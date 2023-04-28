@@ -1,7 +1,6 @@
-import { z } from 'zod';
 import type { PageServerLoad } from './$types';
 import * as Diff from 'diff';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/prisma';
 
 export const load = (async ({ params }) => {
@@ -11,7 +10,7 @@ export const load = (async ({ params }) => {
 	}
 	const submission = await db.submission.findUnique({ where: { id: submissionId } });
 	if (!submission) {
-		throw error(400, 'Invalid submission');
+		throw redirect(302, '/admin/reviews');
 	}
 	let diff = Diff.createTwoFilesPatch(
 		'expected',

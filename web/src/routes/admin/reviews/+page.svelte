@@ -42,6 +42,8 @@
 		</div>
 	</div>
 	<div class="row justify-content-end">
-		<button type="submit" class="mt-3 col-1 btn btn-secondary">Submit</button>
+		<div class="text-end">
+			<button type="submit" class="mt-3 btn btn-secondary">Submit</button>
+		</div>
 	</div>
 </form>
