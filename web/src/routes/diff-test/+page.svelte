@@ -3,8 +3,15 @@
 	import 'diff2html/bundles/css/diff2html.min.css';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
+	import type { DiffPostData } from './+server';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
+
+	let incorrectBtn: HTMLInputElement;
+	let correctBtn: HTMLInputElement;
+	let submitBtn: HTMLButtonElement;
+	let messageText: HTMLTextAreaElement;
 
 	onMount(() => {
 		const diff2htmlUi = new Diff2HtmlUI(document.getElementById('diff')!, data.diff, {
@@ -17,17 +24,25 @@
 		});
 		diff2htmlUi.draw();
 
-		let incorrectBtn = document.getElementById('btn_incorrect')! as HTMLInputElement;
-		let correctBtn = document.getElementById('btn_correct')! as HTMLInputElement;
-		let submitBtn = document.getElementById('submit_btn')! as HTMLButtonElement;
-
-		incorrectBtn?.addEventListener('change', () => {
+		incorrectBtn.addEventListener('change', () => {
 			submitBtn.disabled = false;
 		});
-		correctBtn?.addEventListener('change', () => {
+		correctBtn.addEventListener('change', () => {
 			submitBtn.disabled = false;
 		});
 	});
+
+	async function onSubmitClick() {
+		if (incorrectBtn.checked) {
+			let data: DiffPostData = { correct: false, message: messageText.value };
+			await fetch('/diff-test', { method: 'POST', body: JSON.stringify(data) });
+			goto('/reviews');
+		} else if (correctBtn.checked) {
+			let data: DiffPostData = { correct: true, message: messageText.value };
+			await fetch('/diff-test', { method: 'POST', body: JSON.stringify(data) });
+			goto('/reviews');
+		}
+	}
 </script>
 
 <svelte:head>
@@ -39,14 +54,38 @@
 <a href="/reviews" class="btn btn-outline-primary">Back</a>
 <div class="mt-3" id="diff" />
 
+<h5>Message</h5>
+<textarea bind:this={messageText} class="mb-3 form-control" />
+
 <div class="row justify-content-end">
 	<div class="text-end">
 		<div class="btn-group" role="group">
-			<input type="radio" class="btn-check" name="btnradio" id="btn_incorrect" autocomplete="off" />
+			<input
+				bind:this={incorrectBtn}
+				type="radio"
+				class="btn-check"
+				name="btnradio"
+				id="btn_incorrect"
+				autocomplete="off"
+			/>
 			<label class="btn btn-outline-danger" for="btn_incorrect">Incorrect</label>
-			<input type="radio" class="btn-check" name="btnradio" id="btn_correct" autocomplete="off" />
+			<input
+				bind:this={correctBtn}
+				type="radio"
+				class="btn-check"
+				name="btnradio"
+				id="btn_correct"
+				autocomplete="off"
+			/>
 			<label class="btn btn-outline-success" for="btn_correct">Correct</label>
 		</div>
-		<button id="submit_btn" type="button" class="btn btn-primary" disabled>Submit</button>
+		<button
+			bind:this={submitBtn}
+			on:click={onSubmitClick}
+			id="submit_btn"
+			type="button"
+			class="btn btn-primary"
+			disabled>Submit</button
+		>
 	</div>
 </div>
