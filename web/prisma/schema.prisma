@@ -12,3 +12,15 @@ model User {
   username String @unique
   password String
 }
+
+enum SubmissionState {
+  InReview
+  Correct
+  Incorrect
+}
+
+model Submission {
+  id      Int             @id @default(autoincrement())
+  state   SubmissionState
+  message String?
+}
