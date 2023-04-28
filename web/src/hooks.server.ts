@@ -27,6 +27,8 @@ export const handle = (async ({ event, resolve }) => {
 					throw redirect(302, '/admin/reviews');
 				} else {
 					event.cookies.delete('token');
+					const res = resolve(event);
+					return res;
 				}
 			} else {
 				const res = resolve(event);
@@ -44,6 +46,7 @@ export const handle = (async ({ event, resolve }) => {
 					return res;
 				} else {
 					event.cookies.delete('token');
+					throw redirect(302, '/login');
 				}
 			} else {
 				throw redirect(302, '/login');
