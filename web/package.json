@@ -31,10 +31,12 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@sveltejs/adapter-node": "^1.2.3",
+		"@prisma/client": "^4.13.0",
+		"@sveltejs/adapter-node": "^1.2.4",
 		"bootstrap": "^5.2.3",
 		"diff": "^5.1.0",
 		"diff2html": "^3.4.35",
-		"highlight.js": "^11.7.0"
+		"highlight.js": "^11.7.0",
+		"prisma": "^4.13.0"
 	}
 }
