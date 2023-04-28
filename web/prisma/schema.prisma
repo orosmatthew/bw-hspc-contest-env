@@ -28,7 +28,10 @@ enum SubmissionState {
 }
 
 model Submission {
-  id      Int             @id @default(autoincrement())
-  state   SubmissionState
-  message String?
+  id             Int             @id @default(autoincrement())
+  createdAt      DateTime        @default(now())
+  state          SubmissionState
+  expectedOutput String
+  actualOutput   String
+  message        String?
 }

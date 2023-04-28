@@ -2,9 +2,10 @@
 	import { Diff2HtmlUI } from 'diff2html/lib/ui/js/diff2html-ui-base';
 	import 'diff2html/bundles/css/diff2html.min.css';
 	import { onMount } from 'svelte';
-	import type { PageData } from './$types';
 	import type { DiffPostData } from './+server';
 	import { goto } from '$app/navigation';
+	import type { PageData } from './$types';
+	import { page } from '$app/stores';
 
 	export let data: PageData;
 
@@ -34,22 +35,28 @@
 
 	async function onSubmitClick() {
 		if (incorrectBtn.checked) {
-			let data: DiffPostData = { correct: false, message: messageText.value };
-			await fetch('/admin/diff', { method: 'POST', body: JSON.stringify(data) });
+			let postData: DiffPostData = {
+				correct: false,
+				message: messageText.value
+			};
+			await fetch($page.url, { method: 'POST', body: JSON.stringify(postData) });
 			goto('/admin/reviews');
 		} else if (correctBtn.checked) {
-			let data: DiffPostData = { correct: true, message: messageText.value };
-			await fetch('/admin/diff', { method: 'POST', body: JSON.stringify(data) });
+			let postData: DiffPostData = {
+				correct: true,
+				message: messageText.value
+			};
+			await fetch($page.url, { method: 'POST', body: JSON.stringify(postData) });
 			goto('/admin/reviews');
 		}
 	}
 </script>
 
 <svelte:head>
-	<title>Diff Test</title>
+	<title>Diff</title>
 </svelte:head>
 
-<h1 class="mb-4">Diff Test</h1>
+<h1 class="mb-4">Diff</h1>
 
 <a href="/admin/reviews" class="btn btn-outline-primary">Back</a>
 <div class="mt-3" id="diff" />
