@@ -6,6 +6,9 @@ export const actions = {
 		const data = await request.formData();
 		const username = data.get('username')?.toString();
 		const password = data.get('password')?.toString();
+		if (!username || !password) {
+			return { success: false };
+		}
 		const user = await db.user.findUnique({ where: { username: username } });
 		if (!user) {
 			return { success: false };
