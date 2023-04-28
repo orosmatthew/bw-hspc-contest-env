@@ -35,12 +35,12 @@
 	async function onSubmitClick() {
 		if (incorrectBtn.checked) {
 			let data: DiffPostData = { correct: false, message: messageText.value };
-			await fetch('/diff-test', { method: 'POST', body: JSON.stringify(data) });
-			goto('/reviews');
+			await fetch('/admin/diff', { method: 'POST', body: JSON.stringify(data) });
+			goto('/admin/reviews');
 		} else if (correctBtn.checked) {
 			let data: DiffPostData = { correct: true, message: messageText.value };
-			await fetch('/diff-test', { method: 'POST', body: JSON.stringify(data) });
-			goto('/reviews');
+			await fetch('/admin/diff', { method: 'POST', body: JSON.stringify(data) });
+			goto('/admin/reviews');
 		}
 	}
 </script>
@@ -51,7 +51,7 @@
 
 <h1 class="mb-4">Diff Test</h1>
 
-<a href="/reviews" class="btn btn-outline-primary">Back</a>
+<a href="/admin/reviews" class="btn btn-outline-primary">Back</a>
 <div class="mt-3" id="diff" />
 
 <h5>Message</h5>

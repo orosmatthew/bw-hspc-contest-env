@@ -1,7 +1,15 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import type { ActionData } from './$types';
 	export let form: ActionData;
+
+	$: if (browser) {
+		if (form && form.success) {
+			goto('/admin/reviews');
+		}
+	}
 </script>
 
 <div class="mt-4 row justify-content-center">

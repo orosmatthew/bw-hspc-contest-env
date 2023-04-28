@@ -8,6 +8,6 @@
 
 <ul class="list-group">
 	{#each data.reviewList as review}
-		<a href="/diff-test" class="list-group-item list-group-item-action">{review}</a>
+		<a href="/admin/diff" class="list-group-item list-group-item-action">{review}</a>
 	{/each}
 </ul>
