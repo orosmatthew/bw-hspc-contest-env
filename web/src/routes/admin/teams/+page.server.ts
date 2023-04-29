@@ -3,15 +3,6 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load = (async () => {
 	const teams = await db.team.findMany();
-	teams.sort((a, b) => {
-		if (a.name < b.name) {
-			return -1;
-		}
-		if (a.name > b.name) {
-			return 1;
-		}
-		return 0;
-	});
 	return {
 		teams: teams.map((row) => {
 			return { id: row.id, name: row.name };
