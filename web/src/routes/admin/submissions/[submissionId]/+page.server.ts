@@ -1,7 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/prisma';
-import Diff from 'diff';
+import * as Diff from 'diff';
 import { SubmissionState } from '@prisma/client';
 
 export const load = (async ({ params }) => {
