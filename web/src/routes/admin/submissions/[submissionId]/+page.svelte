@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { SubmissionState } from '@prisma/client';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
 	import { Diff2HtmlUI } from 'diff2html/lib/ui/js/diff2html-ui-base';
@@ -42,11 +41,11 @@
 	</thead>
 	<tbody>
 		<tr
-			class={(data.state == SubmissionState.InReview
+			class={(data.state == 'InReview'
 				? 'table-warning'
-				: data.state == SubmissionState.Correct
+				: data.state == 'Correct'
 				? 'table-success'
-				: data.state == SubmissionState.Incorrect
+				: data.state == 'Incorrect'
 				? 'table-danger'
 				: '') + ' submission-row'}
 		>
@@ -71,13 +70,13 @@
 	</tbody>
 </table>
 
-{#if data.state == SubmissionState.InReview}
+{#if data.state == 'InReview'}
 	<div class="row">
 		<div class="text-center">
 			<a href={'/admin/diff/' + data.id} class="btn btn-warning">Review Submission</a>
 		</div>
 	</div>
-{:else if data.state == SubmissionState.Incorrect}
+{:else if data.state == 'Incorrect'}
 	<h2 style="text-align:center">Diff</h2>
 	<div id="diff" />
 {/if}

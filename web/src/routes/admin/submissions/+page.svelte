@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { SubmissionState } from '@prisma/client';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 
@@ -34,11 +33,11 @@
 				on:click={() => {
 					goto('/admin/submissions/' + submission.id.toString());
 				}}
-				class={(submission.state == SubmissionState.InReview
+				class={(submission.state == 'InReview'
 					? 'table-warning'
-					: submission.state == SubmissionState.Correct
+					: submission.state == 'Correct'
 					? 'table-success'
-					: submission.state == SubmissionState.Incorrect
+					: submission.state == 'Incorrect'
 					? 'table-danger'
 					: '') + ' submission-row'}
 			>
