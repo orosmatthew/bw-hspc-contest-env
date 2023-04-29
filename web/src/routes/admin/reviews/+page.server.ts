@@ -3,13 +3,18 @@ import { SubmissionState } from '@prisma/client';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load = (async () => {
-	const query = await db.submission.findMany({ where: { state: SubmissionState.InReview } });
-	query.sort((a, b) => {
-		return a.createdAt.valueOf() - b.createdAt.valueOf();
-	});
+	const submissions = await db.submission.findMany({ where: { state: SubmissionState.InReview } });
+	const teams = await db.team.findMany();
+	const problems = await db.problem.findMany();
 	return {
-		reviewList: query.map((row) => {
+		reviewList: submissions.map((row) => {
 			return { id: row.id, createdAt: row.createdAt };
+		}),
+		teams: teams.map((row) => {
+			return { id: row.id, name: row.name };
+		}),
+		problems: problems.map((row) => {
+			return { id: row.id, name: row.friendlyName };
 		})
 	};
 }) satisfies PageServerLoad;
@@ -17,20 +22,32 @@ export const load = (async () => {
 export const actions = {
 	submission: async ({ request }) => {
 		const data = await request.formData();
-		const expected = data.get('expected');
+		const teamId = data.get('teamId');
+		const problemId = data.get('problemId');
 		const actual = data.get('actual');
-		if (!expected || !actual) {
+		if (!teamId || !problemId || !actual) {
 			return { success: false };
 		}
-		if (expected.toString() === actual.toString()) {
+		const problemIdInt = parseInt(problemId.toString());
+		const teamIdInt = parseInt(teamId.toString());
+		if (isNaN(problemIdInt) || isNaN(teamIdInt)) {
+			return { success: false };
+		}
+		const problem = await db.problem.findUnique({ where: { id: problemIdInt } });
+		if (!problem) {
+			return { success: false };
+		}
+		if (problem.realOutput === actual.toString()) {
 			return { success: true };
 		}
 		await db.submission.create({
 			data: {
 				state: SubmissionState.InReview,
-				expectedOutput: expected.toString(),
-				actualOutput: actual.toString()
+				actualOutput: actual.toString(),
+				teamId: teamIdInt,
+				problemId: problemIdInt
 			}
 		});
+		return { success: true };
 	}
 } satisfies Actions;

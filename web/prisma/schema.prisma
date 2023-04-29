@@ -8,10 +8,10 @@ datasource db {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  username String    @unique
-  password String
-  sessions Session[]
+  id         Int       @id @default(autoincrement())
+  username   String    @unique
+  password   String
+  Submission Session[]
 }
 
 model Session {
@@ -31,21 +31,26 @@ model Submission {
   id             Int             @id @default(autoincrement())
   createdAt      DateTime        @default(now())
   state          SubmissionState
-  expectedOutput String
   actualOutput   String
   message        String?
+  team           Team            @relation(fields: [teamId], references: [id])
+  teamId         Int
+  problem        Problem         @relation(fields: [problemId], references: [id])
+  problemId      Int
 }
 
 model Problem {
-  id           Int    @id @default(autoincrement())
-  friendlyName String @unique
+  id           Int          @id @default(autoincrement())
+  friendlyName String       @unique
   sampleInput  String
   sampleOutput String
   realInput    String
   realOutput   String
+  Submission   Submission[]
 }
 
 model Team {
-  id   Int    @id @default(autoincrement())
-  name String @unique
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  Submission Submission[]
 }

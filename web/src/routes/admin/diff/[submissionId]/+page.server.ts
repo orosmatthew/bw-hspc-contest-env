@@ -12,10 +12,14 @@ export const load = (async ({ params }) => {
 	if (!submission) {
 		throw redirect(302, '/admin/reviews');
 	}
+	const problem = await db.problem.findUnique({ where: { id: submission.problemId } });
+	if (!problem) {
+		throw error(500, 'Invalid problem');
+	}
 	let diff = Diff.createTwoFilesPatch(
 		'expected',
 		'actual',
-		submission.expectedOutput,
+		problem.realOutput,
 		submission.actualOutput
 	);
 	return { diff: diff };
