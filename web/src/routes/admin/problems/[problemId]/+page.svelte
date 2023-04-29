@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import type { Actions, PageData } from './$types';
 
 	let editing = false;
@@ -9,6 +11,18 @@
 	function stretchTextarea(textarea: HTMLTextAreaElement) {
 		textarea.style.height = textarea.scrollHeight + 'px';
 	}
+
+	async function deleteProblem() {
+		const sure = confirm('Are you sure?');
+		if (!sure) {
+			return;
+		}
+		const res = await fetch($page.url, { method: 'DELETE' });
+		const data = await res.json();
+		if (data.success) {
+			goto('/admin/problems');
+		}
+	}
 </script>
 
 <h1 style="text-align:center" class="mb-4">{data.problemData.friendlyName}</h1>
@@ -17,6 +31,7 @@
 		<a href="/admin/problems" class="btn btn-outline-primary">Back</a>
 	</div>
 	<div class="col-6 text-end">
+		<button on:click={deleteProblem} type="button" class="btn btn-danger">Delete</button>
 		{#if !editing}
 			<button
 				on:click={() => {
