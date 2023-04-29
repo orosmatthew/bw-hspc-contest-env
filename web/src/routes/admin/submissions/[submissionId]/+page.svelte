@@ -29,7 +29,7 @@
 
 <a href="/admin/submissions" class="mb-3 btn btn-outline-primary">All Submissions</a>
 
-<table class="table table-bordered table-hover">
+<table class="table table-bordered">
 	<thead>
 		<tr>
 			<th>Team</th>

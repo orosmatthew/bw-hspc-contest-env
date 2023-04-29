@@ -7,6 +7,10 @@ export const DELETE = (async ({ params }) => {
 	if (isNaN(problemId)) {
 		throw error(400, 'Invalid problem');
 	}
-	await db.problem.delete({ where: { id: problemId } });
+	try {
+		await db.problem.delete({ where: { id: problemId } });
+	} catch {
+		return json({ success: false });
+	}
 	return json({ success: true });
 }) satisfies RequestHandler;

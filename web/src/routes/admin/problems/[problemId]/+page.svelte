@@ -4,6 +4,7 @@
 	import type { Actions, PageData } from './$types';
 
 	let editing = false;
+	let error = false;
 
 	export let data: PageData;
 	export let form: Actions;
@@ -21,11 +22,20 @@
 		const data = await res.json();
 		if (data.success) {
 			goto('/admin/problems');
+		} else {
+			error = true;
 		}
 	}
 </script>
 
 <h1 style="text-align:center" class="mb-4">{data.problemData.friendlyName}</h1>
+
+{#if error}
+	<div class="alert alert-danger">
+		Error deleting problem (Is it being used in any submissions?)
+	</div>
+{/if}
+
 <div class="row">
 	<div class="col-6">
 		<a href="/admin/problems" class="btn btn-outline-primary">Back</a>
