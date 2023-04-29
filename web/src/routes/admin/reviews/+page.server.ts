@@ -38,6 +38,15 @@ export const actions = {
 			return { success: false };
 		}
 		if (problem.realOutput === actual.toString()) {
+			await db.submission.create({
+				data: {
+					state: SubmissionState.Correct,
+					actualOutput: actual.toString(),
+					teamId: teamIdInt,
+					problemId: problemIdInt,
+					gradedAt: new Date()
+				}
+			});
 			return { success: true };
 		}
 		await db.submission.create({

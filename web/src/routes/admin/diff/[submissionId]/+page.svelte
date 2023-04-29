@@ -61,12 +61,12 @@
 	<div class="alert alert-success">Success!</div>
 {/if}
 
-<a href="/admin/reviews" class="btn btn-outline-primary">Back</a>
+<a href="/admin/reviews" class="btn btn-outline-primary">All Reviews</a>
 <div class="mt-3" id="diff" />
 
 <form method="POST" action="?/submit" use:enhance>
 	<h5>Message</h5>
-	<textarea class="mb-3 form-control" />
+	<textarea name="message" class="mb-3 form-control" />
 
 	<div class="row justify-content-end">
 		<div class="text-end">

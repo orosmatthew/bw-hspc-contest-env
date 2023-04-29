@@ -28,15 +28,16 @@ enum SubmissionState {
 }
 
 model Submission {
-  id             Int             @id @default(autoincrement())
-  createdAt      DateTime        @default(now())
-  state          SubmissionState
-  actualOutput   String
-  message        String?
-  team           Team            @relation(fields: [teamId], references: [id])
-  teamId         Int
-  problem        Problem         @relation(fields: [problemId], references: [id])
-  problemId      Int
+  id           Int             @id @default(autoincrement())
+  createdAt    DateTime        @default(now())
+  gradedAt     DateTime?
+  state        SubmissionState
+  actualOutput String
+  message      String?
+  team         Team            @relation(fields: [teamId], references: [id])
+  teamId       Int
+  problem      Problem         @relation(fields: [problemId], references: [id])
+  problemId    Int
 }
 
 model Problem {
