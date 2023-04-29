@@ -38,9 +38,14 @@ model Submission {
 
 model Problem {
   id           Int    @id @default(autoincrement())
-  friendlyName String
+  friendlyName String @unique
   sampleInput  String
   sampleOutput String
   realInput    String
   realOutput   String
+}
+
+model Team {
+  id   Int    @id @default(autoincrement())
+  name String @unique
 }
