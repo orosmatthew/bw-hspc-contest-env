@@ -10,9 +10,7 @@
 	<title>Reviews</title>
 </svelte:head>
 
-<h1 class="mb-4">Reviews</h1>
-
-<a href="/logout" class="mb-2 btn btn-outline-primary" data-sveltekit-preload-data="off">Logout</a>
+<h1 style="text-align:center" class="mb-4">Reviews</h1>
 
 <ul class="list-group">
 	{#if data.reviewList.length === 0}

@@ -7,7 +7,11 @@ export const load = (async () => {
 	query.sort((a, b) => {
 		return a.createdAt.valueOf() - b.createdAt.valueOf();
 	});
-	return { reviewList: query };
+	return {
+		reviewList: query.map((row) => {
+			return { id: row.id, createdAt: row.createdAt };
+		})
+	};
 }) satisfies PageServerLoad;
 
 export const actions = {

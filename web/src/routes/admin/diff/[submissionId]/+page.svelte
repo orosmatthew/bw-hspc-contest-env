@@ -56,7 +56,7 @@
 	<title>Diff</title>
 </svelte:head>
 
-<h1 class="mb-4">Diff</h1>
+<h1 style="text-align:center" class="mb-4">Diff</h1>
 
 <a href="/admin/reviews" class="btn btn-outline-primary">Back</a>
 <div class="mt-3" id="diff" />

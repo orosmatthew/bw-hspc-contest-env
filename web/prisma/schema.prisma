@@ -35,3 +35,12 @@ model Submission {
   actualOutput   String
   message        String?
 }
+
+model Problem {
+  id           Int    @id @default(autoincrement())
+  friendlyName String
+  sampleInput  String
+  sampleOutput String
+  realInput    String
+  realOutput   String
+}

@@ -24,7 +24,7 @@ export const handle = (async ({ event, resolve }) => {
 			if (session) {
 				removeExpiredSessions(session.userId);
 				if (!isSessionExpired(session)) {
-					throw redirect(302, '/admin/reviews');
+					throw redirect(302, '/admin');
 				} else {
 					event.cookies.delete('token');
 					const res = resolve(event);
