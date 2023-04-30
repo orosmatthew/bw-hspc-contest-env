@@ -48,10 +48,19 @@ model Problem {
   realInput    String
   realOutput   String
   Submission   Submission[]
+  contests     Contest[]    @relation("ProblemContestRelation")
 }
 
 model Team {
   id         Int          @id @default(autoincrement())
   name       String       @unique
   Submission Submission[]
+  contests   Contest[]    @relation("TeamContestRelation")
+}
+
+model Contest {
+  id       Int       @id @default(autoincrement())
+  name     String
+  teams    Team[]    @relation("TeamContestRelation")
+  problems Problem[] @relation("ProblemContestRelation")
 }

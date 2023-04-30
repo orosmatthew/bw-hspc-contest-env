@@ -1,0 +1,36 @@
+<script lang="ts">
+	import type { PageData } from './$types';
+
+	export let data: PageData;
+</script>
+
+<svelte:head>
+	<title>{data.name}</title>
+</svelte:head>
+
+<h1 style="text-align:center" class="mb-4">{data.name}</h1>
+
+<div class="row">
+	<div class="col-6">
+		<a href="/admin/contests" class="btn btn-outline-primary">All Contests</a>
+	</div>
+</div>
+
+<div class="mt-3 row">
+	<div class="col-6">
+		<h4>Teams</h4>
+		<div class="list-group">
+			{#each data.teams as team}
+				<div class="list-group-item">{team.name}</div>
+			{/each}
+		</div>
+	</div>
+	<div class="col-6">
+		<h4>Problems</h4>
+		<div class="list-group">
+			{#each data.problems as problem}
+				<div class="list-group-item">{problem.name}</div>
+			{/each}
+		</div>
+	</div>
+</div>
