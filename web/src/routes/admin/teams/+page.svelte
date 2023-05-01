@@ -76,7 +76,7 @@
 
 <div class="list-group">
 	{#each data.teams as team}
-		<div class="list-group-item">
+		<a href={'/admin/teams/' + team.id.toString()} class="list-group-item list-group-item-action">
 			<div class="row">
 				<div class="col-6">
 					{team.name}
@@ -92,6 +92,6 @@
 					{/if}
 				</div>
 			</div>
-		</div>
+		</a>
 	{/each}
 </div>
