@@ -1,4 +1,4 @@
-import { error, redirect } from '@sveltejs/kit';
+import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/prisma';
 
@@ -24,3 +24,17 @@ export const load = (async ({ params }) => {
 		})
 	};
 }) satisfies PageServerLoad;
+
+export const actions = {
+	delete: async ({ params }) => {
+		if (!params.contestId) {
+			return { success: false };
+		}
+		try {
+			await db.contest.delete({ where: { id: parseInt(params.contestId) } });
+		} catch {
+			return { success: false };
+		}
+		throw redirect(302, '/admin/contests');
+	}
+} satisfies Actions;

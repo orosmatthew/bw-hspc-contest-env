@@ -1,5 +1,9 @@
 import { db } from '$lib/server/prisma';
+import { join } from 'path';
 import type { Actions, PageServerLoad } from './$types';
+import fs from 'fs';
+import { error } from 'console';
+import { repos } from '$lib/server/gitserver';
 
 export const load = (async () => {
 	const teams = await db.team.findMany();
@@ -15,7 +19,7 @@ export const load = (async () => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-	create: async ({ request }) => {
+	create: async ({ request, params }) => {
 		const data = await request.formData();
 		const name = data.get('name');
 		const problems = (await db.problem.findMany()).filter((problem) => {
@@ -27,7 +31,7 @@ export const actions = {
 		if (!name) {
 			return { success: false };
 		}
-		await db.contest.create({
+		const createdContest = await db.contest.create({
 			data: {
 				name: name.toString(),
 				teams: {
@@ -40,8 +44,29 @@ export const actions = {
 						return { id: problem.id };
 					})
 				}
-			}
+			},
+			include: { teams: true }
 		});
+
+		// Create repos
+
+		const repoDir = process.env.GIT_REPO_DIR;
+		if (!repoDir) {
+			throw error(500, 'No repo directory specified in env');
+		}
+
+		if (fs.existsSync(join(repoDir, createdContest.id.toString()))) {
+			fs.rmdirSync(join(repoDir, createdContest.id.toString()), { recursive: true });
+		}
+
+		createdContest.teams.forEach((team) => {
+			repos.create(join(createdContest.id.toString(), team.id.toString()), (e) => {
+				if (e) {
+					throw error(500, `Unable to create repo for team: ${team.name}: ${e.message}`);
+				}
+			});
+		});
+
 		return { success: true };
 	}
 } satisfies Actions;

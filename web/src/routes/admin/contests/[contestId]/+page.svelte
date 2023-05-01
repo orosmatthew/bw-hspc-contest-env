@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -13,6 +14,24 @@
 <div class="row">
 	<div class="col-6">
 		<a href="/admin/contests" class="btn btn-outline-primary">All Contests</a>
+	</div>
+	<div class="col-6">
+		<div class="text-end">
+			<form
+				method="POST"
+				action="?/delete"
+				use:enhance={({ cancel }) => {
+					if (!confirm('Are you sure?')) {
+						cancel();
+					}
+					return async ({ update }) => {
+						update();
+					};
+				}}
+			>
+				<button type="submit" class="btn btn-danger">Delete</button>
+			</form>
+		</div>
 	</div>
 </div>
 

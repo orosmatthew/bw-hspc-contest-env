@@ -4,6 +4,8 @@ import { join } from 'path';
 
 let gitRunning = false;
 
+export let repos: Git;
+
 export function startGitServer() {
 	if (!gitRunning) {
 		const port =
@@ -16,7 +18,7 @@ export function startGitServer() {
 		}
 		const repoDir = process.env.GIT_REPO_DIR;
 
-		const repos = new Git(join(repoDir), {
+		repos = new Git(join(repoDir), {
 			autoCreate: false,
 			authenticate: ({ type, user, repo }, next) => {
 				if (type == 'push') {
