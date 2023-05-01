@@ -18,7 +18,27 @@
 
 <h1 style="text-align:center" class="mb-4">{data.team.name}</h1>
 
-<a href="/admin/teams" class="mb-3 btn btn-outline-primary">All Teams</a>
+<div class="row">
+	<div class="col-6">
+		<a href="/admin/teams" class="mb-3 btn btn-outline-primary">All Teams</a>
+	</div>
+	<div class="col-6 text-end">
+		<form
+			method="POST"
+			action="?/delete"
+			use:enhance={({ cancel }) => {
+				if (!confirm('Are you sure?')) {
+					cancel();
+				}
+				return async ({ update }) => {
+					update();
+				};
+			}}
+		>
+			<button type="submit" class="mb-3 btn btn-outline-danger">Delete</button>
+		</form>
+	</div>
+</div>
 
 <table class="table table-bordered table-striped">
 	<thead>

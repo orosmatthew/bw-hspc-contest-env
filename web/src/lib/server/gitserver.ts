@@ -13,24 +13,10 @@ export function startGitServer() {
 				? 7006
 				: parseInt(process.env.GIT_PORT);
 
-		if (!process.env.GIT_REPO_DIR) {
-			throw error('GIT_REPO_DIR not specified in .env');
-		}
-		const repoDir = process.env.GIT_REPO_DIR;
+		const repoDir = 'repo';
 
 		repos = new Git(join(repoDir), {
-			autoCreate: false,
-			authenticate: ({ type, user, repo }, next) => {
-				if (type == 'push') {
-					console.log(repo);
-					user((username, password) => {
-						console.log(username, password);
-						next();
-					});
-				} else {
-					next();
-				}
-			}
+			autoCreate: true,
 		});
 
 		repos.on('push', (push) => {

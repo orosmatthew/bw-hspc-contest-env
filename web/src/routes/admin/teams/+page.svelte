@@ -6,11 +6,9 @@
 	export let form: Actions;
 
 	let adding = false;
-	let deleting = false;
 
 	$: if (form && form.success) {
 		adding = false;
-		deleting = false;
 	}
 </script>
 
@@ -26,23 +24,6 @@
 
 <div class="row mb-3">
 	<div class="text-end">
-		{#if !deleting}
-			<button
-				on:click={() => {
-					deleting = true;
-				}}
-				type="button"
-				class="btn btn-outline-danger">Delete</button
-			>
-		{:else}
-			<button
-				on:click={() => {
-					deleting = false;
-				}}
-				type="button"
-				class="btn btn-outline-danger">Cancel</button
-			>
-		{/if}
 		{#if !adding}
 			<button
 				on:click={() => {
@@ -77,21 +58,7 @@
 <div class="list-group">
 	{#each data.teams as team}
 		<a href={'/admin/teams/' + team.id.toString()} class="list-group-item list-group-item-action">
-			<div class="row">
-				<div class="col-6">
-					{team.name}
-				</div>
-				<div class="col-6">
-					{#if deleting}
-						<form method="POST" action="?/delete" use:enhance>
-							<div class="text-end">
-								<input type="hidden" value={team.id} name="teamId" />
-								<button type="submit" class="btn btn-danger">Delete</button>
-							</div>
-						</form>
-					{/if}
-				</div>
-			</div>
+			{team.name}
 		</a>
 	{/each}
 </div>

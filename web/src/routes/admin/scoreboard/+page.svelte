@@ -5,7 +5,7 @@
 
 	export let data: PageData;
 
-	let updateInterval: number;
+	let updateInterval: ReturnType<typeof setInterval>;
 	let updating = false;
 
 	onMount(() => {

@@ -35,12 +35,15 @@
 	"dependencies": {
 		"@prisma/client": "^4.13.0",
 		"@sveltejs/adapter-node": "^1.2.4",
+		"axios": "^1.4.0",
 		"bootstrap": "^5.2.3",
 		"diff": "^5.1.0",
 		"diff2html": "^3.4.35",
 		"highlight.js": "^11.8.0",
+		"memfs": "^3.5.1",
 		"node-git-server": "^1.0.0",
 		"prisma": "^4.13.0",
+		"simple-git": "^3.18.0",
 		"uuid": "^9.0.0",
 		"zod": "^3.21.4"
 	}

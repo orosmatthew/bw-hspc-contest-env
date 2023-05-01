@@ -18,7 +18,7 @@ export const actions = {
 			return { success: false };
 		}
 		try {
-			await db.team.create({ data: { name: name.toString() } });
+			await db.team.create({ data: { name: name.toString(), password: "thing" } });
 		} catch {
 			return { success: false };
 		}

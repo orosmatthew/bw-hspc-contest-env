@@ -34,5 +34,13 @@ export const actions = {
 			return { success: false };
 		}
 		return { success: true };
+	},
+	delete: async ({ params }) => {
+		try {
+			await db.team.delete({ where: { id: parseInt(params.teamId) } });
+		} catch {
+			return { success: false };
+		}
+		throw redirect(302, '/admin/teams');
 	}
 } satisfies Actions;
