@@ -1,6 +1,9 @@
 import { redirect, type Handle } from '@sveltejs/kit';
 import { db } from '$lib/server/prisma';
 import type { Session } from '@prisma/client';
+import { startGitServer } from '$lib/server/gitserver';
+
+startGitServer();
 
 const sessionExpireMilliseconds = 1000 * 60 * 60 * 24; // 24 hours
 
