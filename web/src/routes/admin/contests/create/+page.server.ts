@@ -72,8 +72,6 @@ export const actions = {
 		createdContest.teams.forEach(async (team) => {
 			fs.mkdirSync(join('temp', team.id.toString()));
 			const git = simpleGit({ baseDir: join('temp', team.id.toString()) });
-			await git.addConfig('user.name', "Admin");
-			await git.addConfig('user.email', "noemail@example.com");
 			await git.init();
 			await git.checkoutLocalBranch('master');
 			createdContest.problems.forEach((problem) => {
@@ -83,7 +81,7 @@ export const actions = {
 				);
 			});
 			await git.add('.');
-			await git.commit('Initial');
+			await git.commit('Initial', { '--author': 'Admin <>' });
 			await git.push(
 				'http://localhost:7006/' + createdContest.id.toString() + '/' + team.id.toString(),
 				'master'
