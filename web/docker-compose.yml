@@ -1,0 +1,11 @@
+version: '3'
+services:
+  web:
+    build: .
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - GIT_PORT=${GIT_PORT}
+      - ORIGIN=http://localhost:${PORT}
+    volumes:
+      - ./repo:/app/repo
+    network_mode: 'host'
