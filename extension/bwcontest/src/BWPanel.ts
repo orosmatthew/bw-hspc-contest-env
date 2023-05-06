@@ -28,7 +28,7 @@ export class BWPanel {
 		// Otherwise, create a new panel.
 		const panel = vscode.window.createWebviewPanel(
 			BWPanel.viewType,
-			'VSinder',
+			'BWContest',
 			column || vscode.ViewColumn.One,
 			{
 				// Enable javascript in the webview
