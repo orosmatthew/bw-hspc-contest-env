@@ -1,18 +1,94 @@
 import * as vscode from 'vscode';
-import { BWPanel } from './BWPanel';
 import { SidebarProvider } from './SidebarProvider';
-import { notDeepEqual } from 'assert';
+import * as child_process from 'child_process';
+import * as fs from 'fs-extra';
+
+interface BWContestSettings {
+	repoBaseUrl: string;
+	repoClonePath: string;
+}
+
+function closeAllWorkspaces() {
+	const workspaceFolders = vscode.workspace.workspaceFolders;
+	if (!workspaceFolders) {
+		return;
+	}
+	const removedFolders = vscode.workspace.updateWorkspaceFolders(0, workspaceFolders.length);
+	if (!removedFolders) {
+		return;
+	}
+}
+
+export async function cloneAndOpenRepo(contestId: number, teamId: number) {
+	const currentSettings = vscode.workspace.getConfiguration().get<BWContestSettings>('BWContest');
+
+	if (!currentSettings || currentSettings.repoBaseUrl == '') {
+		vscode.window.showErrorMessage('BWContest: BWContest.repoBaseURL not set');
+		return;
+	}
+	if (!currentSettings || currentSettings.repoClonePath == '') {
+		vscode.window.showErrorMessage('BWContest: BWContest.repoClonePath not set');
+		return;
+	}
+
+	const repoUrl = `${currentSettings.repoBaseUrl}/${contestId.toString()}/${teamId.toString()}.git`;
+
+	const repoName = repoUrl.split('/').pop()?.replace('.git', '')!;
+
+	if (!fs.existsSync(`${currentSettings.repoClonePath}/BWContest`)) {
+		fs.mkdirSync(`${currentSettings.repoClonePath}/BWContest`);
+	}
+	if (!fs.existsSync(`${currentSettings.repoClonePath}/BWContest/${contestId.toString()}`)) {
+		fs.mkdirSync(`${currentSettings.repoClonePath}/BWContest/${contestId.toString()}`);
+	}
+
+	const clonedRepoPath = `${currentSettings.repoClonePath}/BWContest/${contestId.toString()}/${repoName}`;
+
+	if (fs.existsSync(clonedRepoPath)) {
+		const confirm = await vscode.window.showWarningMessage(
+			'The repo already exists. Do you want to replace it?',
+			'Delete and Replace',
+			'Cancel'
+		);
+		if (confirm !== 'Delete and Replace') {
+			return;
+		}
+		closeAllWorkspaces();
+		fs.removeSync(clonedRepoPath);
+	}
+
+	child_process.exec(
+		`git clone ${repoUrl}`,
+		{ cwd: `${currentSettings.repoClonePath}/BWContest/${contestId.toString()}` },
+		(error, stdout, stderr) => {
+			if (error) {
+				vscode.window.showErrorMessage(`BWContest: Failed to clone repo: ${error.message}`);
+				return;
+			}
+		}
+	);
+
+	const addedFolder = vscode.workspace.updateWorkspaceFolders(
+		vscode.workspace.workspaceFolders?.length ?? 0,
+		0,
+		{ uri: vscode.Uri.file(clonedRepoPath), name: 'BWContest' }
+	);
+
+	if (!addedFolder) {
+		vscode.window.showErrorMessage('BWContest: Failed to open cloned repo');
+		return;
+	}
+
+	vscode.window.showInformationMessage('BWContest: Repo cloned and opened');
+}
 
 export function activate(context: vscode.ExtensionContext) {
-	const sidebarProvider = new SidebarProvider(context.extensionUri);
+	const sidebarProvider = new SidebarProvider(context.extensionUri, context);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider)
 	);
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('bwcontest.helloWorld', () => {
-		})
-	);
+	context.subscriptions.push(vscode.commands.registerCommand('bwcontest.helloWorld', () => {}));
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('bwcontest.askQuestion', async () => {

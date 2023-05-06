@@ -1,10 +1,14 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
+import { cloneAndOpenRepo } from './extension';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
 	_view?: vscode.WebviewView;
+	_context?: vscode.ExtensionContext;
 
-	constructor(private readonly _extensionUri: vscode.Uri) {}
+	constructor(private readonly _extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
+		this._context = context;
+	}
 
 	public resolveWebviewView(webviewView: vscode.WebviewView) {
 		this._view = webviewView;
@@ -20,6 +24,34 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
+				case 'onStartup': {
+					const token: string | undefined = this._context?.globalState.get('token');
+					if (token) {
+						this._view?.webview.postMessage({
+							type: 'onSession',
+							value: token
+						});
+					}
+					break;
+				}
+				case 'onClone': {
+					if (!data.value || !data.value.contestId || !data.value.teamId) {
+						return;
+					}
+					await cloneAndOpenRepo(parseInt(data.value.contestId), parseInt(data.value.teamId));
+					break;
+				}
+				case 'onLogin': {
+					if (!data.value) {
+						return;
+					}
+					this._context?.globalState.update('token', data.value);
+					break;
+				}
+				case 'onLogout': {
+					this._context?.globalState.update('token', null);
+					break;
+				}
 				case 'onInfo': {
 					if (!data.value) {
 						return;
@@ -37,7 +69,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			}
 		});
 	}
-
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		const styleResetUri = webview.asWebviewUri(
