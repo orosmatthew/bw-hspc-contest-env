@@ -8,10 +8,10 @@ datasource db {
 }
 
 model User {
-  id         Int       @id @default(autoincrement())
-  username   String    @unique
-  password   String
-  Submission Session[]
+  id       Int       @id @default(autoincrement())
+  username String    @unique
+  password String
+  sessions Session[]
 }
 
 model Session {
@@ -47,7 +47,7 @@ model Problem {
   sampleOutput String
   realInput    String
   realOutput   String
-  Submission   Submission[]
+  submissions  Submission[]
   contests     Contest[]    @relation("ProblemContestRelation")
 }
 
@@ -66,11 +66,14 @@ model ActiveTeam {
   team             Team      @relation(fields: [teamId], references: [id])
   sessionToken     String?   @unique
   sessionCreatedAt DateTime?
+  contestId        Int
+  contest          Contest   @relation(fields: [contestId], references: [id])
 }
 
 model Contest {
-  id       Int       @id @default(autoincrement())
-  name     String
-  teams    Team[]    @relation("TeamContestRelation")
-  problems Problem[] @relation("ProblemContestRelation")
+  id          Int          @id @default(autoincrement())
+  name        String
+  teams       Team[]       @relation("TeamContestRelation")
+  problems    Problem[]    @relation("ProblemContestRelation")
+  activeTeams ActiveTeam[]
 }
