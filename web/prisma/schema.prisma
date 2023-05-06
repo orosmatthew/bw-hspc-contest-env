@@ -56,7 +56,16 @@ model Team {
   name       String       @unique
   Submission Submission[]
   contests   Contest[]    @relation("TeamContestRelation")
-  password   String 
+  password   String
+  activeTeam ActiveTeam?
+}
+
+model ActiveTeam {
+  id               Int       @id @default(autoincrement())
+  teamId           Int       @unique
+  team             Team      @relation(fields: [teamId], references: [id])
+  sessionToken     String?   @unique
+  sessionCreatedAt DateTime?
 }
 
 model Contest {

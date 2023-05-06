@@ -21,6 +21,17 @@ async function removeExpiredSessions(userId: number) {
 }
 
 export const handle = (async ({ event, resolve }) => {
+	if (event.request.method === 'OPTIONS') {
+		return new Response('ok', {
+			headers: {
+				'Access-Control-Allow-Credentials': 'true',
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type'
+			}
+		});
+	}
+
 	if (event.url.pathname.startsWith('/login')) {
 		if (event.cookies.get('token')) {
 			const session = await db.session.findUnique({ where: { token: event.cookies.get('token') } });
