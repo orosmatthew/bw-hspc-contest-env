@@ -24,6 +24,11 @@
 					"type": "string",
 					"default": "",
 					"description": "The path where the repos are cloned to"
+				},
+				"BWContest.javaPath": {
+					"type": "string",
+					"default": "",
+					"description": "Path of java bin folder"
 				}
 			}
 		},

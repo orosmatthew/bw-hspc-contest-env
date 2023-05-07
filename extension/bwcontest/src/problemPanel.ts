@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
+import { runJava } from './run/java';
+import { extensionSettings } from './extension';
+import { join } from 'path';
 
 export class BWPanel {
 	/**
@@ -35,6 +38,8 @@ export class BWPanel {
 			{
 				// Enable javascript in the webview
 				enableScripts: true,
+
+				retainContextWhenHidden: true,
 
 				// And restrict the webview to only loading content from our extension's `media` directory.
 				localResourceRoots: [
@@ -101,6 +106,33 @@ export class BWPanel {
 		this._panel.webview.html = this._getHtmlForWebview(webview);
 		webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
+				case 'onRun': {
+					if (!data.value) {
+						return;
+					}
+					const repoDir = extensionSettings().repoClonePath;
+					const output = await runJava(
+						join(
+							repoDir,
+							'BWContest',
+							data.value.contestId.toString(),
+							data.value.teamId.toString(),
+							data.value.problemPascalName.toString()
+						),
+						join(
+							repoDir,
+							'BWContest',
+							data.value.contestId.toString(),
+							data.value.teamId.toString(),
+							data.value.problemPascalName.toString(),
+							`${data.value.problemPascalName}.java`
+						),
+						data.value.problemPascalName,
+						data.value.input
+					);
+					this._panel.webview.postMessage({ type: 'onOutput', value: output });
+					break;
+				}
 				case 'onStartup': {
 					const token: string | undefined = BWPanel._context?.globalState.get('token');
 

@@ -4,9 +4,14 @@ import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
 import { BWPanel } from './problemPanel';
 
-interface BWContestSettings {
+export interface BWContestSettings {
 	repoBaseUrl: string;
 	repoClonePath: string;
+	javaPath: string;
+}
+
+export function extensionSettings(): BWContestSettings {
+	return vscode.workspace.getConfiguration().get<BWContestSettings>('BWContest')!;
 }
 
 function closeAllWorkspaces() {
