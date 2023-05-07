@@ -26,6 +26,7 @@ model Session {
 }
 
 enum SubmissionState {
+  Queued
   InReview
   Correct
   Incorrect
