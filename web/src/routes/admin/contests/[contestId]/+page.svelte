@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { PageData } from './$types';
+	import type { Actions, PageData } from './$types';
 
 	export let data: PageData;
+	export let form: Actions;
 </script>
 
 <svelte:head>
@@ -10,6 +11,10 @@
 </svelte:head>
 
 <h1 style="text-align:center" class="mb-4">{data.name}</h1>
+
+{#if form && !form.success}
+	<div class="alert alert-danger">An error occured</div>
+{/if}
 
 <div class="row">
 	<div class="col-6">

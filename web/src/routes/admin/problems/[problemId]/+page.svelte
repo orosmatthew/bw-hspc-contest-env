@@ -61,8 +61,8 @@
 {/if}
 
 <form method="POST" action="?/edit">
-	<h4 style="text-align:center" class="mt-3">Name</h4>
 	<div class="row justify-content-center">
+		<h4 style="text-align:center" class="mt-3">Name</h4>
 		<div class="col-md-auto">
 			<textarea
 				name="name"
@@ -71,6 +71,15 @@
 				disabled={!editing}
 				use:stretchTextarea>{data.problemData.friendlyName}</textarea
 			>
+			<h4 style="text-align:center" class="mt-3">PascalCase Name (for filenames)</h4>
+			<div class="col-md-auto">
+				<input
+					value={data.problemData.pascalName}
+					disabled={!editing}
+					name="pascalName"
+					class="form-control"
+				/>
+			</div>
 		</div>
 	</div>
 	<h4 style="text-align:center" class="mt-5">Sample Data</h4>

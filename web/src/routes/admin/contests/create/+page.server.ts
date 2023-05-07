@@ -34,7 +34,7 @@ function copyFolderSync(source: string, target: string) {
 	});
 }
 export const actions = {
-	create: async ({ request, params }) => {
+	create: async ({ request }) => {
 		const data = await request.formData();
 		const name = data.get('name');
 		const problems = (await db.problem.findMany()).filter((problem) => {
@@ -75,9 +75,14 @@ export const actions = {
 			await git.init();
 			await git.checkoutLocalBranch('master');
 			createdContest.problems.forEach((problem) => {
-				copyFolderSync(
-					'templates/java/problem',
-					join('temp', team.id.toString(), problem.friendlyName)
+				fs.mkdirSync(join('temp', team.id.toString(), problem.pascalName));
+				fs.writeFileSync(
+					join('temp', team.id.toString(), problem.pascalName, problem.pascalName + '.java'),
+					`public class ${problem.pascalName} {
+	public static void main(String[] args) {
+		System.out.println("Hello ${problem.pascalName}!");
+	}
+}`
 				);
 			});
 			await git.add('.');

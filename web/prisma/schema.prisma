@@ -43,6 +43,7 @@ model Submission {
 model Problem {
   id           Int          @id @default(autoincrement())
   friendlyName String       @unique
+  pascalName   String       @unique
   sampleInput  String
   sampleOutput String
   realInput    String

@@ -22,17 +22,19 @@ export const actions = {
 		}
 		const data = await request.formData();
 		const name = data.get('name');
+		const pascalName = data.get('pascalName');
 		const sampleInput = data.get('sampleInput');
 		const sampleOutput = data.get('sampleOutput');
 		const realInput = data.get('realInput');
 		const realOutput = data.get('realOutput');
-		if (!name || !sampleInput || !sampleOutput || !realInput || !realOutput) {
+		if (!name || !pascalName || !sampleInput || !sampleOutput || !realInput || !realOutput) {
 			return { success: false };
 		}
 
 		await db.problem.update({
 			where: { id: problemId },
 			data: {
+				pascalName: pascalName.toString(),
 				friendlyName: name.toString(),
 				sampleInput: sampleInput.toString(),
 				sampleOutput: sampleOutput.toString(),
