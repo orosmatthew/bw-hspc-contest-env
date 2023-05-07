@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
 import { cloneAndOpenRepo } from './extension';
+import { BWPanel } from './problemPanel';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
 	_view?: vscode.WebviewView;
@@ -24,6 +25,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
+				case 'onTestAndSubmit': {
+					if (this._context) {
+						BWPanel.createOrShow(this._context?.extensionUri, this._context);
+					}
+					break;
+				}
 				case 'onStartup': {
 					const token: string | undefined = this._context?.globalState.get('token');
 					if (token) {

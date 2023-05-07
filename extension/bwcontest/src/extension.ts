@@ -2,10 +2,16 @@ import * as vscode from 'vscode';
 import { SidebarProvider } from './SidebarProvider';
 import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
+import { BWPanel } from './problemPanel';
 
-interface BWContestSettings {
+export interface BWContestSettings {
 	repoBaseUrl: string;
 	repoClonePath: string;
+	javaPath: string;
+}
+
+export function extensionSettings(): BWContestSettings {
+	return vscode.workspace.getConfiguration().get<BWContestSettings>('BWContest')!;
 }
 
 function closeAllWorkspaces() {
@@ -42,7 +48,9 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 		fs.mkdirSync(`${currentSettings.repoClonePath}/BWContest/${contestId.toString()}`);
 	}
 
-	const clonedRepoPath = `${currentSettings.repoClonePath}/BWContest/${contestId.toString()}/${repoName}`;
+	const clonedRepoPath = `${
+		currentSettings.repoClonePath
+	}/BWContest/${contestId.toString()}/${repoName}`;
 
 	if (fs.existsSync(clonedRepoPath)) {
 		const confirm = await vscode.window.showWarningMessage(
@@ -88,7 +96,11 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider)
 	);
 
-	context.subscriptions.push(vscode.commands.registerCommand('bwcontest.helloWorld', () => {}));
+	context.subscriptions.push(
+		vscode.commands.registerCommand('bwcontest.helloWorld', () => {
+			BWPanel.createOrShow(context.extensionUri, context);
+		})
+	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('bwcontest.askQuestion', async () => {
