@@ -38,7 +38,7 @@
 
 <div class="row">
 	<div class="col-6">
-		<a href="/admin/problems" class="btn btn-outline-primary">Back</a>
+		<a href="/admin/problems" class="btn btn-outline-primary">All Problems</a>
 	</div>
 	<div class="col-6 text-end">
 		<button on:click={deleteProblem} type="button" class="btn btn-danger">Delete</button>

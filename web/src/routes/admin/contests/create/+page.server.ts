@@ -3,6 +3,7 @@ import path, { join } from 'path';
 import type { Actions, PageServerLoad } from './$types';
 import fs from 'fs';
 import { simpleGit } from 'simple-git';
+import { createRepos } from '../util';
 
 export const load = (async () => {
 	const teams = await db.team.findMany();
@@ -63,35 +64,8 @@ export const actions = {
 			include: { teams: true, problems: true }
 		});
 
-		// Create repos
+		await createRepos(createdContest.id);
 
-		if (fs.existsSync('temp')) {
-			fs.rmSync('temp', { recursive: true });
-		}
-		fs.mkdirSync('temp');
-		createdContest.teams.forEach(async (team) => {
-			fs.mkdirSync(join('temp', team.id.toString()));
-			const git = simpleGit({ baseDir: join('temp', team.id.toString()) });
-			await git.init();
-			await git.checkoutLocalBranch('master');
-			createdContest.problems.forEach((problem) => {
-				fs.mkdirSync(join('temp', team.id.toString(), problem.pascalName));
-				fs.writeFileSync(
-					join('temp', team.id.toString(), problem.pascalName, problem.pascalName + '.java'),
-					`public class ${problem.pascalName} {
-	public static void main(String[] args) {
-		System.out.println("Hello ${problem.pascalName}!");
-	}
-}`
-				);
-			});
-			await git.add('.');
-			await git.commit('Initial', { '--author': 'Admin <>' });
-			await git.push(
-				'http://localhost:7006/' + createdContest.id.toString() + '/' + team.id.toString(),
-				'master'
-			);
-		});
 		return { success: true };
 	}
 } satisfies Actions;

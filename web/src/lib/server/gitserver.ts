@@ -16,7 +16,7 @@ export function startGitServer() {
 		const repoDir = 'repo';
 
 		repos = new Git(join(repoDir), {
-			autoCreate: true,
+			autoCreate: true
 		});
 
 		repos.on('push', (push) => {
