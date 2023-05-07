@@ -12,8 +12,10 @@ export class BWPanel {
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
 	private _disposables: vscode.Disposable[] = [];
+	private static _context?: vscode.ExtensionContext;
 
-	public static createOrShow(extensionUri: vscode.Uri) {
+	public static createOrShow(extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
+		this._context = context;
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
@@ -99,6 +101,17 @@ export class BWPanel {
 		this._panel.webview.html = this._getHtmlForWebview(webview);
 		webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
+				case 'onStartup': {
+					const token: string | undefined = BWPanel._context?.globalState.get('token');
+
+					if (token) {
+						this._panel.webview.postMessage({
+							type: 'onSession',
+							value: token
+						});
+					}
+					break;
+				}
 				case 'onInfo': {
 					if (!data.value) {
 						return;
@@ -125,7 +138,7 @@ export class BWPanel {
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		// // And the uri we use to load this script in the webview
 		const scriptUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'out/compiled', 'HelloWorld.js')
+			vscode.Uri.joinPath(this._extensionUri, 'out/compiled', 'problemPanel.js')
 		);
 
 		// Uri to load styles into webview
@@ -135,9 +148,9 @@ export class BWPanel {
 		const stylesMainUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css')
 		);
-		// const cssUri = webview.asWebviewUri(
-		// 	vscode.Uri.joinPath(this._extensionUri, 'out', 'compiled/swiper.css')
-		// );
+		const cssUri = webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, 'out/compiled', 'problemPanel.css')
+		);
 
 		// // Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
@@ -154,6 +167,10 @@ export class BWPanel {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <link href="${stylesResetUri}" rel="stylesheet">
                     <link href="${stylesMainUri}" rel="stylesheet">
+                    <link href="${cssUri}" rel="stylesheet">
+					<script nonce="${nonce}">
+                    	const vscode = acquireVsCodeApi();
+                	</script>
                 </head>
                 <body>
                 </body>

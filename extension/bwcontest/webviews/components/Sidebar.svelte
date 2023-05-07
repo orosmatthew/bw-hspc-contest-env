@@ -86,6 +86,10 @@
         }
     }) 
 
+    function onTestAndSubmit() {
+        postMessage({type: 'onTestAndSubmit'});
+    }
+
     onMount(() => {
         postMessage({type: "onStartup"});
     })
@@ -107,5 +111,6 @@
         <p>TeamID: {teamData.teamId}</p>
         <p>ContestID: {teamData.contestId}</p>
         <button on:click={onClone}>Clone and Open Repo</button>
+        <button on:click={onTestAndSubmit}>Test & Submit</button>
     {/if}
 {/if}
