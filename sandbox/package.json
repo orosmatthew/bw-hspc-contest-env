@@ -1,0 +1,23 @@
+{
+	"name": "sandbox",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"build": "tsc"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/fs-extra": "^11.0.1",
+		"typescript": "^5.0.4"
+	},
+	"dependencies": {
+		"dotenv": "^16.0.3",
+		"fs-extra": "^11.1.1",
+		"simple-git": "^3.18.0",
+		"url-join": "^5.0.0",
+		"zod": "^3.21.4"
+	}
+}

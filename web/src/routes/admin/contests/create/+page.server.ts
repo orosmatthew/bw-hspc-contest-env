@@ -3,6 +3,7 @@ import path, { join } from 'path';
 import type { Actions, PageServerLoad } from './$types';
 import fs from 'fs';
 import { simpleGit } from 'simple-git';
+import { createRepos } from '../util';
 
 export const load = (async () => {
 	const teams = await db.team.findMany();
@@ -34,7 +35,7 @@ function copyFolderSync(source: string, target: string) {
 	});
 }
 export const actions = {
-	create: async ({ request, params }) => {
+	create: async ({ request }) => {
 		const data = await request.formData();
 		const name = data.get('name');
 		const problems = (await db.problem.findMany()).filter((problem) => {
@@ -63,30 +64,8 @@ export const actions = {
 			include: { teams: true, problems: true }
 		});
 
-		// Create repos
+		await createRepos(createdContest.id);
 
-		if (fs.existsSync('temp')) {
-			fs.rmSync('temp', { recursive: true });
-		}
-		fs.mkdirSync('temp');
-		createdContest.teams.forEach(async (team) => {
-			fs.mkdirSync(join('temp', team.id.toString()));
-			const git = simpleGit({ baseDir: join('temp', team.id.toString()) });
-			await git.init();
-			await git.checkoutLocalBranch('master');
-			createdContest.problems.forEach((problem) => {
-				copyFolderSync(
-					'templates/java/problem',
-					join('temp', team.id.toString(), problem.friendlyName)
-				);
-			});
-			await git.add('.');
-			await git.commit('Initial', { '--author': 'Admin <>' });
-			await git.push(
-				'http://localhost:7006/' + createdContest.id.toString() + '/' + team.id.toString(),
-				'master'
-			);
-		});
 		return { success: true };
 	}
 } satisfies Actions;

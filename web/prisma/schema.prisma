@@ -2,6 +2,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -22,6 +26,7 @@ model Session {
 }
 
 enum SubmissionState {
+  Queued
   InReview
   Correct
   Incorrect
@@ -32,17 +37,22 @@ model Submission {
   createdAt    DateTime        @default(now())
   gradedAt     DateTime?
   state        SubmissionState
-  actualOutput String
+  actualOutput String?
+  commitHash   String
+  diff         String?
   message      String?
   team         Team            @relation(fields: [teamId], references: [id])
   teamId       Int
   problem      Problem         @relation(fields: [problemId], references: [id])
   problemId    Int
+  contestId    Int
+  contest      Contest         @relation(fields: [contestId], references: [id])
 }
 
 model Problem {
   id           Int          @id @default(autoincrement())
   friendlyName String       @unique
+  pascalName   String       @unique
   sampleInput  String
   sampleOutput String
   realInput    String
@@ -76,4 +86,5 @@ model Contest {
   teams       Team[]       @relation("TeamContestRelation")
   problems    Problem[]    @relation("ProblemContestRelation")
   activeTeams ActiveTeam[]
+  submissions Submission[]
 }

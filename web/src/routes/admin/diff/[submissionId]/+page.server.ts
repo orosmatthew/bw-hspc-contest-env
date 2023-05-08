@@ -17,12 +17,16 @@ export const load = (async ({ params }) => {
 	if (!problem) {
 		throw error(500, 'Invalid problem');
 	}
-	let diff = Diff.createTwoFilesPatch(
-		'expected',
-		'actual',
-		problem.realOutput,
-		submission.actualOutput
-	);
+	let diff: string | undefined;
+	if (submission.actualOutput) {
+		diff = Diff.createTwoFilesPatch(
+			'expected',
+			'actual',
+			problem.realOutput,
+			submission.actualOutput
+		);
+	}
+
 	return { diff: diff };
 }) satisfies PageServerLoad;
 

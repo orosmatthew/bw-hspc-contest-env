@@ -1,0 +1,10 @@
+{
+	"compilerOptions": {
+		"module": "NodeNext",
+		"sourceMap": true,
+		"outDir": "./dist",
+		"esModuleInterop": true,
+		"strict": true
+	},
+	"include": ["./src/**/*"]
+}
