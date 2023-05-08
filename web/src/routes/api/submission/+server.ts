@@ -44,15 +44,20 @@ export const POST = (async ({ request }) => {
 	if (!data.success) {
 		throw error(400);
 	}
-	const submission = await db.submission.update({
+	const submission = await db.submission.findUnique({
 		where: { id: data.data.submissionId },
-		data: { actualOutput: data.data.output },
 		include: { problem: true }
 	});
+	if (!submission) {
+		return json({ success: false });
+	}
+	if (submission.state !== SubmissionState.Queued) {
+		return json({ success: false });
+	}
 	if (data.data.output.trimEnd() === submission.problem.realOutput.trimEnd()) {
 		await db.submission.update({
 			where: { id: data.data.submissionId },
-			data: { state: SubmissionState.Correct, gradedAt: new Date() }
+			data: { state: SubmissionState.Correct, gradedAt: new Date(), actualOutput: data.data.output }
 		});
 		return json({ success: true });
 	} else {
@@ -64,7 +69,7 @@ export const POST = (async ({ request }) => {
 		);
 		await db.submission.update({
 			where: { id: data.data.submissionId },
-			data: { state: SubmissionState.InReview, diff: diff }
+			data: { state: SubmissionState.InReview, diff: diff, actualOutput: data.data.output }
 		});
 		return json({ success: true });
 	}
