@@ -1,5 +1,6 @@
 import { db } from '$lib/server/prisma';
 import type { Actions, PageServerLoad } from './$types';
+import { genPassword } from './util';
 
 export const load = (async () => {
 	const teams = await db.team.findMany();
@@ -18,7 +19,7 @@ export const actions = {
 			return { success: false };
 		}
 		try {
-			await db.team.create({ data: { name: name.toString(), password: "thing" } });
+			await db.team.create({ data: { name: name.toString(), password: genPassword() } });
 		} catch {
 			return { success: false };
 		}

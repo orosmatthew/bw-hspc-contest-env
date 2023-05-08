@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { genPassword } from '../util';
 	import type { Actions, PageData } from './$types';
 
 	export let data: PageData;
@@ -9,6 +10,11 @@
 
 	$: if (form && form.success) {
 		changingPassword = false;
+	}
+
+	function onGenPassword() {
+		const passEntry = document.getElementById('pass_entry') as HTMLInputElement;
+		passEntry.value = genPassword();
 	}
 </script>
 
@@ -72,7 +78,7 @@
 {:else}
 	<form method="POST" action="?/password" use:enhance>
 		<h4>Change Password</h4>
-		<input name="password" class="form-control" />
+		<input id="pass_entry" name="password" class="form-control" />
 		<div class="mt-2 row">
 			<div class="text-end">
 				<button
@@ -81,6 +87,9 @@
 					}}
 					type="button"
 					class="btn btn-outline-secondary">Cancel</button
+				>
+				<button on:click={onGenPassword} type="button" class="btn btn-outline-primary"
+					>Generate</button
 				>
 				<button type="submit" class="btn btn-success">Change</button>
 			</div>

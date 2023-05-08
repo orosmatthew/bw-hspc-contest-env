@@ -27,7 +27,7 @@ export const load = (async ({ params }) => {
 			'expected',
 			'actual',
 			problem.realOutput,
-			submission.actualOutput
+			submission.actualOutput!
 		);
 	}
 
