@@ -55,6 +55,12 @@
         }
     }
 
+    function onSubmit() {
+        if (teamId && contestId && sessionToken) {
+            postMessage({type: 'onSubmit', value: {sessionToken: sessionToken, contestId: contestId, teamId: teamId, problemId: activeProblem.id, problemName: activeProblem.pascalName}})
+        }
+    }
+
     async function fetchProblemData() {
         if (sessionToken) {
             const res = await fetch(`http://localhost:5173/api/contest/${sessionToken}`);
@@ -122,6 +128,7 @@
             <button style="margin-top:5px" on:click={onRun} type="button">Run</button>
         </div>
     </div>
+    <button on:click={onSubmit} type="button">Submit</button>
 {/if}
 
 <style>

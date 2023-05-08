@@ -27,7 +27,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			switch (data.type) {
 				case 'onTestAndSubmit': {
 					if (this._context) {
-						BWPanel.createOrShow(this._context?.extensionUri, this._context);
+						BWPanel.createOrShow(this._context);
 					}
 					break;
 				}
