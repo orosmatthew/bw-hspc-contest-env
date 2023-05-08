@@ -98,7 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('bwcontest.helloWorld', () => {
-			BWPanel.createOrShow(context.extensionUri, context);
+			BWPanel.createOrShow(context);
 		})
 	);
 

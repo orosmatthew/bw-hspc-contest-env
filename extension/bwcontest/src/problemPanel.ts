@@ -3,6 +3,7 @@ import { getNonce } from './getNonce';
 import { runJava } from './run/java';
 import { extensionSettings } from './extension';
 import { join } from 'path';
+import { submitProblem } from './submit';
 
 export class BWPanel {
 	/**
@@ -17,7 +18,7 @@ export class BWPanel {
 	private _disposables: vscode.Disposable[] = [];
 	private static _context?: vscode.ExtensionContext;
 
-	public static createOrShow(extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
+	public static createOrShow(context: vscode.ExtensionContext) {
 		this._context = context;
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
@@ -26,7 +27,6 @@ export class BWPanel {
 		// If we already have a panel, show it.
 		if (BWPanel.currentPanel) {
 			BWPanel.currentPanel._panel.reveal(column);
-			BWPanel.currentPanel._update();
 			return;
 		}
 
@@ -43,13 +43,13 @@ export class BWPanel {
 
 				// And restrict the webview to only loading content from our extension's `media` directory.
 				localResourceRoots: [
-					vscode.Uri.joinPath(extensionUri, 'media'),
-					vscode.Uri.joinPath(extensionUri, 'out/compiled')
+					vscode.Uri.joinPath(context.extensionUri, 'media'),
+					vscode.Uri.joinPath(context.extensionUri, 'out/compiled')
 				]
 			}
 		);
 
-		BWPanel.currentPanel = new BWPanel(panel, extensionUri);
+		BWPanel.currentPanel = new BWPanel(panel, context.extensionUri);
 	}
 
 	public static kill() {
@@ -64,34 +64,13 @@ export class BWPanel {
 	private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
 		this._panel = panel;
 		this._extensionUri = extensionUri;
-
-		// Set the webview's initial html content
 		this._update();
-
-		// Listen for when the panel is disposed
-		// This happens when the user closes the panel or when the panel is closed programatically
 		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-
-		// // Handle messages from the webview
-		// this._panel.webview.onDidReceiveMessage(
-		//   (message) => {
-		//     switch (message.command) {
-		//       case "alert":
-		//         vscode.window.showErrorMessage(message.text);
-		//         return;
-		//     }
-		//   },
-		//   null,
-		//   this._disposables
-		// );
 	}
 
 	public dispose() {
 		BWPanel.currentPanel = undefined;
-
-		// Clean up our resources
 		this._panel.dispose();
-
 		while (this._disposables.length) {
 			const x = this._disposables.pop();
 			if (x) {
@@ -106,12 +85,39 @@ export class BWPanel {
 		this._panel.webview.html = this._getHtmlForWebview(webview);
 		webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
+				case 'onSubmit': {
+					if (!data.value) {
+						return;
+					}
+					const ans = await vscode.window.showInformationMessage(
+						`Are you sure you want to submit ${data.value.problemName}?`,
+						'Yes',
+						'No'
+					);
+					if (ans !== 'Yes') {
+						break;
+					}
+					try {
+						await submitProblem(
+							data.value.sessionToken,
+							data.value.contestId,
+							data.value.teamId,
+							data.value.problemId
+						);
+					} catch (reason) {
+						vscode.window.showErrorMessage('Unable to submit');
+						console.error(reason);
+						break;
+					}
+					vscode.window.showInformationMessage('Submitted!');
+					break;
+				}
 				case 'onRun': {
 					if (!data.value) {
 						return;
 					}
 					const repoDir = extensionSettings().repoClonePath;
-					const output = await runJava(
+					runJava(
 						join(
 							repoDir,
 							'BWContest',
@@ -129,8 +135,9 @@ export class BWPanel {
 						),
 						data.value.problemPascalName,
 						data.value.input
-					);
-					this._panel.webview.postMessage({ type: 'onOutput', value: output });
+					).then((output) => {
+						this._panel.webview.postMessage({ type: 'onOutput', value: output });
+					});
 					break;
 				}
 				case 'onStartup': {
