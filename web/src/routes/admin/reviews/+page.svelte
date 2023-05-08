@@ -1,12 +1,7 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { ActionData, PageData } from './$types';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
-	export let form: ActionData;
-
-	let selectedTeam: (typeof data.teams)[0] | null;
-	let selectedProblem: (typeof data.problems)[0] | null;
 </script>
 
 <svelte:head>
@@ -26,7 +21,7 @@
 	{/each}
 </ul>
 
-<hr />
+<!-- <hr />
 <h2>For Testing Purposes - Create Fake Submission</h2>
 {#if form && !form.success}
 	<div class="alert alert-danger">Invalid Submission</div>
@@ -87,4 +82,4 @@
 			<button type="submit" class="mt-3 btn btn-secondary">Submit</button>
 		</div>
 	</div>
-</form>
+</form> -->

@@ -8,26 +8,19 @@ import util from 'util';
 const execPromise = util.promisify(exec);
 
 export async function runJava(
-	srcDir: string,
+	javaBinPath: string,
+	buildDir: string,
 	mainFile: string,
 	mainClass: string,
 	input: string
 ): Promise<string> {
-	const javaPath = '';
-	if (javaPath == '') {
-		throw error('Java path not set');
-	}
-	const tempDir = os.tmpdir();
-	const buildDir = join(tempDir, 'bwcontest_java');
-	if (fs.existsSync(buildDir)) {
-		fs.removeSync(buildDir);
-	}
-	fs.mkdirSync(buildDir);
-
-	const compileCommand = `${join(javaPath, 'javac')} -cp ${srcDir} ${mainFile} -d ${buildDir}`;
+	const compileCommand = `${join(javaBinPath, 'javac')} -cp ${join(
+		buildDir,
+		'src'
+	)} ${mainFile} -d ${join(buildDir, 'build')}`;
 	await execPromise(compileCommand);
 
-	const runCommand = `${join(javaPath, 'java')} -cp "${buildDir}" ${mainClass}`;
+	const runCommand = `${join(javaBinPath, 'java')} -cp "${join(buildDir, 'build')}" ${mainClass}`;
 
 	return new Promise((resolve) => {
 		let outputBuffer = '';

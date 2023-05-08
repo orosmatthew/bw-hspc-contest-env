@@ -37,12 +37,16 @@ model Submission {
   createdAt    DateTime        @default(now())
   gradedAt     DateTime?
   state        SubmissionState
-  actualOutput String
+  actualOutput String?
+  commitHash   String
+  diff         String?
   message      String?
   team         Team            @relation(fields: [teamId], references: [id])
   teamId       Int
   problem      Problem         @relation(fields: [problemId], references: [id])
   problemId    Int
+  contestId    Int
+  contest      Contest         @relation(fields: [contestId], references: [id])
 }
 
 model Problem {
@@ -82,4 +86,5 @@ model Contest {
   teams       Team[]       @relation("TeamContestRelation")
   problems    Problem[]    @relation("ProblemContestRelation")
   activeTeams ActiveTeam[]
+  submissions Submission[]
 }
