@@ -17,7 +17,7 @@ export const load = (async ({ params }) => {
 		throw error(500, 'Invalid problem');
 	}
 
-	return { diff: submission.diff, submissionId: submission.id };
+	return { diff: submission.diff, submissionId: submission.id, output: submission.actualOutput };
 }) satisfies PageServerLoad;
 
 export const actions = {

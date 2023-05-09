@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { stretchTextarea } from '$lib/util';
 	import type { Actions, PageData } from './$types';
 
 	let editing = false;
@@ -8,10 +9,6 @@
 
 	export let data: PageData;
 	export let form: Actions;
-
-	function stretchTextarea(textarea: HTMLTextAreaElement) {
-		textarea.style.height = textarea.scrollHeight + 'px';
-	}
 
 	async function deleteProblem() {
 		const sure = confirm('Are you sure?');

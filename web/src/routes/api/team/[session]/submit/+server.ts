@@ -13,7 +13,10 @@ export const POST = (async ({ params, request }) => {
 	const sessionToken = params.session;
 	const activeTeam = await db.activeTeam.findUnique({
 		where: { sessionToken: sessionToken },
-		include: { contest: { include: { problems: { select: { id: true } } } } }
+		include: {
+			contest: { include: { problems: { select: { id: true } } } },
+			team: { include: { submissions: true } }
+		}
 	});
 	if (!activeTeam) {
 		throw error(400);
@@ -29,6 +32,19 @@ export const POST = (async ({ params, request }) => {
 		})
 	) {
 		throw error(400);
+	}
+
+	// Make sure no submission is currently marked correct
+	const correctSubmissions = activeTeam.team.submissions.filter((submission) => {
+		return (
+			submission.contestId === activeTeam.contestId &&
+			submission.state === 'Correct' &&
+			submission.problemId === data.data.problemId
+		);
+	}).length;
+
+	if (correctSubmissions !== 0) {
+		return json({ success: false, message: 'Already submitted correct submission' });
 	}
 
 	await db.submission.create({
