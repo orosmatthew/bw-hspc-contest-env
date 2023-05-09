@@ -86,6 +86,7 @@ export class BWPanel {
 		webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
 				case 'onSubmit': {
+					await vscode.workspace.saveAll();
 					if (!data.value) {
 						return;
 					}
@@ -112,6 +113,7 @@ export class BWPanel {
 					break;
 				}
 				case 'onRun': {
+					await vscode.workspace.saveAll();
 					if (!data.value) {
 						return;
 					}
