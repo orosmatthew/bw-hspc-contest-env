@@ -5,6 +5,7 @@
 	import type { Actions, PageData } from './$types';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { stretchTextarea } from '$lib/util';
 
 	export let data: PageData;
 	export let form: Actions;
@@ -28,15 +29,17 @@
 	}
 
 	onMount(() => {
-		const diff2htmlUi = new Diff2HtmlUI(document.getElementById('diff')!, data.diff, {
-			drawFileList: false,
-			matching: 'lines',
-			diffStyle: 'char',
-			outputFormat: 'side-by-side',
-			highlight: false,
-			fileContentToggle: false
-		});
-		diff2htmlUi.draw();
+		if (data.diff) {
+			const diff2htmlUi = new Diff2HtmlUI(document.getElementById('diff')!, data.diff, {
+				drawFileList: false,
+				matching: 'lines',
+				diffStyle: 'char',
+				outputFormat: 'side-by-side',
+				highlight: false,
+				fileContentToggle: false
+			});
+			diff2htmlUi.draw();
+		}
 
 		incorrectBtn.addEventListener('change', () => {
 			submitBtn.disabled = false;
@@ -50,10 +53,10 @@
 </script>
 
 <svelte:head>
-	<title>Diff</title>
+	<title>Review Submission</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4">Diff</h1>
+<h1 style="text-align:center" class="mb-4">Review Submission</h1>
 
 {#if form && !form.success}
 	<div class="alert alert-danger">Submission was not successful</div>
@@ -61,7 +64,17 @@
 	<div class="alert alert-success">Success!</div>
 {/if}
 
-<a href="/admin/reviews" class="btn btn-outline-primary">All Reviews</a>
+<div class="mb-3 col">
+	<a href="/admin/reviews" class="btn btn-outline-primary">All Reviews</a>
+	<a href={`/admin/submissions/${data.submissionId.toString()}`} class="btn btn-outline-primary"
+		>Go to Submission</a
+	>
+</div>
+
+<h3>Output</h3>
+<textarea use:stretchTextarea class="mb-3 form-control" disabled>{data.output}</textarea>
+
+<h3>Diff</h3>
 <div class="mt-3" id="diff" />
 
 <form method="POST" action="?/submit" use:enhance>

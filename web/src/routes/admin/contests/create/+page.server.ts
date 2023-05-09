@@ -1,8 +1,5 @@
 import { db } from '$lib/server/prisma';
-import path, { join } from 'path';
 import type { Actions, PageServerLoad } from './$types';
-import fs from 'fs';
-import { simpleGit } from 'simple-git';
 import { createRepos } from '../util';
 
 export const load = (async () => {
@@ -18,22 +15,6 @@ export const load = (async () => {
 	};
 }) satisfies PageServerLoad;
 
-function copyFolderSync(source: string, target: string) {
-	if (!fs.existsSync(target)) {
-		fs.mkdirSync(target);
-	}
-
-	fs.readdirSync(source).forEach((file) => {
-		const sourcePath = path.join(source, file);
-		const targetPath = path.join(target, file);
-
-		if (fs.lstatSync(sourcePath).isDirectory()) {
-			copyFolderSync(sourcePath, targetPath);
-		} else {
-			fs.copyFileSync(sourcePath, targetPath);
-		}
-	});
-}
 export const actions = {
 	create: async ({ request }) => {
 		const data = await request.formData();

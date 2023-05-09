@@ -6,6 +6,7 @@ export const load = (async () => {
 	const problems = await db.problem.findMany();
 	const teams = await db.team.findMany();
 	return {
+		timestamp: new Date(),
 		submissions: submissions.map((row) => {
 			return {
 				id: row.id,

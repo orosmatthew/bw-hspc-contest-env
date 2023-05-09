@@ -65,13 +65,18 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 	);
 	await git.checkout(submissionData.submission.commitHash);
 	const problemName = submissionData.submission.problem.pascalName;
-	const output = await runJava(
-		javaBinPath,
-		buildDir,
-		join(repoDir, problemName, problemName + '.java'),
-		problemName,
-		submissionData.submission.problem.realInput
-	);
+	let output: string;
+	try {
+		output = await runJava(
+			javaBinPath,
+			buildDir,
+			join(repoDir, problemName, problemName + '.java'),
+			problemName,
+			submissionData.submission.problem.realInput
+		);
+	} catch (error) {
+		output = `[An error occurred while running]\n${error}`;
+	}
 
 	const res = await fetch(urlJoin(adminUrl, 'api/submission'), {
 		method: 'POST',
@@ -106,7 +111,14 @@ const repoUrl = process.env.REPO_URL as string;
 const javaBinPath = process.env.JAVA_PATH as string;
 
 async function loop() {
-	const submissionData = await fetchQueuedSubmission();
+	let submissionData: SubmissionGetData | undefined;
+	try {
+		submissionData = await fetchQueuedSubmission();
+	} catch {
+		console.error('Failed to fetch submission');
+		return;
+	}
+
 	if (!submissionData) {
 		console.error('Unable to fetch submission data');
 	} else {
@@ -121,7 +133,7 @@ async function loop() {
 async function run() {
 	while (true) {
 		await loop();
-		await new Promise((resolve) => setTimeout(resolve, 15000));
+		await new Promise((resolve) => setTimeout(resolve, 10000));
 	}
 }
 

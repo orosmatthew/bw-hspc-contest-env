@@ -1,8 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 import { db } from '$lib/server/prisma';
-import * as Diff from 'diff';
-import { SubmissionState } from '@prisma/client';
 
 export const load = (async ({ params }) => {
 	const submissionId = parseInt(params.submissionId);
@@ -21,16 +19,6 @@ export const load = (async ({ params }) => {
 	if (!problem) {
 		throw error(500, 'Invalid problem');
 	}
-	let diff: string | null = null;
-	if (submission.state == SubmissionState.Incorrect) {
-		diff = Diff.createTwoFilesPatch(
-			'expected',
-			'actual',
-			problem.realOutput,
-			submission.actualOutput
-		);
-	}
-
 	return {
 		id: submission.id,
 		state: submission.state,
@@ -39,6 +27,18 @@ export const load = (async ({ params }) => {
 		submitTime: submission.createdAt,
 		gradedTime: submission.gradedAt,
 		message: submission.message,
-		diff: diff
+		diff: submission.diff
 	};
 }) satisfies PageServerLoad;
+
+export const actions = {
+	delete: async ({ params }) => {
+		const submissionId = parseInt(params.submissionId);
+		try {
+			await db.submission.delete({ where: { id: submissionId } });
+		} catch {
+			return { success: false };
+		}
+		throw redirect(302, '/admin/submissions');
+	}
+} satisfies Actions;

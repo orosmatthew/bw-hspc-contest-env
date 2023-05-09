@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/stores';
 	import type { Actions, PageData } from './$types';
 
 	export let data: PageData;
@@ -50,6 +51,7 @@
 <div class="mt-3 row">
 	<div class="col-6">
 		<h4>Teams</h4>
+		<a href={`${$page.url}/logins`} class="mb-2 btn btn-outline-secondary">Printable Logins</a>
 		<div class="list-group">
 			{#each data.teams as team}
 				<a href={`/admin/teams/${team.id}`} class="list-group-item list-group-item-action"
