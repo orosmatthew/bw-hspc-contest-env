@@ -1,5 +1,4 @@
 import type { Actions, PageServerLoad } from './$types';
-import * as Diff from 'diff';
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/prisma';
 import { SubmissionState } from '@prisma/client';
@@ -17,17 +16,8 @@ export const load = (async ({ params }) => {
 	if (!problem) {
 		throw error(500, 'Invalid problem');
 	}
-	let diff: string | undefined;
-	if (submission.actualOutput) {
-		diff = Diff.createTwoFilesPatch(
-			'expected',
-			'actual',
-			problem.realOutput,
-			submission.actualOutput
-		);
-	}
 
-	return { diff: diff };
+	return { diff: submission.diff, submissionId: submission.id };
 }) satisfies PageServerLoad;
 
 export const actions = {

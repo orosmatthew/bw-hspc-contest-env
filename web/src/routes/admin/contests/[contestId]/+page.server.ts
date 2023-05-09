@@ -68,6 +68,8 @@ export const actions = {
 			await db.activeTeam.create({ data: { teamId: team.id, contestId: contest.id } });
 		});
 
+		await db.contest.update({ where: { id: contestId }, data: { startTime: new Date() } });
+
 		return { success: true };
 	},
 	stop: async ({ params }) => {

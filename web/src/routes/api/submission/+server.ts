@@ -64,8 +64,8 @@ export const POST = (async ({ request }) => {
 		const diff = Diff.createTwoFilesPatch(
 			'expected',
 			'actual',
-			data.data.output,
-			submission.actualOutput!
+			submission.problem.realOutput,
+			data.data.output
 		);
 		await db.submission.update({
 			where: { id: data.data.submissionId },

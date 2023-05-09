@@ -20,7 +20,9 @@
 	{#each data.contests as contest}
 		<a
 			href={'/admin/contests/' + contest.id.toString()}
-			class="list-group-item list-group-item-action">{contest.name}</a
+			class={`list-group-item list-group-item-action ${
+				contest.activeTeams === 0 ? '' : ' list-group-item-success'
+			}`}>{contest.name}</a
 		>
 	{/each}
 </div>

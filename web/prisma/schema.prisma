@@ -62,12 +62,12 @@ model Problem {
 }
 
 model Team {
-  id         Int          @id @default(autoincrement())
-  name       String       @unique
-  Submission Submission[]
-  contests   Contest[]    @relation("TeamContestRelation")
-  password   String
-  activeTeam ActiveTeam?
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  submissions Submission[]
+  contests    Contest[]    @relation("TeamContestRelation")
+  password    String
+  activeTeam  ActiveTeam?
 }
 
 model ActiveTeam {
@@ -87,4 +87,5 @@ model Contest {
   problems    Problem[]    @relation("ProblemContestRelation")
   activeTeams ActiveTeam[]
   submissions Submission[]
+  startTime   DateTime?
 }

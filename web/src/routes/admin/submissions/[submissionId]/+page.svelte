@@ -1,22 +1,27 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { Actions, PageData } from './$types';
 	import { onMount } from 'svelte';
 	import { Diff2HtmlUI } from 'diff2html/lib/ui/js/diff2html-ui-base';
 	import 'diff2html/bundles/css/diff2html.min.css';
+	import { enhance } from '$app/forms';
 
 	export let data: PageData;
+	export let form: Actions;
 
 	onMount(() => {
 		if (data.diff) {
-			const diff2htmlUi = new Diff2HtmlUI(document.getElementById('diff')!, data.diff, {
-				drawFileList: false,
-				matching: 'lines',
-				diffStyle: 'char',
-				outputFormat: 'side-by-side',
-				highlight: false,
-				fileContentToggle: false
-			});
-			diff2htmlUi.draw();
+			const diffElement = document.getElementById('diff');
+			if (diffElement) {
+				const diff2htmlUi = new Diff2HtmlUI(diffElement, data.diff, {
+					drawFileList: false,
+					matching: 'lines',
+					diffStyle: 'char',
+					outputFormat: 'side-by-side',
+					highlight: false,
+					fileContentToggle: false
+				});
+				diff2htmlUi.draw();
+			}
 		}
 	});
 </script>
@@ -27,7 +32,31 @@
 
 <h1 style="text-align:center" class="mb-4">Submission</h1>
 
-<a href="/admin/submissions" class="mb-3 btn btn-outline-primary">All Submissions</a>
+{#if form && !form.success}
+	<div class="alert alert-danger">Error</div>
+{/if}
+
+<div class="row">
+	<div class="col-6">
+		<a href="/admin/submissions" class="mb-3 btn btn-outline-primary">All Submissions</a>
+	</div>
+	<div class="col-6 text-end">
+		<form
+			method="POST"
+			action="?/delete"
+			use:enhance={({ cancel }) => {
+				if (!confirm('Are you sure?')) {
+					cancel();
+				}
+				return async ({ update }) => {
+					update();
+				};
+			}}
+		>
+			<button type="submit" class="btn btn-danger">Delete</button>
+		</form>
+	</div>
+</div>
 
 <table class="table table-bordered">
 	<thead>

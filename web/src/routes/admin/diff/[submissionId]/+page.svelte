@@ -28,15 +28,17 @@
 	}
 
 	onMount(() => {
-		const diff2htmlUi = new Diff2HtmlUI(document.getElementById('diff')!, data.diff, {
-			drawFileList: false,
-			matching: 'lines',
-			diffStyle: 'char',
-			outputFormat: 'side-by-side',
-			highlight: false,
-			fileContentToggle: false
-		});
-		diff2htmlUi.draw();
+		if (data.diff) {
+			const diff2htmlUi = new Diff2HtmlUI(document.getElementById('diff')!, data.diff, {
+				drawFileList: false,
+				matching: 'lines',
+				diffStyle: 'char',
+				outputFormat: 'side-by-side',
+				highlight: false,
+				fileContentToggle: false
+			});
+			diff2htmlUi.draw();
+		}
 
 		incorrectBtn.addEventListener('change', () => {
 			submitBtn.disabled = false;
@@ -61,7 +63,11 @@
 	<div class="alert alert-success">Success!</div>
 {/if}
 
-<a href="/admin/reviews" class="btn btn-outline-primary">All Reviews</a>
+<div class="col">
+	<a href="/admin/reviews" class="btn btn-outline-primary">All Reviews</a>
+	<a href={`/admin/submissions/${data.submissionId.toString()}`} class="btn btn-outline-primary">Go to Submission</a>
+</div>
+
 <div class="mt-3" id="diff" />
 
 <form method="POST" action="?/submit" use:enhance>
