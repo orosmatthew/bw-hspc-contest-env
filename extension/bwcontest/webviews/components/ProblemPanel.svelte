@@ -61,6 +61,10 @@
         }
     }
 
+    function onKill() {
+        postMessage({type: 'onKill'});
+    }
+
     async function fetchProblemData() {
         if (sessionToken) {
             const res = await fetch(`http://localhost:5173/api/contest/${sessionToken}`);
@@ -125,7 +129,11 @@
                 {/if}
             </div>
             <textarea bind:this={outputText} disabled />
-            <button style="margin-top:5px" on:click={onRun} type="button">Run</button>
+            {#if !running}
+                <button style="margin-top:5px" on:click={onRun} type="button">Run</button>
+            {:else}
+                <button style="margin-top:5px" on:click={onKill} type="button">Stop</button>
+            {/if}
         </div>
     </div>
     <button on:click={onSubmit} type="button">Submit</button>

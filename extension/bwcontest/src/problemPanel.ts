@@ -17,6 +17,8 @@ export class BWPanel {
 	private readonly _extensionUri: vscode.Uri;
 	private _disposables: vscode.Disposable[] = [];
 	private static _context?: vscode.ExtensionContext;
+	private static _running: boolean;
+	private static _kill: Function | null;
 
 	public static createOrShow(context: vscode.ExtensionContext) {
 		this._context = context;
@@ -85,6 +87,12 @@ export class BWPanel {
 		this._panel.webview.html = this._getHtmlForWebview(webview);
 		webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
+				case 'onKill': {
+					if (!BWPanel._running || !BWPanel._kill) {
+						break;
+					}
+					BWPanel._kill();
+				}
 				case 'onSubmit': {
 					await vscode.workspace.saveAll();
 					if (!data.value) {
@@ -113,12 +121,17 @@ export class BWPanel {
 					break;
 				}
 				case 'onRun': {
+					if (BWPanel._running === true) {
+						vscode.window.showErrorMessage('Already running');
+						break;
+					}
 					await vscode.workspace.saveAll();
 					if (!data.value) {
-						return;
+						break;
 					}
 					const repoDir = extensionSettings().repoClonePath;
-					runJava(
+					BWPanel._running = true;
+					const process = await runJava(
 						join(
 							repoDir,
 							'BWContest',
@@ -136,16 +149,29 @@ export class BWPanel {
 						),
 						data.value.problemPascalName,
 						data.value.input
-					)
+					);
+					if (!process) {
+						this._panel.webview.postMessage({
+							type: 'onOutput',
+							value: '[An error occurred while running]'
+						});
+						break;
+					}
+					process.output
 						.then((output) => {
 							this._panel.webview.postMessage({ type: 'onOutput', value: output });
+							BWPanel._running = false;
+							BWPanel._kill = null;
 						})
 						.catch(() => {
 							this._panel.webview.postMessage({
 								type: 'onOutput',
 								value: '[An error occurred while running]'
 							});
+							BWPanel._running = false;
+							BWPanel._kill = null;
 						});
+					BWPanel._kill = process.kill;
 					break;
 				}
 				case 'onStartup': {
