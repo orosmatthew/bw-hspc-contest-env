@@ -106,7 +106,14 @@ const repoUrl = process.env.REPO_URL as string;
 const javaBinPath = process.env.JAVA_PATH as string;
 
 async function loop() {
-	const submissionData = await fetchQueuedSubmission();
+	let submissionData: SubmissionGetData | undefined;
+	try {
+		submissionData = await fetchQueuedSubmission();
+	} catch {
+		console.error('Failed to fetch submission');
+		return;
+	}
+
 	if (!submissionData) {
 		console.error('Unable to fetch submission data');
 	} else {
