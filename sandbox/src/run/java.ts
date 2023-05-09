@@ -1,8 +1,5 @@
-import fs from 'fs-extra';
 import { join } from 'path';
-import os from 'os';
 import { exec, spawn } from 'child_process';
-import { error } from 'console';
 import util from 'util';
 
 const execPromise = util.promisify(exec);
