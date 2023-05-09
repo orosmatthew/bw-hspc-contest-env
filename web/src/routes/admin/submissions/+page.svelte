@@ -1,11 +1,29 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { onDestroy, onMount } from 'svelte';
 
 	export let data: PageData;
 
 	$: data.submissions.sort((a, b) => {
 		return b.createdAt.valueOf() - a.createdAt.valueOf();
+	});
+
+	let updateInterval: ReturnType<typeof setInterval> | undefined;
+	let updating = false;
+
+	onMount(() => {
+		updateInterval = setInterval(async () => {
+			updating = true;
+			await invalidateAll();
+			updating = false;
+		}, 10000);
+	});
+
+	onDestroy(() => {
+		if (updateInterval) {
+			clearInterval(updateInterval);
+		}
 	});
 </script>
 
@@ -15,7 +33,17 @@
 
 <h1 style="text-align:center" class="mb-4">Submissions</h1>
 
-<p>Rows are color coded: Red - Incorrect, Green - Correct, Yellow - In Review</p>
+<div class="row">
+	<div class="col-8">
+		<p>Rows are color coded: Red - Incorrect, Green - Correct, Yellow - In Review</p>
+	</div>
+	<div class="col-4 text-end">
+		{#if updating}
+			<div class="spinner-border spinner-border-sm text-secondary" />
+		{/if}
+		<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
+	</div>
+</div>
 
 <table class="table table-bordered table-hover">
 	<thead>

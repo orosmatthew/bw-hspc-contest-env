@@ -64,6 +64,8 @@ export const actions = {
 			return { success: false };
 		}
 
+		await db.submission.deleteMany({ where: { contestId: contest.id } });
+
 		contest.teams.forEach(async (team) => {
 			await db.activeTeam.create({ data: { teamId: team.id, contestId: contest.id } });
 		});
