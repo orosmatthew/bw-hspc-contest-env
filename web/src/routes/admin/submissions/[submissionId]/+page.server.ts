@@ -27,7 +27,8 @@ export const load = (async ({ params }) => {
 		submitTime: submission.createdAt,
 		gradedTime: submission.gradedAt,
 		message: submission.message,
-		diff: submission.diff
+		diff: submission.diff,
+		output: submission.actualOutput
 	};
 }) satisfies PageServerLoad;
 

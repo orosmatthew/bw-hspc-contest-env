@@ -4,6 +4,7 @@
 	import { Diff2HtmlUI } from 'diff2html/lib/ui/js/diff2html-ui-base';
 	import 'diff2html/bundles/css/diff2html.min.css';
 	import { enhance } from '$app/forms';
+	import { stretchTextarea } from '$lib/util';
 
 	export let data: PageData;
 	export let form: Actions;
@@ -106,6 +107,8 @@
 		</div>
 	</div>
 {:else if data.state == 'Incorrect'}
-	<h2 style="text-align:center">Diff</h2>
+	<h3 style="text-align:center">Output</h3>
+	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.output}</textarea>
+	<h3 style="text-align:center">Diff</h3>
 	<div id="diff" />
 {/if}

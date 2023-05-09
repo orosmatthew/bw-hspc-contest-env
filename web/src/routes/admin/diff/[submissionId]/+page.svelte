@@ -72,7 +72,7 @@
 </div>
 
 <h3>Output</h3>
-<textarea use:stretchTextarea class="mb-3 form-control" disabled>{data.output}</textarea>
+<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.output}</textarea>
 
 <h3>Diff</h3>
 <div class="mt-3" id="diff" />
