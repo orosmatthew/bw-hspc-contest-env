@@ -104,9 +104,8 @@ export class BWPanel {
 							data.value.teamId,
 							data.value.problemId
 						);
-					} catch (reason) {
-						vscode.window.showErrorMessage('Unable to submit');
-						console.error(reason);
+					} catch (err: any) {
+						vscode.window.showErrorMessage(err.message ?? 'Submission unsuccessful');
 						break;
 					}
 					vscode.window.showInformationMessage('Submitted!');
@@ -135,9 +134,16 @@ export class BWPanel {
 						),
 						data.value.problemPascalName,
 						data.value.input
-					).then((output) => {
-						this._panel.webview.postMessage({ type: 'onOutput', value: output });
-					});
+					)
+						.then((output) => {
+							this._panel.webview.postMessage({ type: 'onOutput', value: output });
+						})
+						.catch(() => {
+							this._panel.webview.postMessage({
+								type: 'onOutput',
+								value: '[An error occurred while running]'
+							});
+						});
 					break;
 				}
 				case 'onStartup': {

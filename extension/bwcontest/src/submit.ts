@@ -58,6 +58,6 @@ export async function submitProblem(
 		throw Error('Failed to post submission');
 	}
 	if (!res.data.success) {
-		throw Error('Submission post unsuccessful');
+		throw Error(res.data.message ?? 'Unknown error');
 	}
 }
