@@ -33,8 +33,22 @@ export async function runJava(
 		child.stdin.write(input);
 		child.stdin.end();
 
+		let resolved = false;
+
 		child.on('close', () => {
-			resolve(outputBuffer);
+			if (!resolved) {
+				resolved = true;
+				resolve(outputBuffer);
+			}
 		});
+
+		setTimeout(() => {
+			if (!resolved) {
+				console.log('30 seconds reached, killing process');
+				resolved = true;
+				child.kill('SIGKILL');
+				resolve(outputBuffer + '\n[Timeout after 30 seconds]');
+			}
+		}, 30000);
 	});
 }
