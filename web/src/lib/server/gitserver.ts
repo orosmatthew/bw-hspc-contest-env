@@ -1,4 +1,3 @@
-import { error } from 'console';
 import { Git } from 'node-git-server';
 import { join } from 'path';
 

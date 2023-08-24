@@ -1,6 +1,6 @@
 .code {
 	font-family: Menlo, Consolas, monospace;
-    white-space: pre;
-    overflow-wrap: normal;
+	white-space: pre;
+	overflow-wrap: normal;
 	overflow-x: scroll;
 }
