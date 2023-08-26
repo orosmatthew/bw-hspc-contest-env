@@ -8,7 +8,7 @@
 	<title>Contests</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4">Contests</h1>
+<h1 style="text-align:center" class="mb-4"><i class="bi bi-flag"></i> Contests</h1>
 
 <div class="row">
 	<div class="text-end">

@@ -8,7 +8,7 @@
 	<title>Problems</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4">Problems</h1>
+<h1 style="text-align:center" class="mb-4"><i class="bi bi-question-circle"></i> Problems</h1>
 
 <div class="row mb-3">
 	<div class="text-end">

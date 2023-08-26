@@ -31,7 +31,7 @@
 	<title>Submissions</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4">Submissions</h1>
+<h1 style="text-align:center" class="mb-4"><i class="bi bi-envelope-paper"></i> Submissions</h1>
 
 <div class="row">
 	<div class="col-8">

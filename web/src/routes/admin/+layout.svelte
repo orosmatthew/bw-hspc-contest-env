@@ -18,13 +18,31 @@
 		</button>
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-				<li class="nav-item"><a href="/admin" class="nav-link">Home</a></li>
-				<li class="nav-item"><a href="/admin/reviews" class="nav-link">Reviews</a></li>
-				<li class="nav-item"><a href="/admin/submissions" class="nav-link">Submissions</a></li>
-				<li class="nav-item"><a href="/admin/problems" class="nav-link">Problems</a></li>
-				<li class="nav-item"><a href="/admin/scoreboard" class="nav-link">Scoreboards</a></li>
-				<li class="nav-item"><a href="/admin/teams" class="nav-link">Teams</a></li>
-				<li class="nav-item"><a href="/admin/contests" class="nav-link">Contests</a></li>
+				<li class="nav-item">
+					<a href="/admin" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+				</li>
+				<li class="nav-item">
+					<a href="/admin/reviews" class="nav-link"><i class="bi bi-eye"></i> Reviews</a>
+				</li>
+				<li class="nav-item">
+					<a href="/admin/submissions" class="nav-link"
+						><i class="bi bi-envelope-paper"></i> Submissions</a
+					>
+				</li>
+				<li class="nav-item">
+					<a href="/admin/problems" class="nav-link"
+						><i class="bi bi-question-circle"></i> Problems</a
+					>
+				</li>
+				<li class="nav-item">
+					<a href="/admin/scoreboard" class="nav-link"><i class="bi bi-trophy"></i> Scoreboards</a>
+				</li>
+				<li class="nav-item">
+					<a href="/admin/teams" class="nav-link"><i class="bi bi-people"></i> Teams</a>
+				</li>
+				<li class="nav-item">
+					<a href="/admin/contests" class="nav-link"><i class="bi bi-flag"></i> Contests</a>
+				</li>
 			</ul>
 		</div>
 	</div>
