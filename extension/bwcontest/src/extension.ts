@@ -6,6 +6,7 @@ import { BWPanel } from './problemPanel';
 
 export interface BWContestSettings {
 	repoBaseUrl: string;
+	webUrl: string;
 	repoClonePath: string;
 	javaPath: string;
 }
@@ -36,7 +37,11 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 		vscode.window.showErrorMessage('BWContest: BWContest.repoClonePath not set');
 		return;
 	}
-
+	if (!currentSettings || currentSettings.webUrl == '') {
+		vscode.window.showErrorMessage('BWContest: BWContest.webUrl not set');
+		return;
+	}
+	
 	const repoUrl = `${currentSettings.repoBaseUrl}/${contestId.toString()}/${teamId.toString()}.git`;
 
 	const repoName = repoUrl.split('/').pop()?.replace('.git', '')!;
