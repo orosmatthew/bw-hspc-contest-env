@@ -1,7 +1,7 @@
 import svelte from "rollup-plugin-svelte";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
-import { terser } from "rollup-plugin-terser";
+import terser from "@rollup/plugin-terser";
 import sveltePreprocess from "svelte-preprocess";
 import typescript from "@rollup/plugin-typescript";
 import path from "path";
@@ -17,7 +17,6 @@ export default fs
         return {
             input: "webviews/pages/" + input,
             output: {
-                sourcemap: true,
                 format: "iife",
                 name: "app",
                 file: "out/compiled/" + name + ".js",
@@ -25,7 +24,9 @@ export default fs
             plugins: [
                 svelte({
                     // enable run-time checks when not in production
-                    dev: !production,
+                    compilerOptions: {
+                        dev: !production
+                    },
                     preprocess: sveltePreprocess(),
                     emitCss: true
                 }),
@@ -37,7 +38,6 @@ export default fs
                 commonjs(),
                 typescript({
                     tsconfig: "webviews/tsconfig.json",
-                    sourceMap: !production,
                     inlineSources: !production,
                 }),
                 production && terser(),
