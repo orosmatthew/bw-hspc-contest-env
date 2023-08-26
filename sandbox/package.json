@@ -5,12 +5,15 @@
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
-		"build": "tsc"
+		"build": "tsc",
+		"format": "prettier --write .",
+		"start": "node build"
 	},
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
 		"@types/fs-extra": "^11.0.1",
+		"prettier": "^3.0.2",
 		"typescript": "^5.1.6"
 	},
 	"dependencies": {
