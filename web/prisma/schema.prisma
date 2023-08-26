@@ -8,14 +8,15 @@ datasource db {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  username String    @unique
-  password String
-  sessions Session[]
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  passwordHash String
+  passwordSalt String
+  sessions     Session[]
 }
 
 model Session {
-  token     String   @id
+  token     String   @id @default(uuid())
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   userId    Int

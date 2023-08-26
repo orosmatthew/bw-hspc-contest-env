@@ -1,26 +1,32 @@
 import { redirect, type Handle } from '@sveltejs/kit';
-import { db } from '$lib/server/prisma';
-import type { Session } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { startGitServer } from '$lib/server/gitserver';
+import { hashPassword, isSessionValid, logout } from '$lib/server/auth';
 
-startGitServer();
-
-const sessionExpireMilliseconds = 1000 * 60 * 60 * 24; // 24 hours
-
-function isSessionExpired(session: Session): boolean {
-	return session.createdAt.valueOf() + sessionExpireMilliseconds < new Date().valueOf();
-}
-
-async function removeExpiredSessions(userId: number) {
-	const sessions: Session[] = await db.session.findMany({ where: { userId: userId } });
-	sessions.forEach(async (session) => {
-		if (isSessionExpired(session)) {
-			await db.session.delete({ where: { token: session.token } });
-		}
+async function createDefaultAccount(db: PrismaClient) {
+	const count = await db.user.count();
+	if (count !== 0) {
+		return;
+	}
+	const password = await hashPassword('bw123');
+	await db.user.create({
+		data: { username: 'admin', passwordHash: password.hash, passwordSalt: password.salt }
 	});
 }
 
+try {
+	const db = new PrismaClient();
+	createDefaultAccount(db);
+} catch (error) {
+	console.log('Initialization in hooks failed (Normal on build)');
+}
+
+startGitServer();
+
 export const handle = (async ({ event, resolve }) => {
+	const theme = event.cookies.get('theme') as 'light' | 'dark' | undefined;
+	event.locals.theme = theme ?? 'dark';
+
 	if (event.request.method === 'OPTIONS') {
 		return new Response('ok', {
 			headers: {
@@ -33,42 +39,18 @@ export const handle = (async ({ event, resolve }) => {
 	}
 
 	if (event.url.pathname.startsWith('/login')) {
-		if (event.cookies.get('token')) {
-			const session = await db.session.findUnique({ where: { token: event.cookies.get('token') } });
-			if (session) {
-				removeExpiredSessions(session.userId);
-				if (!isSessionExpired(session)) {
-					throw redirect(302, '/admin');
-				} else {
-					event.cookies.delete('token');
-					const res = resolve(event);
-					return res;
-				}
-			} else {
-				const res = resolve(event);
-				return res;
-			}
+		if ((await isSessionValid(event.cookies)) === true) {
+			throw redirect(302, '/admin');
 		}
 	}
 	if (event.url.pathname.startsWith('/admin')) {
-		if (event.cookies.get('token')) {
-			const session = await db.session.findUnique({ where: { token: event.cookies.get('token') } });
-			if (session) {
-				removeExpiredSessions(session.userId);
-				if (!isSessionExpired(session)) {
-					const res = await resolve(event);
-					return res;
-				} else {
-					event.cookies.delete('token');
-					throw redirect(302, '/login');
-				}
-			} else {
-				throw redirect(302, '/login');
-			}
-		} else {
+		if ((await isSessionValid(event.cookies)) !== true) {
+			logout(event.cookies);
 			throw redirect(302, '/login');
 		}
 	}
-	const res = await resolve(event);
+	const res = await resolve(event, {
+		transformPageChunk: ({ html }) => html.replace('%theme%', event.locals.theme)
+	});
 	return res;
 }) satisfies Handle;

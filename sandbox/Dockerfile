@@ -36,4 +36,4 @@ COPY . .
 
 RUN npm run build
 
-CMD ["node", "dist"]
+CMD ["node", "build"]

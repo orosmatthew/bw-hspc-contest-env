@@ -27,7 +27,7 @@
 	<title>Reviews</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4">Reviews</h1>
+<h1 style="text-align:center" class="mb-1"><i class="bi bi-eye"></i> Reviews</h1>
 
 <div class="mb-3 text-end">
 	{#if updating}

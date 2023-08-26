@@ -1,25 +1,21 @@
 import type { Actions } from '@sveltejs/kit';
-import { db } from '$lib/server/prisma';
-import * as UUID from 'uuid';
+import { attemptLogin } from '$lib/server/auth';
 
 export const actions = {
 	login: async ({ cookies, request }) => {
 		const data = await request.formData();
-		const username = data.get('username')?.toString();
-		const password = data.get('password')?.toString();
-		if (!username || !password) {
-			return { success: false };
+		const formUsername = data.get('username');
+		const formPassword = data.get('password');
+		if (formUsername === null || formPassword === null) {
+			return { success: false, message: 'Incomplete form data' };
 		}
-		const user = await db.user.findUnique({ where: { username: username } });
-		if (!user) {
-			return { success: false };
-		}
-		if (user.password === password) {
-			const uuid: string = UUID.v4();
-			await db.session.create({ data: { token: uuid, userId: user.id } });
-			cookies.set('token', uuid);
+		if (
+			(await attemptLogin(cookies, formUsername.toString().trim(), formPassword.toString())) !==
+			true
+		) {
+			return { success: false, message: 'Invalid login' };
+		} else {
 			return { success: true };
 		}
-		return { success: false };
 	}
 } satisfies Actions;

@@ -1,24 +1,27 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
-	import type { Actions, PageData } from './$types';
+	import ConfirmModal from '$lib/ConfirmModal.svelte';
+	import FormAlert from '$lib/FormAlert.svelte';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
-	export let form: Actions;
+
+	let confirmModal: ConfirmModal;
 </script>
 
 <svelte:head>
 	<title>{data.name}</title>
 </svelte:head>
 
+<ConfirmModal bind:this={confirmModal} />
+
 <h1 style="text-align:center" class="mb-4">{data.name}</h1>
+
+<FormAlert />
 
 {#if data.activeTeams !== 0}
 	<div class="alert alert-success">In Progress</div>
-{/if}
-
-{#if form && !form.success}
-	<div class="alert alert-danger">An error occured</div>
 {/if}
 
 <div class="row">
@@ -28,12 +31,12 @@
 	<div class="col-6 text-end">
 		<form
 			method="POST"
-			use:enhance={({ cancel }) => {
-				if (!confirm('Are you sure?')) {
+			use:enhance={async ({ cancel }) => {
+				if ((await confirmModal.prompt('Are you sure?')) !== true) {
 					cancel();
 				}
 				return async ({ update }) => {
-					update();
+					await update();
 				};
 			}}
 		>

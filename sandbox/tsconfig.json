@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"module": "NodeNext",
 		"sourceMap": true,
-		"outDir": "./dist",
+		"outDir": "./build",
 		"esModuleInterop": true,
 		"strict": true
 	},

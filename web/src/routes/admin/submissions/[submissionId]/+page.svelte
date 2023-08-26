@@ -5,6 +5,7 @@
 	import 'diff2html/bundles/css/diff2html.min.css';
 	import { enhance } from '$app/forms';
 	import { stretchTextarea } from '$lib/util';
+	import ConfirmModal from '$lib/ConfirmModal.svelte';
 
 	export let data: PageData;
 	export let form: Actions;
@@ -25,11 +26,15 @@
 			}
 		}
 	});
+
+	let confirmModal: ConfirmModal;
 </script>
 
 <svelte:head>
 	<title>Submission</title>
 </svelte:head>
+
+<ConfirmModal bind:this={confirmModal} />
 
 <h1 style="text-align:center" class="mb-4">Submission</h1>
 
@@ -45,12 +50,12 @@
 		<form
 			method="POST"
 			action="?/delete"
-			use:enhance={({ cancel }) => {
-				if (!confirm('Are you sure?')) {
+			use:enhance={async ({ cancel }) => {
+				if ((await confirmModal.prompt('Are you sure?')) !== true) {
 					cancel();
 				}
 				return async ({ update }) => {
-					update();
+					await update();
 				};
 			}}
 		>
@@ -110,5 +115,56 @@
 	<h3 style="text-align:center">Output</h3>
 	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.output}</textarea>
 	<h3 style="text-align:center">Diff</h3>
-	<div id="diff" />
+	<div id="diff" class="dark-diff" />
 {/if}
+
+<style lang="scss">
+	:global(.dark-diff) {
+		:global(.d2h-code-side-linenumber),
+		:global(.d2h-info),
+		:global(.d2h-emptyplaceholder),
+		:global(.d2h-code-side-emptyplaceholder),
+		:global(.d2h-file-header),
+		:global(.d2h-tag) {
+			background-color: var(--bs-body-bg);
+			color: var(--bs-body-color);
+		}
+		:global(span) {
+			color: var(--bs-body-color);
+		}
+
+		:global(.d2h-file-wrapper) {
+			border-color: var(--bs-border-color);
+		}
+
+		:global(.d2h-file-header) {
+			border-bottom-color: var(--bs-border-color);
+		}
+
+		:global(.d2h-info) {
+			border-color: var(--bs-border-color);
+		}
+
+		:global(.d2h-del) {
+			background-color: var(--bs-danger-border-subtle);
+			border-color: var(--bs-danger);
+		}
+
+		:global(del) {
+			background-color: rgba(210, 85, 97, 0.5);
+		}
+		:global(.d2h-ins) {
+			background-color: var(--bs-success-border-subtle);
+			border-color: var(--bs-success);
+		}
+
+		:global(.d2h-code-side-emptyplaceholder),
+		:global(.d2h-emptyplaceholder) {
+			border-color: var(--bs-border-color);
+		}
+
+		:global(ins) {
+			background-color: rgba(13, 125, 75, 0.5);
+		}
+	}
+</style>

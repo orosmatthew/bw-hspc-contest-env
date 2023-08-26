@@ -16,7 +16,7 @@
 	<title>Teams</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4">Teams</h1>
+<h1 style="text-align:center" class="mb-1"><i class="bi bi-people"></i> Teams</h1>
 
 {#if form && !form.success}
 	<div class="alert alert-danger">Invalid action</div>
