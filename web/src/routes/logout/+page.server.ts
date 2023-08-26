@@ -1,16 +1,8 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { db } from '$lib/server/prisma';
+import { logout } from '$lib/server/auth';
 
 export const load = (async ({ cookies }) => {
-	if (!cookies.get('token')) {
-		throw redirect(302, '/login');
-	}
-	try {
-		await db.session.delete({ where: { token: cookies.get('token') } });
-	} catch {
-		throw redirect(302, '/login');
-	}
-	cookies.delete('token');
+	await logout(cookies);
 	throw redirect(302, '/login');
 }) satisfies PageServerLoad;
