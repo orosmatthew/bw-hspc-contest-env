@@ -25,7 +25,7 @@
 	<title>Admin Scoreboard</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4"><i class="bi bi-trophy"></i> Admin Scoreboards</h1>
+<h1 style="text-align:center" class="mb-1"><i class="bi bi-trophy"></i> Admin Scoreboards</h1>
 
 <div class="text-end">
 	{#if updating}

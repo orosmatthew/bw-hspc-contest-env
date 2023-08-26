@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import ConfirmModal from '$lib/ConfirmModal.svelte';
 	import { genPassword } from '../util';
 	import type { Actions, PageData } from './$types';
 
@@ -16,11 +17,15 @@
 		const passEntry = document.getElementById('pass_entry') as HTMLInputElement;
 		passEntry.value = genPassword();
 	}
+
+	let confirmModal: ConfirmModal;
 </script>
 
 <svelte:head>
 	<title>Team</title>
 </svelte:head>
+
+<ConfirmModal bind:this={confirmModal} />
 
 <h1 style="text-align:center" class="mb-4">{data.team.name}</h1>
 
@@ -32,12 +37,12 @@
 		<form
 			method="POST"
 			action="?/delete"
-			use:enhance={({ cancel }) => {
-				if (!confirm('Are you sure?')) {
+			use:enhance={async ({ cancel }) => {
+				if ((await confirmModal.prompt('Are you sure?')) !== true) {
 					cancel();
 				}
 				return async ({ update }) => {
-					update();
+					await update();
 				};
 			}}
 		>

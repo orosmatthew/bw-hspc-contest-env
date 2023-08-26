@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import ConfirmModal from '$lib/ConfirmModal.svelte';
 	import { stretchTextarea } from '$lib/util';
 	import type { Actions, PageData } from './$types';
 
@@ -11,7 +12,7 @@
 	export let form: Actions;
 
 	async function deleteProblem() {
-		const sure = confirm('Are you sure?');
+		const sure = await confirmModal.prompt('Are you sure?');
 		if (!sure) {
 			return;
 		}
@@ -23,9 +24,15 @@
 			error = true;
 		}
 	}
+
+	let confirmModal: ConfirmModal;
 </script>
 
-<h1 style="text-align:center" class="mb-4">{data.problemData.friendlyName}</h1>
+<ConfirmModal bind:this={confirmModal} />
+
+<h1 style="text-align:center" class="mb-1">
+	<i class="bi bi-question-circle"></i> Problem - {data.problemData.friendlyName}
+</h1>
 
 {#if error}
 	<div class="alert alert-danger">

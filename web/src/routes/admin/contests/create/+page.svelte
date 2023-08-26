@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import FormAlert from '$lib/FormAlert.svelte';
 	import type { Actions, PageData } from './$types';
 
 	export let data: PageData;
@@ -39,13 +40,11 @@
 	<title>Create Contest</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4">Create Contest</h1>
+<h1 style="text-align:center" class="mb-4"><i class="bi bi-flag"></i> Create Contest</h1>
+
+<FormAlert />
 
 <a href="/admin/contests" class="mb-3 btn btn-outline-secondary">Cancel</a>
-
-{#if form && !form.success}
-	<div class="alert alert-danger">Invalid entry</div>
-{/if}
 
 <form method="POST" action="?/create" use:enhance>
 	<h4>Name</h4>

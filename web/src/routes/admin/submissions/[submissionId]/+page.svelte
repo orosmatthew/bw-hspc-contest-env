@@ -5,6 +5,7 @@
 	import 'diff2html/bundles/css/diff2html.min.css';
 	import { enhance } from '$app/forms';
 	import { stretchTextarea } from '$lib/util';
+	import ConfirmModal from '$lib/ConfirmModal.svelte';
 
 	export let data: PageData;
 	export let form: Actions;
@@ -25,11 +26,15 @@
 			}
 		}
 	});
+
+	let confirmModal: ConfirmModal;
 </script>
 
 <svelte:head>
 	<title>Submission</title>
 </svelte:head>
+
+<ConfirmModal bind:this={confirmModal} />
 
 <h1 style="text-align:center" class="mb-4">Submission</h1>
 
@@ -45,12 +50,12 @@
 		<form
 			method="POST"
 			action="?/delete"
-			use:enhance={({ cancel }) => {
-				if (!confirm('Are you sure?')) {
+			use:enhance={async ({ cancel }) => {
+				if ((await confirmModal.prompt('Are you sure?')) !== true) {
 					cancel();
 				}
 				return async ({ update }) => {
-					update();
+					await update();
 				};
 			}}
 		>

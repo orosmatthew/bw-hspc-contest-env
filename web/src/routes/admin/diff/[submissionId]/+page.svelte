@@ -6,6 +6,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { stretchTextarea } from '$lib/util';
+	import FormAlert from '$lib/FormAlert.svelte';
 
 	export let data: PageData;
 	export let form: Actions;
@@ -58,11 +59,7 @@
 
 <h1 style="text-align:center" class="mb-4">Review Submission</h1>
 
-{#if form && !form.success}
-	<div class="alert alert-danger">Submission was not successful</div>
-{:else if form && form.success}
-	<div class="alert alert-success">Success!</div>
-{/if}
+<FormAlert />
 
 <div class="mb-3 col">
 	<a href="/admin/reviews" class="btn btn-outline-primary">All Reviews</a>

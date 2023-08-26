@@ -8,12 +8,10 @@
 	<title>Contests</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-4"><i class="bi bi-flag"></i> Contests</h1>
+<h1 style="text-align:center" class="mb-1"><i class="bi bi-flag"></i> Contests</h1>
 
-<div class="row">
-	<div class="text-end">
-		<a href="/admin/contests/create" class="btn btn-outline-success">Create</a>
-	</div>
+<div class="d-flex flex-row justify-content-end">
+	<a href="/admin/contests/create" class="btn btn-outline-success">Create</a>
 </div>
 
 <div class="mt-3 list-group">
