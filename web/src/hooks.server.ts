@@ -24,6 +24,9 @@ try {
 startGitServer();
 
 export const handle = (async ({ event, resolve }) => {
+	const theme = event.cookies.get('theme') as 'light' | 'dark' | undefined;
+	event.locals.theme = theme ?? 'dark';
+
 	if (event.request.method === 'OPTIONS') {
 		return new Response('ok', {
 			headers: {
@@ -46,6 +49,8 @@ export const handle = (async ({ event, resolve }) => {
 			throw redirect(302, '/login');
 		}
 	}
-	const res = await resolve(event);
+	const res = await resolve(event, {
+		transformPageChunk: ({ html }) => html.replace('%theme%', event.locals.theme)
+	});
 	return res;
 }) satisfies Handle;
