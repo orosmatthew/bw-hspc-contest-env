@@ -55,10 +55,27 @@
 	</form>
 {/if}
 
-<div class="list-group">
-	{#each data.teams as team}
-		<a href={'/admin/teams/' + team.id.toString()} class="list-group-item list-group-item-action">
-			{team.name}
-		</a>
-	{/each}
+<div class="table-responsive">
+	<table class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Name</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each data.teams as team}
+				<tr>
+					<td>{team.id}</td>
+					<td>{team.name}</td>
+					<td
+						><a href={`/admin/teams/${team.id.toString()}`} class="btn btn-sm btn-outline-secondary"
+							>Details</a
+						></td
+					>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 </div>

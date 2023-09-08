@@ -28,6 +28,10 @@
 	let confirmModal: ConfirmModal;
 </script>
 
+<svelte:head>
+	<title>Problem - {data.problemData.friendlyName}</title>
+</svelte:head>
+
 <ConfirmModal bind:this={confirmModal} />
 
 <h1 style="text-align:center" class="mb-1">

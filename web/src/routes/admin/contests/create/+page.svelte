@@ -44,8 +44,6 @@
 
 <FormAlert />
 
-<a href="/admin/contests" class="mb-3 btn btn-outline-secondary">Cancel</a>
-
 <form method="POST" action="?/create" use:enhance>
 	<h4>Name</h4>
 	<input name="name" class="form-control" />
@@ -106,9 +104,8 @@
 			{/each}
 		</div>
 	</div>
-	<div class="row">
-		<div class="text-end">
-			<button type="submit" class="btn btn-success">Create</button>
-		</div>
+	<div class="d-flex flex-row justify-content-end gap-2">
+		<a href="/admin/contests" class="btn btn-outline-secondary">Cancel</a>
+		<button type="submit" class="btn btn-success">Create</button>
 	</div>
 </form>

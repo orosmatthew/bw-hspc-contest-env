@@ -19,11 +19,29 @@
 {#if data.problems.length === 0}
 	<div class="alert alert-warning">No problems</div>
 {/if}
-<div class="list-group">
-	{#each data.problems as problem}
-		<a
-			href={'/admin/problems/' + problem.id.toString()}
-			class="list-group-item list-group-item-action">{problem.friendlyName}</a
-		>
-	{/each}
+
+<div class="table-responsive">
+	<table class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Name</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each data.problems as problem}
+				<tr>
+					<td>{problem.id}</td>
+					<td>{problem.friendlyName}</td>
+					<td
+						><a
+							href={`/admin/problems/${problem.id.toString()}`}
+							class="btn btn-sm btn-outline-secondary">Details</a
+						></td
+					>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 </div>

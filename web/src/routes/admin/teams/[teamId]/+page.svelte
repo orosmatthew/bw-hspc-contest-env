@@ -22,12 +22,12 @@
 </script>
 
 <svelte:head>
-	<title>Team</title>
+	<title>Team - {data.team.name}</title>
 </svelte:head>
 
 <ConfirmModal bind:this={confirmModal} />
 
-<h1 style="text-align:center" class="mb-4">{data.team.name}</h1>
+<h1 style="text-align:center" class="mb-4"><i class="bi bi-people"></i> Team - {data.team.name}</h1>
 
 <div class="row">
 	<div class="col-6">
@@ -51,7 +51,7 @@
 	</div>
 </div>
 
-<table class="table table-bordered table-striped">
+<table class="table table-bordered">
 	<thead>
 		<tr>
 			<th>Name</th>
