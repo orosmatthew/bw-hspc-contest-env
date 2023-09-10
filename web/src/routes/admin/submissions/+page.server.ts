@@ -12,7 +12,6 @@ export const load = (async () => {
 				id: row.id,
 				createdAt: row.createdAt,
 				gradedAt: row.gradedAt,
-				message: row.message,
 				state: row.state,
 				problemName: problems.find((problem) => {
 					return problem.id == row.problemId;

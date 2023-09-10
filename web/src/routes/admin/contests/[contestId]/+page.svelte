@@ -11,12 +11,12 @@
 </script>
 
 <svelte:head>
-	<title>{data.name}</title>
+	<title>Contest - {data.name}</title>
 </svelte:head>
 
 <ConfirmModal bind:this={confirmModal} />
 
-<h1 style="text-align:center" class="mb-4">{data.name}</h1>
+<h1 style="text-align:center" class="mb-4"><i class="bi bi-flag"></i> Contest - {data.name}</h1>
 
 <FormAlert />
 

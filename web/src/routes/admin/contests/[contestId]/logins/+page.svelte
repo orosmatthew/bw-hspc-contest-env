@@ -4,8 +4,12 @@
 	export let data: PageData;
 </script>
 
+<svelte:head>
+	<title>Printable Logins</title>
+</svelte:head>
+
 {#each data.teams as team}
-	<table class="table table-bordered table-striped">
+	<table class="table table-bordered">
 		<thead>
 			<tr>
 				<th>ID</th>

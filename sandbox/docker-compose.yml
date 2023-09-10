@@ -3,6 +3,6 @@ services:
   sandbox:
     build: .
     environment:
-      - ADMIN_URL=http://localhost:5173
-      - REPO_URL=http://localhost:7006
+      - ADMIN_URL=${ADMIN_URL}
+      - REPO_URL=${REPO_URL}
     network_mode: 'host'

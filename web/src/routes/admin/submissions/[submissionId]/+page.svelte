@@ -31,12 +31,14 @@
 </script>
 
 <svelte:head>
-	<title>Submission</title>
+	<title>Submission - {data.teamName} - {data.problemName}</title>
 </svelte:head>
 
 <ConfirmModal bind:this={confirmModal} />
 
-<h1 style="text-align:center" class="mb-4">Submission</h1>
+<h1 style="text-align:center" class="mb-4">
+	<i class="bi bi-envelope-paper"></i> Submission - {data.teamName} - {data.problemName}
+</h1>
 
 {#if form && !form.success}
 	<div class="alert alert-danger">Error</div>
@@ -64,46 +66,52 @@
 	</div>
 </div>
 
-<table class="table table-bordered">
-	<thead>
-		<tr>
-			<th>Team</th>
-			<th>Problem</th>
-			<th>Submit Time</th>
-			<th>Graded Time</th>
-			<th>Message</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr
-			class={(data.state == 'InReview'
-				? 'table-warning'
-				: data.state == 'Correct'
-				? 'table-success'
-				: data.state == 'Incorrect'
-				? 'table-danger'
-				: '') + ' submission-row'}
-		>
-			<td>
-				{#if data.teamName}
-					{data.teamName}
-				{/if}
-			</td>
-			<td>
-				{#if data.problemName}
-					{data.problemName}
-				{/if}
-			</td>
-			<td>{data.submitTime.toLocaleDateString() + ' ' + data.submitTime.toLocaleTimeString()}</td>
-			<td>
-				{#if data.gradedTime}
-					{data.gradedTime.toLocaleDateString() + ' ' + data.gradedTime.toLocaleTimeString()}
-				{/if}
-			</td>
-			<td>{data.message ? data.message : ''}</td>
-		</tr>
-	</tbody>
-</table>
+<div class="table-responsive">
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>Team</th>
+				<th>Problem</th>
+				<th>Status</th>
+				<th>Submit Time</th>
+				<th>Graded Time</th>
+				<th>Message</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>
+					{#if data.teamName}
+						{data.teamName}
+					{/if}
+				</td>
+				<td>
+					{#if data.problemName}
+						{data.problemName}
+					{/if}
+				</td>
+				<td>
+					{#if data.state === 'Queued'}
+						<span class="badge bg-secondary">Queued</span>
+					{:else if data.state === 'InReview'}
+						<span class="badge bg-warning">In Review</span>
+					{:else if data.state === 'Correct'}
+						<span class="badge bg-success">Correct</span>
+					{:else if data.state === 'Incorrect'}
+						<span class="badge bg-danger">Incorrect</span>
+					{/if}
+				</td>
+				<td>{data.submitTime.toLocaleDateString() + ' ' + data.submitTime.toLocaleTimeString()}</td>
+				<td>
+					{#if data.gradedTime}
+						{data.gradedTime.toLocaleDateString() + ' ' + data.gradedTime.toLocaleTimeString()}
+					{/if}
+				</td>
+				<td>{data.message ? data.message : ''}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
 
 {#if data.state == 'InReview'}
 	<div class="row">

@@ -14,13 +14,36 @@
 	<a href="/admin/contests/create" class="btn btn-outline-success">Create</a>
 </div>
 
-<div class="mt-3 list-group">
-	{#each data.contests as contest}
-		<a
-			href={'/admin/contests/' + contest.id.toString()}
-			class={`list-group-item list-group-item-action ${
-				contest.activeTeams === 0 ? '' : ' list-group-item-success'
-			}`}>{contest.name}</a
-		>
-	{/each}
+<div class="mt-3 table-responsive">
+	<table class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Name</th>
+				<th>Status</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each data.contests as contest}
+				<tr>
+					<td>{contest.id}</td>
+					<td>{contest.name}</td>
+					<td>
+						{#if contest.activeTeams === 0}
+							<span class="badge bg-secondary">Inactive</span>
+						{:else}
+							<span class="badge bg-success">Active</span>
+						{/if}
+					</td>
+					<td
+						><a
+							href={`/admin/contests/${contest.id.toString()}`}
+							class="btn btn-sm btn-outline-secondary">Details</a
+						></td
+					>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 </div>

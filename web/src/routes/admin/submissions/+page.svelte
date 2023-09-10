@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { onDestroy, onMount } from 'svelte';
 
 	export let data: PageData;
@@ -33,72 +33,69 @@
 
 <h1 style="text-align:center" class="mb-4"><i class="bi bi-envelope-paper"></i> Submissions</h1>
 
-<div class="row">
-	<div class="col-8">
-		<p>Rows are color coded: Red - Incorrect, Green - Correct, Yellow - In Review</p>
-	</div>
-	<div class="col-4 text-end">
-		{#if updating}
-			<div class="spinner-border spinner-border-sm text-secondary" />
-		{/if}
-		<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
-	</div>
+<div class="d-flex flex-row justify-content-end gap-2 align-items-center">
+	{#if updating}
+		<div class="spinner-border spinner-border-sm text-secondary" />
+	{/if}
+	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
 </div>
 
-<table class="table table-bordered table-hover">
-	<thead>
-		<tr>
-			<th>Team</th>
-			<th>Problem</th>
-			<th>Submit Time</th>
-			<th>Graded Time</th>
-			<th>Message</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each data.submissions as submission}
-			<tr
-				on:click={() => {
-					goto('/admin/submissions/' + submission.id.toString());
-				}}
-				class={(submission.state == 'InReview'
-					? 'table-warning'
-					: submission.state == 'Correct'
-					? 'table-success'
-					: submission.state == 'Incorrect'
-					? 'table-danger'
-					: '') + ' submission-row'}
-			>
-				<td>
-					{#if submission.teamName}
-						{submission.teamName}
-					{/if}
-				</td>
-				<td>
-					{#if submission.problemName}
-						{submission.problemName}
-					{/if}
-				</td>
-				<td
-					>{submission.createdAt.toLocaleDateString() +
-						' ' +
-						submission.createdAt.toLocaleTimeString()}</td
-				>
-				<td>
-					{#if submission.gradedAt}
-						{submission.gradedAt.toLocaleDateString() +
-							' ' +
-							submission.gradedAt.toLocaleTimeString()}
-					{/if}
-				</td>
-				<td>{submission.message ? submission.message : ''}</td>
+<div class="mt-3 table-responsive">
+	<table class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th>Team</th>
+				<th>Problem</th>
+				<th>State</th>
+				<th>Submit Time</th>
+				<th>Graded Time</th>
+				<th>Actions</th>
 			</tr>
-		{/each}
-	</tbody>
-</table>
-
-<style>
-	.submission-row:hover {
-		cursor: pointer;
-	}
-</style>
+		</thead>
+		<tbody>
+			{#each data.submissions as submission}
+				<tr>
+					<td>
+						{#if submission.teamName}
+							{submission.teamName}
+						{/if}
+					</td>
+					<td>
+						{#if submission.problemName}
+							{submission.problemName}
+						{/if}
+					</td>
+					<td>
+						{#if submission.state === 'Queued'}
+							<span class="badge bg-secondary">Queued</span>
+						{:else if submission.state === 'InReview'}
+							<span class="badge bg-warning">In Review</span>
+						{:else if submission.state === 'Correct'}
+							<span class="badge bg-success">Correct</span>
+						{:else if submission.state === 'Incorrect'}
+							<span class="badge bg-danger">Incorrect</span>
+						{/if}
+					</td>
+					<td
+						>{submission.createdAt.toLocaleDateString() +
+							' ' +
+							submission.createdAt.toLocaleTimeString()}</td
+					>
+					<td>
+						{#if submission.gradedAt}
+							{submission.gradedAt.toLocaleDateString() +
+								' ' +
+								submission.gradedAt.toLocaleTimeString()}
+						{/if}
+					</td>
+					<td>
+						<a
+							href={`/admin/submissions/${submission.id.toString()}`}
+							class="btn btn-sm btn-outline-secondary">Details</a
+						>
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</div>
