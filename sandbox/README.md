@@ -1,4 +1,4 @@
-# BW Contest Web
+# BW Contest Sandbox
 
 ## Build Instructions
 
@@ -11,11 +11,14 @@ Build dependencies:
 - NodeJS
 - Docker (for docker build)
 
+It is recommended to test development changes in a docker container.
+
 ### For Development
 
 ```bash
 npm i
-npm run dev
+npm run build
+node build
 ```
 
 ### For Production
