@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import { SidebarProvider } from './SidebarProvider';
-import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
 import urlJoin from 'url-join';
+import git from 'isomorphic-git';
+import path = require('path');
+import http from 'isomorphic-git/http/node';
 
 export interface BWContestSettings {
 	repoBaseUrl: string;
@@ -74,16 +76,18 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 		fs.removeSync(clonedRepoPath);
 	}
 
-	child_process.exec(
-		`git clone ${repoUrl}`,
-		{ cwd: `${currentSettings.repoClonePath}/BWContest/${contestId.toString()}` },
-		(error, stdout, stderr) => {
-			if (error) {
-				vscode.window.showErrorMessage(`BWContest: Failed to clone repo: ${error.message}`);
-				return;
-			}
-		}
-	);
+	// child_process.exec(
+	// 	`git clone ${repoUrl}`,
+	// 	{ cwd: `${currentSettings.repoClonePath}/BWContest/${contestId.toString()}` },
+	// 	(error, stdout, stderr) => {
+	// 		if (error) {
+	// 			vscode.window.showErrorMessage(`BWContest: Failed to clone repo: ${error.message}`);
+	// 			return;
+	// 		}
+	// 	}
+	// );
+	const dir = path.join(currentSettings.repoClonePath, 'BWContest', contestId.toString());
+	await git.clone({ fs, http, dir, url: repoUrl });
 
 	const addedFolder = vscode.workspace.updateWorkspaceFolders(
 		vscode.workspace.workspaceFolders?.length ?? 0,
