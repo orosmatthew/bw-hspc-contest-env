@@ -1,0 +1,25 @@
+version: '3'
+services:
+  db:
+    image: postgres:latest
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_DB=${DATABASE_DB}
+    restart: always
+  web:
+    build: .
+    ports:
+      - 3000:3000
+      - 7006:7006
+    environment:
+      - DATABASE_URL=postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@db:5432/${DATABASE_DB}
+      - GIT_PORT=7006
+      - ORIGIN=http://127.0.0.1:3000
+    volumes:
+      - ./repo:/app/repo
+    depends_on:
+      - db
+    restart: always

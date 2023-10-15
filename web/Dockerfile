@@ -34,4 +34,6 @@ EXPOSE 7006
 
 RUN npm run build
 
-CMD ["node", "build"]
+RUN chmod +x ./docker/entry.sh
+
+CMD ["./docker/entry.sh"]

@@ -14,14 +14,12 @@ async function createDefaultAccount(db: PrismaClient) {
 	});
 }
 
-try {
+if (process.env.INIT !== undefined && process.env.INIT === 'true') {
+	console.log('Runtime initialization...');
 	const db = new PrismaClient();
 	createDefaultAccount(db);
-} catch (error) {
-	console.log('Initialization in hooks failed (Normal on build)');
+	startGitServer();
 }
-
-startGitServer();
 
 export const handle = (async ({ event, resolve }) => {
 	const theme = event.cookies.get('theme') as 'light' | 'dark' | undefined;
