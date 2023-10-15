@@ -20,7 +20,7 @@ export class BWPanel {
 	private static _running: boolean;
 	private static _kill: Function | null;
 
-	public static createOrShow(context: vscode.ExtensionContext) {
+	public static createOrShow(context: vscode.ExtensionContext, webUrl: string) {
 		this._context = context;
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
@@ -51,7 +51,7 @@ export class BWPanel {
 			}
 		);
 
-		BWPanel.currentPanel = new BWPanel(panel, context.extensionUri);
+		BWPanel.currentPanel = new BWPanel(panel, context.extensionUri, webUrl);
 	}
 
 	public static kill() {
@@ -59,11 +59,11 @@ export class BWPanel {
 		BWPanel.currentPanel = undefined;
 	}
 
-	public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-		BWPanel.currentPanel = new BWPanel(panel, extensionUri);
+	public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, webUrl: string) {
+		BWPanel.currentPanel = new BWPanel(panel, extensionUri, webUrl);
 	}
 
-	private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+	private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, webUrl: string) {
 		this._panel = panel;
 		this._extensionUri = extensionUri;
 		this._update();

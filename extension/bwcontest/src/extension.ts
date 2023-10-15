@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { SidebarProvider } from './SidebarProvider';
 import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
-import { BWPanel } from './problemPanel';
+import urlJoin from 'url-join';
 
 export interface BWContestSettings {
 	repoBaseUrl: string;
@@ -41,8 +41,12 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 		vscode.window.showErrorMessage('BWContest: BWContest.webUrl not set');
 		return;
 	}
-	
-	const repoUrl = `${currentSettings.repoBaseUrl}/${contestId.toString()}/${teamId.toString()}.git`;
+
+	const repoUrl = urlJoin(
+		currentSettings.repoBaseUrl,
+		contestId.toString(),
+		`${teamId.toString()}.git`
+	);
 
 	const repoName = repoUrl.split('/').pop()?.replace('.git', '')!;
 
@@ -96,26 +100,13 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-	const sidebarProvider = new SidebarProvider(context.extensionUri, context);
+	const sidebarProvider = new SidebarProvider(
+		context.extensionUri,
+		context,
+		extensionSettings().webUrl
+	);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider)
-	);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('bwcontest.helloWorld', () => {
-			BWPanel.createOrShow(context);
-		})
-	);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('bwcontest.askQuestion', async () => {
-			const answer = await vscode.window.showInformationMessage('How was your day?', 'good', 'bad');
-			if (answer === 'bad') {
-				vscode.window.showInformationMessage('Sorry to hear that');
-			} else {
-				console.log(answer);
-			}
-		})
 	);
 }
 

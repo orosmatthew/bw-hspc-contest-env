@@ -2,43 +2,44 @@ import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
 import { cloneAndOpenRepo } from './extension';
 import { BWPanel } from './problemPanel';
+import urlJoin from 'url-join';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
-	_view?: vscode.WebviewView;
-	_context?: vscode.ExtensionContext;
-
-	constructor(private readonly _extensionUri: vscode.Uri, context: vscode.ExtensionContext) {
-		this._context = context;
-	}
+	constructor(
+		private readonly extensionUri: vscode.Uri,
+		private readonly context: vscode.ExtensionContext,
+		private readonly webUrl: string
+	) {}
 
 	public resolveWebviewView(webviewView: vscode.WebviewView) {
-		this._view = webviewView;
-
-		webviewView.webview.options = {
-			// Allow scripts in the webview
+		const webview = webviewView.webview;
+		webview.options = {
 			enableScripts: true,
-
-			localResourceRoots: [this._extensionUri]
+			localResourceRoots: [this.extensionUri]
 		};
+		webview.html = this.getHtmlForWebview(webview);
 
-		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-
-		webviewView.webview.onDidReceiveMessage(async (data) => {
+		webview.onDidReceiveMessage(async (data: { type: string; value: any }) => {
 			switch (data.type) {
 				case 'onTestAndSubmit': {
-					if (this._context) {
-						BWPanel.createOrShow(this._context);
+					if (this.context) {
+						BWPanel.createOrShow(this.context, this.webUrl);
 					}
 					break;
 				}
 				case 'onStartup': {
-					const token: string | undefined = this._context?.globalState.get('token');
-					if (token) {
-						this._view?.webview.postMessage({
-							type: 'onSession',
-							value: token
+					const token: string | undefined = this.context.globalState.get('token');
+					const teamData = this.context.globalState.get('teamData');
+					if (token && teamData !== undefined) {
+						webview.postMessage({
+							type: 'onLogin',
+							value: teamData
 						});
 					}
+					webview.postMessage({
+						type: 'onWebUrl',
+						value: this.webUrl
+					});
 					break;
 				}
 				case 'onClone': {
@@ -48,15 +49,56 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 					await cloneAndOpenRepo(parseInt(data.value.contestId), parseInt(data.value.teamId));
 					break;
 				}
-				case 'onLogin': {
-					if (!data.value) {
+				case 'requestLogin': {
+					const res = await fetch(urlJoin(this.webUrl, '/api/team/login'), {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							teamname: data.value.teamname,
+							password: data.value.password
+						})
+					});
+					const thing = await res.json();
+					if (thing.success !== true) {
 						return;
 					}
-					this._context?.globalState.update('token', data.value);
+					const sessionToken = thing.token;
+					this.context.globalState.update('token', sessionToken);
+					const res1 = await fetch(urlJoin(this.webUrl, `api/team/${sessionToken}`), {
+						method: 'GET'
+					});
+					const data2 = await res1.json();
+					if (!data2.success) {
+						return;
+					}
+					this.context.globalState.update('teamData', data2.data);
+					webview.postMessage({ type: 'onLogin', value: data2.data });
+					break;
+				}
+				case 'requestLogout': {
+					const sessionToken = this.context.globalState.get<string>('token');
+					if (sessionToken === undefined) {
+						webview.postMessage({ type: 'onLogout' });
+					}
+					const res = await fetch(urlJoin(this.webUrl, '/api/team/logout'), {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							token: sessionToken
+						})
+					});
+					if (res.status !== 200) {
+						return;
+					}
+					const data2 = await res.json();
+					if (data2.success === true) {
+						webview.postMessage({ type: 'onLogout' });
+						this.context.globalState.update('token', undefined);
+					}
 					break;
 				}
 				case 'onLogout': {
-					this._context?.globalState.update('token', null);
+					this.context.globalState.update('token', null);
 					break;
 				}
 				case 'onInfo': {
@@ -77,19 +119,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		});
 	}
 
-	private _getHtmlForWebview(webview: vscode.Webview) {
+	private getHtmlForWebview(webview: vscode.Webview) {
 		const styleResetUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css')
+			vscode.Uri.joinPath(this.extensionUri, 'media', 'reset.css')
 		);
 		const styleVSCodeUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css')
+			vscode.Uri.joinPath(this.extensionUri, 'media', 'vscode.css')
 		);
 
 		const scriptUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'out', 'compiled/sidebar.js')
+			vscode.Uri.joinPath(this.extensionUri, 'out', 'compiled/sidebar.js')
 		);
 		const styleMainUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'out', 'compiled/sidebar.css')
+			vscode.Uri.joinPath(this.extensionUri, 'out', 'compiled/sidebar.css')
 		);
 
 		// Use a nonce to only allow a specific script to be run.
