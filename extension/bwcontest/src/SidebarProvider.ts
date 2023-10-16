@@ -4,6 +4,20 @@ import { cloneAndOpenRepo } from './extension';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
 
+export type TeamData = {
+	teamId: number;
+	contestId: number;
+};
+
+export type WebviewMessageType = { msg: 'onLogin'; data: TeamData } | { msg: 'onLogout' };
+
+export type MessageType =
+	| { msg: 'onTestAndSubmit' }
+	| { msg: 'onStartup' }
+	| { msg: 'onClone'; data: { contestId: number; teamId: number } }
+	| { msg: 'onLogin'; data: { teamName: string; password: string } }
+	| { msg: 'onLogout' };
+
 export class SidebarProvider implements vscode.WebviewViewProvider {
 	constructor(
 		private readonly extensionUri: vscode.Uri,
@@ -19,43 +33,40 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		};
 		webview.html = this.getHtmlForWebview(webview);
 
-		webview.onDidReceiveMessage(async (data: { type: string; value: any }) => {
-			switch (data.type) {
+		const webviewPostMessage = (m: WebviewMessageType) => {
+			webview.postMessage(m);
+		};
+
+		webview.onDidReceiveMessage(async (m: MessageType) => {
+			switch (m.msg) {
 				case 'onTestAndSubmit': {
 					if (this.context) {
-						BWPanel.createOrShow(this.context, this.webUrl);
+						BWPanel.show(this.context, this.webUrl);
 					}
 					break;
 				}
 				case 'onStartup': {
 					const token: string | undefined = this.context.globalState.get('token');
-					const teamData = this.context.globalState.get('teamData');
+					const teamData = this.context.globalState.get('teamData') as TeamData | undefined;
 					if (token && teamData !== undefined) {
-						webview.postMessage({
-							type: 'onLogin',
-							value: teamData
+						webviewPostMessage({
+							msg: 'onLogin',
+							data: teamData
 						});
 					}
-					webview.postMessage({
-						type: 'onWebUrl',
-						value: this.webUrl
-					});
 					break;
 				}
 				case 'onClone': {
-					if (!data.value || !data.value.contestId || !data.value.teamId) {
-						return;
-					}
-					await cloneAndOpenRepo(parseInt(data.value.contestId), parseInt(data.value.teamId));
+					await cloneAndOpenRepo(m.data.contestId, m.data.teamId);
 					break;
 				}
-				case 'requestLogin': {
+				case 'onLogin': {
 					const res = await fetch(urlJoin(this.webUrl, '/api/team/login'), {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({
-							teamname: data.value.teamname,
-							password: data.value.password
+							teamname: m.data.teamName,
+							password: m.data.password
 						})
 					});
 					const thing = await res.json();
@@ -72,13 +83,13 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 						return;
 					}
 					this.context.globalState.update('teamData', data2.data);
-					webview.postMessage({ type: 'onLogin', value: data2.data });
+					webviewPostMessage({ msg: 'onLogout' });
 					break;
 				}
-				case 'requestLogout': {
+				case 'onLogout': {
 					const sessionToken = this.context.globalState.get<string>('token');
 					if (sessionToken === undefined) {
-						webview.postMessage({ type: 'onLogout' });
+						webviewPostMessage({ msg: 'onLogout' });
 					}
 					const res = await fetch(urlJoin(this.webUrl, '/api/team/logout'), {
 						method: 'POST',
@@ -92,29 +103,29 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 					}
 					const data2 = await res.json();
 					if (data2.success === true) {
-						webview.postMessage({ type: 'onLogout' });
+						webviewPostMessage({ msg: 'onLogout' });
 						this.context.globalState.update('token', undefined);
 					}
 					break;
 				}
-				case 'onLogout': {
-					this.context.globalState.update('token', null);
-					break;
-				}
-				case 'onInfo': {
-					if (!data.value) {
-						return;
-					}
-					vscode.window.showInformationMessage(data.value);
-					break;
-				}
-				case 'onError': {
-					if (!data.value) {
-						return;
-					}
-					vscode.window.showErrorMessage(data.value);
-					break;
-				}
+				// case 'onLogout': {
+				// 	this.context.globalState.update('token', null);
+				// 	break;
+				// }
+				// case 'onInfo': {
+				// 	if (!data.value) {
+				// 		return;
+				// 	}
+				// 	vscode.window.showInformationMessage(data.value);
+				// 	break;
+				// }
+				// case 'onError': {
+				// 	if (!data.value) {
+				// 		return;
+				// 	}
+				// 	vscode.window.showErrorMessage(data.value);
+				// 	break;
+				// }
 			}
 		});
 	}

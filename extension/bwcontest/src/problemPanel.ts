@@ -4,46 +4,56 @@ import { runJava } from './run/java';
 import { extensionSettings } from './extension';
 import { join } from 'path';
 import { submitProblem } from './submit';
+import urlJoin from 'url-join';
 
+export type ProblemData = {
+	id: number;
+	name: string;
+	pascalName: string;
+	sampleInput: string;
+	sampleOutput: string;
+}[];
+
+export type MessageType = { msg: 'onRequestProblemData' };
+export type WebviewMessageType = { msg: 'onProblemData'; data: ProblemData };
+
+/**
+ * Singleton class for problem panel
+ */
 export class BWPanel {
-	/**
-	 * Track the currently panel. Only allow a single panel to exist at a time.
-	 */
 	public static currentPanel: BWPanel | undefined;
 
-	public static readonly viewType = 'bwpanel';
+	private running: boolean = false;
+	private kill: Function | null = null;
 
-	private readonly _panel: vscode.WebviewPanel;
-	private readonly _extensionUri: vscode.Uri;
-	private _disposables: vscode.Disposable[] = [];
-	private static _context?: vscode.ExtensionContext;
-	private static _running: boolean;
-	private static _kill: Function | null;
+	private constructor(
+		private readonly context: vscode.ExtensionContext,
+		private readonly panel: vscode.WebviewPanel,
+		private readonly extensionUri: vscode.Uri,
+		private readonly webUrl: string
+	) {
+		this.update();
+	}
 
-	public static createOrShow(context: vscode.ExtensionContext, webUrl: string) {
-		this._context = context;
+	public static show(context: vscode.ExtensionContext, webUrl: string) {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
 
-		// If we already have a panel, show it.
+		// Show panel if exists
 		if (BWPanel.currentPanel) {
-			BWPanel.currentPanel._panel.reveal(column);
+			BWPanel.currentPanel.panel.reveal(column);
 			return;
 		}
 
-		// Otherwise, create a new panel.
+		// Otherwise create new panel
 		const panel = vscode.window.createWebviewPanel(
-			BWPanel.viewType,
+			'bwpanel',
 			'BWContest',
 			column || vscode.ViewColumn.One,
 			{
-				// Enable javascript in the webview
 				enableScripts: true,
-
 				retainContextWhenHidden: true,
-
-				// And restrict the webview to only loading content from our extension's `media` directory.
 				localResourceRoots: [
 					vscode.Uri.joinPath(context.extensionUri, 'media'),
 					vscode.Uri.joinPath(context.extensionUri, 'out/compiled')
@@ -51,7 +61,7 @@ export class BWPanel {
 			}
 		);
 
-		BWPanel.currentPanel = new BWPanel(panel, context.extensionUri, webUrl);
+		BWPanel.currentPanel = new BWPanel(context, panel, context.extensionUri, webUrl);
 	}
 
 	public static kill() {
@@ -59,173 +69,155 @@ export class BWPanel {
 		BWPanel.currentPanel = undefined;
 	}
 
-	public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, webUrl: string) {
-		BWPanel.currentPanel = new BWPanel(panel, extensionUri, webUrl);
-	}
-
-	private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, webUrl: string) {
-		this._panel = panel;
-		this._extensionUri = extensionUri;
-		this._update();
-		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-	}
-
 	public dispose() {
+		this.panel.dispose();
 		BWPanel.currentPanel = undefined;
-		this._panel.dispose();
-		while (this._disposables.length) {
-			const x = this._disposables.pop();
-			if (x) {
-				x.dispose();
-			}
-		}
 	}
 
-	private async _update() {
-		const webview = this._panel.webview;
+	private webviewPostMessage(m: WebviewMessageType) {
+		this.panel.webview.postMessage(m);
+	}
 
-		this._panel.webview.html = this._getHtmlForWebview(webview);
-		webview.onDidReceiveMessage(async (data) => {
-			switch (data.type) {
-				case 'onKill': {
-					if (!BWPanel._running || !BWPanel._kill) {
-						break;
-					}
-					BWPanel._kill();
-				}
-				case 'onSubmit': {
-					await vscode.workspace.saveAll();
-					if (!data.value) {
-						return;
-					}
-					const ans = await vscode.window.showInformationMessage(
-						`Are you sure you want to submit ${data.value.problemName}?`,
-						'Yes',
-						'No'
-					);
-					if (ans !== 'Yes') {
-						break;
-					}
-					try {
-						await submitProblem(
-							data.value.sessionToken,
-							data.value.contestId,
-							data.value.teamId,
-							data.value.problemId
-						);
-					} catch (err: any) {
-						vscode.window.showErrorMessage(err.message ?? 'Submission unsuccessful');
-						break;
-					}
-					vscode.window.showInformationMessage('Submitted!');
-					break;
-				}
-				case 'onRun': {
-					if (BWPanel._running === true) {
-						vscode.window.showErrorMessage('Already running');
-						break;
-					}
-					await vscode.workspace.saveAll();
-					if (!data.value) {
-						break;
-					}
-					const repoDir = extensionSettings().repoClonePath;
-					BWPanel._running = true;
-					const process = await runJava(
-						join(
-							repoDir,
-							'BWContest',
-							data.value.contestId.toString(),
-							data.value.teamId.toString(),
-							data.value.problemPascalName.toString()
-						),
-						join(
-							repoDir,
-							'BWContest',
-							data.value.contestId.toString(),
-							data.value.teamId.toString(),
-							data.value.problemPascalName.toString(),
-							`${data.value.problemPascalName}.java`
-						),
-						data.value.problemPascalName,
-						data.value.input
-					);
-					if (!process) {
-						this._panel.webview.postMessage({
-							type: 'onOutput',
-							value: '[An error occurred while running]'
-						});
-						break;
-					}
-					process.output
-						.then((output) => {
-							this._panel.webview.postMessage({ type: 'onOutput', value: output });
-							BWPanel._running = false;
-							BWPanel._kill = null;
-						})
-						.catch(() => {
-							this._panel.webview.postMessage({
-								type: 'onOutput',
-								value: '[An error occurred while running]'
+	private async update() {
+		const webview = this.panel.webview;
+
+		this.panel.webview.html = this._getHtmlForWebview(webview);
+		webview.onDidReceiveMessage(async (m: MessageType) => {
+			switch (m.msg) {
+				// case 'onKill': {
+				// 	if (!this.running || !this.kill) {
+				// 		break;
+				// 	}
+				// 	this.kill();
+				// }
+				// case 'onSubmit': {
+				// 	await vscode.workspace.saveAll();
+				// 	if (!data.value) {
+				// 		return;
+				// 	}
+				// 	const ans = await vscode.window.showInformationMessage(
+				// 		`Are you sure you want to submit ${data.value.problemName}?`,
+				// 		'Yes',
+				// 		'No'
+				// 	);
+				// 	if (ans !== 'Yes') {
+				// 		break;
+				// 	}
+				// 	try {
+				// 		await submitProblem(
+				// 			data.value.sessionToken,
+				// 			data.value.contestId,
+				// 			data.value.teamId,
+				// 			data.value.problemId
+				// 		);
+				// 	} catch (err: any) {
+				// 		vscode.window.showErrorMessage(err.message ?? 'Submission unsuccessful');
+				// 		break;
+				// 	}
+				// 	vscode.window.showInformationMessage('Submitted!');
+				// 	break;
+				// }
+				// case 'onRun': {
+				// 	if (this.running === true) {
+				// 		vscode.window.showErrorMessage('Already running');
+				// 		break;
+				// 	}
+				// 	await vscode.workspace.saveAll();
+				// 	if (!data.value) {
+				// 		break;
+				// 	}
+				// 	const repoDir = extensionSettings().repoClonePath;
+				// 	this.running = true;
+				// 	const process = await runJava(
+				// 		join(
+				// 			repoDir,
+				// 			'BWContest',
+				// 			data.value.contestId.toString(),
+				// 			data.value.teamId.toString(),
+				// 			data.value.problemPascalName.toString()
+				// 		),
+				// 		join(
+				// 			repoDir,
+				// 			'BWContest',
+				// 			data.value.contestId.toString(),
+				// 			data.value.teamId.toString(),
+				// 			data.value.problemPascalName.toString(),
+				// 			`${data.value.problemPascalName}.java`
+				// 		),
+				// 		data.value.problemPascalName,
+				// 		data.value.input
+				// 	);
+				// 	if (!process) {
+				// 		this.panel.webview.postMessage({
+				// 			type: 'onOutput',
+				// 			value: '[An error occurred while running]'
+				// 		});
+				// 		break;
+				// 	}
+				// 	process.output
+				// 		.then((output) => {
+				// 			this.panel.webview.postMessage({ type: 'onOutput', value: output });
+				// 			this.running = false;
+				// 			this.kill = null;
+				// 		})
+				// 		.catch(() => {
+				// 			this.panel.webview.postMessage({
+				// 				type: 'onOutput',
+				// 				value: '[An error occurred while running]'
+				// 			});
+				// 			this.running = false;
+				// 			this.kill = null;
+				// 		});
+				// 	this.kill = process.kill;
+				// 	break;
+				// }
+				case 'onRequestProblemData': {
+					const token: string | undefined = this.context.globalState.get('token');
+					if (token !== undefined) {
+						const res = await fetch(urlJoin(this.webUrl, `/api/contest/${token}`));
+						const data = await res.json();
+						if (data.success === true) {
+							this.webviewPostMessage({
+								msg: 'onProblemData',
+								data: data.problems
 							});
-							BWPanel._running = false;
-							BWPanel._kill = null;
-						});
-					BWPanel._kill = process.kill;
-					break;
-				}
-				case 'onStartup': {
-					const token: string | undefined = BWPanel._context?.globalState.get('token');
-
-					if (token) {
-						this._panel.webview.postMessage({
-							type: 'onSession',
-							value: token
-						});
+						}
 					}
 					break;
 				}
-				case 'onInfo': {
-					if (!data.value) {
-						return;
-					}
-					vscode.window.showInformationMessage(data.value);
-					break;
-				}
-				case 'onError': {
-					if (!data.value) {
-						return;
-					}
-					vscode.window.showErrorMessage(data.value);
-					break;
-				}
-				// case "tokens": {
-				//   await Util.globalState.update(accessTokenKey, data.accessToken);
-				//   await Util.globalState.update(refreshTokenKey, data.refreshToken);
-				//   break;
+				// case 'onInfo': {
+				// 	if (!data.value) {
+				// 		return;
+				// 	}
+				// 	vscode.window.showInformationMessage(data.value);
+				// 	break;
+				// }
+				// case 'onError': {
+				// 	if (!data.value) {
+				// 		return;
+				// 	}
+				// 	vscode.window.showErrorMessage(data.value);
+				// 	break;
 				// }
 			}
 		});
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
-		// // And the uri we use to load this script in the webview
 		const scriptUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'out/compiled', 'problemPanel.js')
+			vscode.Uri.joinPath(this.extensionUri, 'out/compiled', 'problemPanel.js')
 		);
 
-		// Uri to load styles into webview
 		const stylesResetUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css')
+			vscode.Uri.joinPath(this.extensionUri, 'media', 'reset.css')
 		);
 		const stylesMainUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css')
+			vscode.Uri.joinPath(this.extensionUri, 'media', 'vscode.css')
 		);
 		const cssUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'out/compiled', 'problemPanel.css')
+			vscode.Uri.joinPath(this.extensionUri, 'out/compiled', 'problemPanel.css')
 		);
 
-		// // Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
 
 		return `<!DOCTYPE html>

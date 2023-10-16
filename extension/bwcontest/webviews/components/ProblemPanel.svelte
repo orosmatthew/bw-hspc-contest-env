@@ -1,120 +1,89 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import urlJoin from 'url-join';
+	import type { WebviewMessageType, MessageType, ProblemData } from '../../src/problemPanel';
 
-	function postMessage(message: any) {
+	function postMessage(message: MessageType) {
 		vscode.postMessage(message);
 	}
 
-	type ProblemData = {
-		id: number;
-		name: string;
-		pascalName: string;
-		sampleInput: string;
-		sampleOutput: string;
-	}[];
+	// let savedInputs: Map<number, { input: string; output: string }> = new Map();
 
-	let savedInputs: Map<number, { input: string; output: string }> = new Map();
-
-	let activeProblem: ProblemData[0];
-	let sessionToken: string | undefined;
+	let activeProblemIndex = 0;
 	let problemData: ProblemData | undefined;
 
-	let sampleInputText: HTMLTextAreaElement;
-	let outputText: HTMLTextAreaElement;
+	let sampleInputValue: string;
+	let outputValue: string;
 
 	let running = false;
 
-	let webUrl: string | undefined;
-
 	$: if (problemData && problemData.length !== 0) {
-		let first = problemData.at(0);
-		if (first) {
-			activeProblem = first;
-		}
+		activeProblemIndex = 0;
 	}
 
 	function resetInput() {
-		sampleInputText.value = activeProblem.sampleInput;
+		if (problemData) {
+			sampleInputValue = problemData[activeProblemIndex].sampleInput;
+		} else {
+			sampleInputValue = '';
+		}
 	}
 
-	let contestId: number | undefined;
-	let teamId: number | undefined;
-
 	function onRun() {
-		if (!running && contestId && teamId) {
-			postMessage({
-				type: 'onRun',
-				value: {
-					problemPascalName: activeProblem.pascalName,
-					contestId: contestId,
-					teamId: teamId,
-					input: sampleInputText.value
-				}
-			});
-			running = true;
-		}
+		// if (problemData !== undefined && running === false) {
+		// 	postMessage({
+		// 		type: 'requestRun',
+		// 		value: {
+		// 			problemId: problemData[activeProblemIndex].id,
+		// 			input: sampleInputValue
+		// 		}
+		// 	});
+		// }
 	}
 
 	function updateTextBoxes() {
-		if (savedInputs.has(activeProblem.id)) {
-			sampleInputText.value = savedInputs.get(activeProblem.id)!.input;
-			outputText.value = savedInputs.get(activeProblem.id)!.output;
-		} else {
-			sampleInputText.value = activeProblem.sampleInput;
-			outputText.value = '[Run to get output]';
+		// if (savedInputs.has(activeProblem.id)) {
+		// 	sampleInputText.value = savedInputs.get(activeProblem.id)!.input;
+		// 	outputText.value = savedInputs.get(activeProblem.id)!.output;
+		// } else {
+		if (problemData !== undefined) {
+			sampleInputValue = problemData[activeProblemIndex].sampleInput;
 		}
+		outputValue = '[Run to get output]';
+		// }
 	}
 
 	function onSubmit() {
-		if (teamId && contestId && sessionToken) {
-			postMessage({
-				type: 'onSubmit',
-				value: {
-					sessionToken: sessionToken,
-					contestId: contestId,
-					teamId: teamId,
-					problemId: activeProblem.id,
-					problemName: activeProblem.pascalName
-				}
-			});
-		}
+		// if (teamId && contestId && sessionToken) {
+		// 	postMessage({
+		// 		type: 'onSubmit',
+		// 		value: {
+		// 			sessionToken: sessionToken,
+		// 			contestId: contestId,
+		// 			teamId: teamId,
+		// 			problemId: activeProblem.id,
+		// 			problemName: activeProblem.pascalName
+		// 		}
+		// 	});
+		// }
 	}
 
 	function onKill() {
-		postMessage({ type: 'onKill' });
+		// postMessage({ type: 'onKill' });
 	}
-
-	async function fetchProblemData() {
-		if (sessionToken && webUrl) {
-			const res = await fetch(urlJoin(webUrl, `/api/contest/${sessionToken}`));
-			const data = await res.json();
-			if (data.success === true) {
-				problemData = data.problems as ProblemData;
-				contestId = data.contestId;
-				teamId = data.teamId;
-			}
-		}
-	}
-
-	window.addEventListener('message', async (event) => {
-		const message = (event as MessageEvent).data;
-		if (message.type === 'onSession') {
-			if (message.value !== '') {
-				sessionToken = message.value;
-				await fetchProblemData();
-				updateTextBoxes();
-			}
-		} else if (message.type === 'onOutput') {
-			outputText.value = message.value;
-			running = false;
-		} else if (message.type === 'onWebUrl') {
-			webUrl = message.value;
-		}
-	});
 
 	onMount(() => {
-		postMessage({ type: 'onStartup' });
+		postMessage({ msg: 'onRequestProblemData' });
+	});
+
+	window.addEventListener('message', async (event) => {
+		const m = (event as MessageEvent).data as WebviewMessageType;
+		// if (message.msg === 'onOutput') {
+		// 	outputValue = message.value;
+		// 	running = false;
+		if (m.msg === 'onProblemData') {
+			problemData = m.data;
+			updateTextBoxes();
+		}
 	});
 </script>
 
@@ -122,32 +91,32 @@
 
 {#if problemData}
 	<div class="tab-container">
-		{#each problemData as problem}
+		{#each problemData as problem, i}
 			<button
 				on:click={() => {
 					if (!running) {
-						savedInputs.set(activeProblem.id, {
-							input: sampleInputText.value,
-							output: outputText.value
-						});
-						activeProblem = problem;
+						// savedInputs.set(activeProblem.id, {
+						// 	input: sampleInputText.value,
+						// 	output: outputText.value
+						// });
+						activeProblemIndex = i;
 						updateTextBoxes();
 					}
 				}}
 				id={`problem_${problem.id}`}
 				type="button"
-				class={'tab ' + (activeProblem.id == problem.id ? 'active' : '')}>{problem.name}</button
+				class={'tab ' + (activeProblemIndex === i ? 'active' : '')}>{problem.name}</button
 			>
 		{/each}
 	</div>
 {/if}
 
-{#if activeProblem}
-	<h2>{activeProblem.name}</h2>
+{#if problemData !== undefined}
+	<h2>{problemData[activeProblemIndex].name}</h2>
 	<div style="display:flex">
 		<div style="flex:1; margin-right:20px">
 			<h3>Sample Input (You can edit this!)</h3>
-			<textarea bind:this={sampleInputText} />
+			<textarea bind:value={sampleInputValue} />
 			<button style="margin-top:5px" on:click={resetInput} type="button">Reset Input</button>
 		</div>
 		<div style="flex:1">
@@ -157,7 +126,7 @@
 					<span class="loader"></span>
 				{/if}
 			</div>
-			<textarea bind:this={outputText} disabled />
+			<textarea bind:value={outputValue} readonly />
 			{#if !running}
 				<button style="margin-top:5px" on:click={onRun} type="button">Run</button>
 			{:else}

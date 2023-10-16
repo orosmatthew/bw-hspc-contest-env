@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { WebviewMessageType, MessageType, TeamData } from '../../src/SidebarProvider';
 
-	function postMessage(message: any) {
+	function postMessage(message: MessageType) {
 		vscode.postMessage(message);
 	}
 
@@ -10,49 +11,44 @@
 
 	let loggedIn = false;
 
-	interface TeamData {
-		teamId: number;
-		contestId: number;
-	}
-
 	let teamData: TeamData | undefined;
 
 	function onClone() {
 		if (teamData) {
 			postMessage({
-				type: 'onClone',
-				value: { contestId: teamData.contestId, teamId: teamData.teamId }
+				msg: 'onClone',
+				data: { contestId: teamData.contestId, teamId: teamData.teamId }
 			});
 		}
 	}
 
 	function onLogin() {
 		postMessage({
-			type: 'requestLogin',
-			value: { teamname: teamname, password: password }
+			msg: 'onLogin',
+			data: { teamName: teamname, password: password }
 		});
 	}
 
 	function onLogout() {
 		postMessage({
-			type: 'requestLogout'
+			msg: 'onLogout'
 		});
 	}
 
 	function onTestAndSubmit() {
-		postMessage({ type: 'onTestAndSubmit' });
+		postMessage({ msg: 'onTestAndSubmit' });
 	}
 
 	onMount(() => {
-		postMessage({ type: 'onStartup' });
+		postMessage({ msg: 'onStartup' });
 	});
 
 	window.addEventListener('message', (event) => {
-		const message = (event as MessageEvent).data;
-		if (message.type === 'onLogin') {
+		const m = (event as MessageEvent).data as WebviewMessageType;
+		if (m.msg === 'onLogin') {
 			loggedIn = true;
-			teamData = message.value;
-		} else if (message.type === 'onLogout') {
+			teamData = m.data;
+		} else if (m.msg === 'onLogout') {
 			loggedIn = false;
 			teamData = undefined;
 		}
