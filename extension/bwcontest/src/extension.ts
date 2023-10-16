@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import { SidebarProvider } from './SidebarProvider';
-import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
-import { BWPanel } from './problemPanel';
+import urlJoin from 'url-join';
+import git from 'isomorphic-git';
+import path = require('path');
+import http from 'isomorphic-git/http/node';
 
 export interface BWContestSettings {
 	repoBaseUrl: string;
@@ -41,8 +43,12 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 		vscode.window.showErrorMessage('BWContest: BWContest.webUrl not set');
 		return;
 	}
-	
-	const repoUrl = `${currentSettings.repoBaseUrl}/${contestId.toString()}/${teamId.toString()}.git`;
+
+	const repoUrl = urlJoin(
+		currentSettings.repoBaseUrl,
+		contestId.toString(),
+		`${teamId.toString()}.git`
+	);
 
 	const repoName = repoUrl.split('/').pop()?.replace('.git', '')!;
 
@@ -70,16 +76,10 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 		fs.removeSync(clonedRepoPath);
 	}
 
-	child_process.exec(
-		`git clone ${repoUrl}`,
-		{ cwd: `${currentSettings.repoClonePath}/BWContest/${contestId.toString()}` },
-		(error, stdout, stderr) => {
-			if (error) {
-				vscode.window.showErrorMessage(`BWContest: Failed to clone repo: ${error.message}`);
-				return;
-			}
-		}
-	);
+	const dir = path.join(currentSettings.repoClonePath, 'BWContest', contestId.toString(), repoName);
+	await git.clone({ fs, http, dir, url: repoUrl });
+
+	closeAllWorkspaces();
 
 	const addedFolder = vscode.workspace.updateWorkspaceFolders(
 		vscode.workspace.workspaceFolders?.length ?? 0,
@@ -96,26 +96,13 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-	const sidebarProvider = new SidebarProvider(context.extensionUri, context);
+	const sidebarProvider = new SidebarProvider(
+		context.extensionUri,
+		context,
+		extensionSettings().webUrl
+	);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider)
-	);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('bwcontest.helloWorld', () => {
-			BWPanel.createOrShow(context);
-		})
-	);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('bwcontest.askQuestion', async () => {
-			const answer = await vscode.window.showInformationMessage('How was your day?', 'good', 'bad');
-			if (answer === 'bad') {
-				vscode.window.showInformationMessage('Sorry to hear that');
-			} else {
-				console.log(answer);
-			}
-		})
 	);
 }
 
