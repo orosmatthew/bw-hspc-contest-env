@@ -50,7 +50,7 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 		`${teamId.toString()}.git`
 	);
 
-	const repoName = repoUrl.split('/').pop()?.replace('.git', '')!;
+	const repoName = teamId.toString();
 
 	if (!fs.existsSync(`${currentSettings.repoClonePath}/BWContest`)) {
 		fs.mkdirSync(`${currentSettings.repoClonePath}/BWContest`);

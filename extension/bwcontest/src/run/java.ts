@@ -14,7 +14,7 @@ export async function runJava(
 	mainFile: string,
 	mainClass: string,
 	input: string
-): Promise<{ output: Promise<string>; kill: Function | null }> {
+): Promise<{ output: Promise<string>; kill: () => void | null }> {
 	const javaPath = extensionSettings().javaPath;
 	if (javaPath == '') {
 		throw error('Java path not set');

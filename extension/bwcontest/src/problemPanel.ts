@@ -1,9 +1,5 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
-import { runJava } from './run/java';
-import { extensionSettings } from './extension';
-import { join } from 'path';
-import { submitProblem } from './submit';
 import urlJoin from 'url-join';
 
 export type ProblemData = {
@@ -24,7 +20,7 @@ export class BWPanel {
 	public static currentPanel: BWPanel | undefined;
 
 	private running: boolean = false;
-	private kill: Function | null = null;
+	// private kill: () => void | null = null;
 
 	private constructor(
 		private readonly context: vscode.ExtensionContext,

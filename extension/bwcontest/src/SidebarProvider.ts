@@ -47,7 +47,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 				}
 				case 'onStartup': {
 					const token: string | undefined = this.context.globalState.get('token');
-					const teamData = this.context.globalState.get('teamData') as TeamData | undefined;
+					const teamData: TeamData | undefined = this.context.globalState.get('teamData');
 					if (token && teamData !== undefined) {
 						webviewPostMessage({
 							msg: 'onLogin',
@@ -69,21 +69,21 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 							password: m.data.password
 						})
 					});
-					const thing = await res.json();
-					if (thing.success !== true) {
-						return;
+					const resData = await res.json();
+					if (resData.success !== true) {
+						throw new Error(resData.error.message);
 					}
-					const sessionToken = thing.token;
+					const sessionToken = resData.token;
 					this.context.globalState.update('token', sessionToken);
-					const res1 = await fetch(urlJoin(this.webUrl, `api/team/${sessionToken}`), {
+					const teamRes = await fetch(urlJoin(this.webUrl, `api/team/${sessionToken}`), {
 						method: 'GET'
 					});
-					const data2 = await res1.json();
+					const data2 = await teamRes.json();
 					if (!data2.success) {
 						return;
 					}
 					this.context.globalState.update('teamData', data2.data);
-					webviewPostMessage({ msg: 'onLogout' });
+					webviewPostMessage({ msg: 'onLogin', data: data2.data });
 					break;
 				}
 				case 'onLogout': {
