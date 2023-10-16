@@ -70,8 +70,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 						})
 					});
 					const resData = await res.json();
-					if (resData.success !== true) {
-						throw new Error(resData.error.message);
+					if (res.status !== 200 || resData.success !== true) {
+						vscode.window.showErrorMessage('BWContest: Invalid Login');
+						return;
 					}
 					const sessionToken = resData.token;
 					this.context.globalState.update('token', sessionToken);

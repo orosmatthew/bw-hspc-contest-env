@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
 import urlJoin from 'url-join';
+import { extensionSettings } from './extension';
+import { runJava } from './run/java';
+import { join } from 'path';
+import { TeamData } from './SidebarProvider';
 
 export type ProblemData = {
 	id: number;
@@ -10,8 +14,21 @@ export type ProblemData = {
 	sampleOutput: string;
 }[];
 
-export type MessageType = { msg: 'onRequestProblemData' };
-export type WebviewMessageType = { msg: 'onProblemData'; data: ProblemData };
+export type MessageType =
+	| { msg: 'onRequestProblemData' }
+	| { msg: 'onRun'; data: { problemId: number; input: string } }
+	| { msg: 'onKill' };
+export type WebviewMessageType =
+	| { msg: 'onProblemData'; data: ProblemData }
+	| { msg: 'onRunning' }
+	| { msg: 'onRunningDone' }
+	| { msg: 'onRunningOutput'; data: string };
+
+type RunningProgram = {
+	problemId: number;
+	outputBuffer: string[];
+	kill: () => void;
+};
 
 /**
  * Singleton class for problem panel
@@ -19,8 +36,8 @@ export type WebviewMessageType = { msg: 'onProblemData'; data: ProblemData };
 export class BWPanel {
 	public static currentPanel: BWPanel | undefined;
 
-	private running: boolean = false;
-	// private kill: () => void | null = null;
+	private runningProgram: RunningProgram | undefined;
+	private problemData: ProblemData | undefined;
 
 	private constructor(
 		private readonly context: vscode.ExtensionContext,
@@ -29,6 +46,7 @@ export class BWPanel {
 		private readonly webUrl: string
 	) {
 		this.update();
+		panel.onDidDispose(() => this.dispose());
 	}
 
 	public static show(context: vscode.ExtensionContext, webUrl: string) {
@@ -37,7 +55,7 @@ export class BWPanel {
 			: undefined;
 
 		// Show panel if exists
-		if (BWPanel.currentPanel) {
+		if (BWPanel.currentPanel !== undefined) {
 			BWPanel.currentPanel.panel.reveal(column);
 			return;
 		}
@@ -66,7 +84,6 @@ export class BWPanel {
 	}
 
 	public dispose() {
-		this.panel.dispose();
 		BWPanel.currentPanel = undefined;
 	}
 
@@ -80,10 +97,13 @@ export class BWPanel {
 		this.panel.webview.html = this._getHtmlForWebview(webview);
 		webview.onDidReceiveMessage(async (m: MessageType) => {
 			switch (m.msg) {
-				// case 'onKill': {
-				// 	if (!this.running || !this.kill) {
-				// 		break;
-				// 	}
+				case 'onKill': {
+					if (this.runningProgram !== undefined) {
+						this.runningProgram.kill();
+						return;
+					}
+					break;
+				}
 				// 	this.kill();
 				// }
 				// case 'onSubmit': {
@@ -113,66 +133,73 @@ export class BWPanel {
 				// 	vscode.window.showInformationMessage('Submitted!');
 				// 	break;
 				// }
-				// case 'onRun': {
-				// 	if (this.running === true) {
-				// 		vscode.window.showErrorMessage('Already running');
-				// 		break;
-				// 	}
-				// 	await vscode.workspace.saveAll();
-				// 	if (!data.value) {
-				// 		break;
-				// 	}
-				// 	const repoDir = extensionSettings().repoClonePath;
-				// 	this.running = true;
-				// 	const process = await runJava(
-				// 		join(
-				// 			repoDir,
-				// 			'BWContest',
-				// 			data.value.contestId.toString(),
-				// 			data.value.teamId.toString(),
-				// 			data.value.problemPascalName.toString()
-				// 		),
-				// 		join(
-				// 			repoDir,
-				// 			'BWContest',
-				// 			data.value.contestId.toString(),
-				// 			data.value.teamId.toString(),
-				// 			data.value.problemPascalName.toString(),
-				// 			`${data.value.problemPascalName}.java`
-				// 		),
-				// 		data.value.problemPascalName,
-				// 		data.value.input
-				// 	);
-				// 	if (!process) {
-				// 		this.panel.webview.postMessage({
-				// 			type: 'onOutput',
-				// 			value: '[An error occurred while running]'
-				// 		});
-				// 		break;
-				// 	}
-				// 	process.output
-				// 		.then((output) => {
-				// 			this.panel.webview.postMessage({ type: 'onOutput', value: output });
-				// 			this.running = false;
-				// 			this.kill = null;
-				// 		})
-				// 		.catch(() => {
-				// 			this.panel.webview.postMessage({
-				// 				type: 'onOutput',
-				// 				value: '[An error occurred while running]'
-				// 			});
-				// 			this.running = false;
-				// 			this.kill = null;
-				// 		});
-				// 	this.kill = process.kill;
-				// 	break;
-				// }
+				case 'onRun': {
+					const teamData: TeamData | undefined = this.context.globalState.get('teamData');
+					if (teamData === undefined) {
+						return;
+					}
+					if (this.problemData === undefined) {
+						return;
+					}
+					if (this.runningProgram !== undefined) {
+						vscode.window.showErrorMessage('Already Running');
+						return;
+					}
+					const problem = this.problemData.find((p) => (p.id = m.data.problemId));
+					if (problem === undefined) {
+						return;
+					}
+					await vscode.workspace.saveAll();
+					const repoDir = extensionSettings().repoClonePath;
+					const outputBuffer: string[] = [];
+					this.webviewPostMessage({ msg: 'onRunning' });
+					this.webviewPostMessage({ msg: 'onRunningOutput', data: '[Compiling...]' });
+
+					const killFunc = await runJava(
+						join(
+							repoDir,
+							'BWContest',
+							teamData.contestId.toString(),
+							teamData.teamId.toString(),
+							problem.pascalName
+						),
+						join(
+							repoDir,
+							'BWContest',
+							teamData.contestId.toString(),
+							teamData.teamId.toString(),
+							problem.pascalName,
+							`${problem.pascalName}.java`
+						),
+						problem.pascalName,
+						m.data.input,
+						(data: string) => {
+							outputBuffer.push(data);
+							this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
+						},
+						() => {
+							this.runningProgram = undefined;
+							this.webviewPostMessage({ msg: 'onRunningDone' });
+						}
+					);
+					if (killFunc !== undefined) {
+						this.runningProgram = {
+							problemId: m.data.problemId,
+							outputBuffer: outputBuffer,
+							kill: killFunc
+						};
+					} else {
+						this.webviewPostMessage({ msg: 'onRunningDone' });
+					}
+					break;
+				}
 				case 'onRequestProblemData': {
 					const token: string | undefined = this.context.globalState.get('token');
 					if (token !== undefined) {
 						const res = await fetch(urlJoin(this.webUrl, `/api/contest/${token}`));
 						const data = await res.json();
 						if (data.success === true) {
+							this.problemData = data.problems;
 							this.webviewPostMessage({
 								msg: 'onProblemData',
 								data: data.problems

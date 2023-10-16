@@ -29,15 +29,12 @@
 	}
 
 	function onRun() {
-		// if (problemData !== undefined && running === false) {
-		// 	postMessage({
-		// 		type: 'requestRun',
-		// 		value: {
-		// 			problemId: problemData[activeProblemIndex].id,
-		// 			input: sampleInputValue
-		// 		}
-		// 	});
-		// }
+		if (problemData !== undefined) {
+			postMessage({
+				msg: 'onRun',
+				data: { input: sampleInputValue, problemId: problemData[activeProblemIndex].id }
+			});
+		}
 	}
 
 	function updateTextBoxes() {
@@ -68,7 +65,7 @@
 	}
 
 	function onKill() {
-		// postMessage({ type: 'onKill' });
+		postMessage({ msg: 'onKill' });
 	}
 
 	onMount(() => {
@@ -77,12 +74,15 @@
 
 	window.addEventListener('message', async (event) => {
 		const m = (event as MessageEvent).data as WebviewMessageType;
-		// if (message.msg === 'onOutput') {
-		// 	outputValue = message.value;
-		// 	running = false;
 		if (m.msg === 'onProblemData') {
 			problemData = m.data;
 			updateTextBoxes();
+		} else if (m.msg === 'onRunning') {
+			running = true;
+		} else if (m.msg === 'onRunningDone') {
+			running = false;
+		} else if (m.msg === 'onRunningOutput') {
+			outputValue = m.data;
 		}
 	});
 </script>
