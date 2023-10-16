@@ -15,6 +15,7 @@ export default fs.readdirSync(path.join(__dirname, 'webviews', 'pages')).map((in
 	return {
 		input: 'webviews/pages/' + input,
 		output: {
+			sourcemap: true,
 			format: 'iife',
 			name: 'app',
 			file: 'out/compiled/' + name + '.js'
@@ -35,6 +36,7 @@ export default fs.readdirSync(path.join(__dirname, 'webviews', 'pages')).map((in
 			}),
 			commonjs(),
 			typescript({
+				sourceMap: true,
 				tsconfig: 'webviews/tsconfig.json',
 				inlineSources: !production
 			}),
