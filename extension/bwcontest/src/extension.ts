@@ -76,18 +76,10 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 		fs.removeSync(clonedRepoPath);
 	}
 
-	// child_process.exec(
-	// 	`git clone ${repoUrl}`,
-	// 	{ cwd: `${currentSettings.repoClonePath}/BWContest/${contestId.toString()}` },
-	// 	(error, stdout, stderr) => {
-	// 		if (error) {
-	// 			vscode.window.showErrorMessage(`BWContest: Failed to clone repo: ${error.message}`);
-	// 			return;
-	// 		}
-	// 	}
-	// );
-	const dir = path.join(currentSettings.repoClonePath, 'BWContest', contestId.toString());
+	const dir = path.join(currentSettings.repoClonePath, 'BWContest', contestId.toString(), repoName);
 	await git.clone({ fs, http, dir, url: repoUrl });
+
+	closeAllWorkspaces();
 
 	const addedFolder = vscode.workspace.updateWorkspaceFolders(
 		vscode.workspace.workspaceFolders?.length ?? 0,
