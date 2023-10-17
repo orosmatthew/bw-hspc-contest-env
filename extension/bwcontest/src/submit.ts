@@ -1,63 +1,58 @@
 import { extensionSettings } from './extension';
-import { exec } from 'child_process';
-import util = require('node:util');
-import axios from 'axios';
-
-const execPromise = util.promisify(exec);
+import * as fs from 'fs-extra';
+import git from 'isomorphic-git';
+import path = require('path');
+import http from 'isomorphic-git/http/node';
+import urlJoin from 'url-join';
 
 export async function submitProblem(
 	sessionToken: string,
 	contestId: number,
 	teamId: number,
 	problemId: number
-) {
+): Promise<{ success: true } | { success: false; message: string }> {
 	const repoClonePath = extensionSettings().repoClonePath;
-	console.log(repoClonePath);
 
-	const clonedRepoPath = `${repoClonePath}/BWContest/${contestId.toString()}/${teamId.toString()}`;
+	const repoDir = path.join(repoClonePath, 'BWContest', contestId.toString(), teamId.toString());
+	await git.add({ fs, dir: repoDir, filepath: '.' });
 
-	let output: { stdout: string; stderr: string };
-	output = await execPromise(`git add .`, {
-		cwd: clonedRepoPath
+	const hash = await git.commit({
+		fs,
+		dir: repoDir,
+		author: { name: `Team ${teamId}` },
+		message: `Submit problem ${problemId}`
 	});
 
-	if (output.stderr) {
-		console.error(output.stderr);
+	try {
+		const result = await git.push({
+			fs,
+			http,
+			dir: repoDir
+		});
+		if (result.ok !== true) {
+			return { success: false, message: 'Push failure' };
+		}
+	} catch (error) {
+		return { success: false, message: 'Unable to push' };
 	}
 
-	output = await execPromise(`git commit -m "Submit problem ${problemId}"`, {
-		cwd: clonedRepoPath
-	});
-
-	if (output.stderr) {
-		console.error(output.stderr);
-	}
-
-	output = await execPromise(`git push`, {
-		cwd: clonedRepoPath
-	});
-
-	if (output.stderr) {
-		console.error(output.stderr);
-	}
-
-	output = await execPromise(`git rev-parse HEAD`, {
-		cwd: clonedRepoPath
-	});
-
-	if (output.stderr) {
-		console.error(output.stderr);
-	}
-
-	const commitHash = output.stdout.toString().replace('\n', '');
-	const res = await axios.post(`http://localhost:5173/api/team/${sessionToken}/submit`, {
-		commitHash: commitHash,
-		problemId: problemId
-	});
+	const res = await fetch(
+		urlJoin(extensionSettings().webUrl, '/api/team', sessionToken, '/submit'),
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				commitHash: hash,
+				problemId: problemId
+			})
+		}
+	);
 	if (res.status !== 200) {
-		throw Error('Failed to post submission');
+		return { success: false, message: 'Submission POST failure' };
 	}
-	if (!res.data.success) {
-		throw Error(res.data.message ?? 'Unknown error');
+	const resData = await res.json();
+	if (resData.success !== true) {
+		return { success: false, message: resData.message };
 	}
+	return { success: true };
 }

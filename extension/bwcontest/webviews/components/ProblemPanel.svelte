@@ -50,18 +50,9 @@
 	}
 
 	function onSubmit() {
-		// if (teamId && contestId && sessionToken) {
-		// 	postMessage({
-		// 		type: 'onSubmit',
-		// 		value: {
-		// 			sessionToken: sessionToken,
-		// 			contestId: contestId,
-		// 			teamId: teamId,
-		// 			problemId: activeProblem.id,
-		// 			problemName: activeProblem.pascalName
-		// 		}
-		// 	});
-		// }
+		if (problemData !== undefined) {
+			postMessage({ msg: 'onSubmit', data: { problemId: problemData[activeProblemIndex].id } });
+		}
 	}
 
 	function onKill() {

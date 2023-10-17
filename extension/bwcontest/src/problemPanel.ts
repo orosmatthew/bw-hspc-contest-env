@@ -5,6 +5,7 @@ import { extensionSettings } from './extension';
 import { runJava } from './run/java';
 import { join } from 'path';
 import { TeamData } from './SidebarProvider';
+import { submitProblem } from './submit';
 
 export type ProblemData = {
 	id: number;
@@ -17,7 +18,8 @@ export type ProblemData = {
 export type MessageType =
 	| { msg: 'onRequestProblemData' }
 	| { msg: 'onRun'; data: { problemId: number; input: string } }
-	| { msg: 'onKill' };
+	| { msg: 'onKill' }
+	| { msg: 'onSubmit'; data: { problemId: number } };
 export type WebviewMessageType =
 	| { msg: 'onProblemData'; data: ProblemData }
 	| { msg: 'onRunning' }
@@ -91,11 +93,124 @@ export class BWPanel {
 		this.panel.webview.postMessage(m);
 	}
 
+	private async handleSubmit(problemId: number) {
+		if (this.problemData === undefined) {
+			console.error('Problem data undefined');
+			return;
+		}
+		const problem = this.problemData.find((p) => p.id === problemId);
+		if (problem === undefined) {
+			console.error('Invalid problem Id');
+			return;
+		}
+		const sessionToken = this.context.globalState.get<string>('token');
+		if (sessionToken === undefined) {
+			console.error('No session token');
+			return;
+		}
+		const teamData = this.context.globalState.get<TeamData>('teamData');
+		if (teamData === undefined) {
+			console.error('No team data');
+			return;
+		}
+		await vscode.workspace.saveAll();
+		const ans = await vscode.window.showInformationMessage(
+			`Are you sure you want to submit ${problem.name}?`,
+			'Yes',
+			'No'
+		);
+		if (ans !== 'Yes') {
+			return;
+		}
+		submitProblem(sessionToken, teamData.contestId, teamData.teamId, problemId).then((result) => {
+			if (result.success === true) {
+				vscode.window.showInformationMessage('Submitted!');
+			} else {
+				vscode.window.showErrorMessage(`Error: ${result.message}`);
+			}
+		});
+	}
+
+	private async handleRun(problemId: number, input: string) {
+		const teamData: TeamData | undefined = this.context.globalState.get('teamData');
+		if (teamData === undefined) {
+			return;
+		}
+		if (this.problemData === undefined) {
+			return;
+		}
+		if (this.runningProgram !== undefined) {
+			vscode.window.showErrorMessage('Already Running');
+			return;
+		}
+		const problem = this.problemData.find((p) => (p.id = problemId));
+		if (problem === undefined) {
+			return;
+		}
+		await vscode.workspace.saveAll();
+		const repoDir = extensionSettings().repoClonePath;
+		const outputBuffer: string[] = [];
+		this.webviewPostMessage({ msg: 'onRunning' });
+		this.webviewPostMessage({ msg: 'onRunningOutput', data: '[Compiling...]' });
+
+		const killFunc = await runJava(
+			join(
+				repoDir,
+				'BWContest',
+				teamData.contestId.toString(),
+				teamData.teamId.toString(),
+				problem.pascalName
+			),
+			join(
+				repoDir,
+				'BWContest',
+				teamData.contestId.toString(),
+				teamData.teamId.toString(),
+				problem.pascalName,
+				`${problem.pascalName}.java`
+			),
+			problem.pascalName,
+			input,
+			(data: string) => {
+				outputBuffer.push(data);
+				this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
+			},
+			() => {
+				this.runningProgram = undefined;
+				this.webviewPostMessage({ msg: 'onRunningDone' });
+			}
+		);
+		if (killFunc !== undefined) {
+			this.runningProgram = {
+				problemId: problemId,
+				outputBuffer: outputBuffer,
+				kill: killFunc
+			};
+		} else {
+			this.webviewPostMessage({ msg: 'onRunningDone' });
+		}
+	}
+
+	private async handleRequestProblemData() {
+		const token: string | undefined = this.context.globalState.get('token');
+		if (token !== undefined) {
+			const res = await fetch(urlJoin(this.webUrl, `/api/contest/${token}`));
+			const data = await res.json();
+			if (data.success === true) {
+				this.problemData = data.problems;
+				this.webviewPostMessage({
+					msg: 'onProblemData',
+					data: data.problems
+				});
+			}
+		}
+	}
+
 	private async update() {
 		const webview = this.panel.webview;
 
 		this.panel.webview.html = this._getHtmlForWebview(webview);
-		webview.onDidReceiveMessage(async (m: MessageType) => {
+		webview.onDidReceiveMessage((m: MessageType) => {
 			switch (m.msg) {
 				case 'onKill': {
 					if (this.runningProgram !== undefined) {
@@ -104,124 +219,18 @@ export class BWPanel {
 					}
 					break;
 				}
-				// 	this.kill();
-				// }
-				// case 'onSubmit': {
-				// 	await vscode.workspace.saveAll();
-				// 	if (!data.value) {
-				// 		return;
-				// 	}
-				// 	const ans = await vscode.window.showInformationMessage(
-				// 		`Are you sure you want to submit ${data.value.problemName}?`,
-				// 		'Yes',
-				// 		'No'
-				// 	);
-				// 	if (ans !== 'Yes') {
-				// 		break;
-				// 	}
-				// 	try {
-				// 		await submitProblem(
-				// 			data.value.sessionToken,
-				// 			data.value.contestId,
-				// 			data.value.teamId,
-				// 			data.value.problemId
-				// 		);
-				// 	} catch (err: any) {
-				// 		vscode.window.showErrorMessage(err.message ?? 'Submission unsuccessful');
-				// 		break;
-				// 	}
-				// 	vscode.window.showInformationMessage('Submitted!');
-				// 	break;
-				// }
+				case 'onSubmit': {
+					this.handleSubmit(m.data.problemId);
+					break;
+				}
 				case 'onRun': {
-					const teamData: TeamData | undefined = this.context.globalState.get('teamData');
-					if (teamData === undefined) {
-						return;
-					}
-					if (this.problemData === undefined) {
-						return;
-					}
-					if (this.runningProgram !== undefined) {
-						vscode.window.showErrorMessage('Already Running');
-						return;
-					}
-					const problem = this.problemData.find((p) => (p.id = m.data.problemId));
-					if (problem === undefined) {
-						return;
-					}
-					await vscode.workspace.saveAll();
-					const repoDir = extensionSettings().repoClonePath;
-					const outputBuffer: string[] = [];
-					this.webviewPostMessage({ msg: 'onRunning' });
-					this.webviewPostMessage({ msg: 'onRunningOutput', data: '[Compiling...]' });
-
-					const killFunc = await runJava(
-						join(
-							repoDir,
-							'BWContest',
-							teamData.contestId.toString(),
-							teamData.teamId.toString(),
-							problem.pascalName
-						),
-						join(
-							repoDir,
-							'BWContest',
-							teamData.contestId.toString(),
-							teamData.teamId.toString(),
-							problem.pascalName,
-							`${problem.pascalName}.java`
-						),
-						problem.pascalName,
-						m.data.input,
-						(data: string) => {
-							outputBuffer.push(data);
-							this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
-						},
-						() => {
-							this.runningProgram = undefined;
-							this.webviewPostMessage({ msg: 'onRunningDone' });
-						}
-					);
-					if (killFunc !== undefined) {
-						this.runningProgram = {
-							problemId: m.data.problemId,
-							outputBuffer: outputBuffer,
-							kill: killFunc
-						};
-					} else {
-						this.webviewPostMessage({ msg: 'onRunningDone' });
-					}
+					this.handleRun(m.data.problemId, m.data.input);
 					break;
 				}
 				case 'onRequestProblemData': {
-					const token: string | undefined = this.context.globalState.get('token');
-					if (token !== undefined) {
-						const res = await fetch(urlJoin(this.webUrl, `/api/contest/${token}`));
-						const data = await res.json();
-						if (data.success === true) {
-							this.problemData = data.problems;
-							this.webviewPostMessage({
-								msg: 'onProblemData',
-								data: data.problems
-							});
-						}
-					}
+					this.handleRequestProblemData();
 					break;
 				}
-				// case 'onInfo': {
-				// 	if (!data.value) {
-				// 		return;
-				// 	}
-				// 	vscode.window.showInformationMessage(data.value);
-				// 	break;
-				// }
-				// case 'onError': {
-				// 	if (!data.value) {
-				// 		return;
-				// 	}
-				// 	vscode.window.showErrorMessage(data.value);
-				// 	break;
-				// }
 			}
 		});
 	}
