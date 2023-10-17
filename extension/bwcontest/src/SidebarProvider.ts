@@ -25,6 +25,59 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		private readonly webUrl: string
 	) {}
 
+	private async handleLogin(
+		teamName: string,
+		password: string,
+		webviewPostMessage: (m: WebviewMessageType) => void
+	) {
+		const res = await fetch(urlJoin(this.webUrl, '/api/team/login'), {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				teamname: teamName,
+				password: password
+			})
+		});
+		const resData = await res.json();
+		if (res.status !== 200 || resData.success !== true) {
+			vscode.window.showErrorMessage('BWContest: Invalid Login');
+			return;
+		}
+		const sessionToken = resData.token;
+		this.context.globalState.update('token', sessionToken);
+		const teamRes = await fetch(urlJoin(this.webUrl, `api/team/${sessionToken}`), {
+			method: 'GET'
+		});
+		const data2 = await teamRes.json();
+		if (!data2.success) {
+			return;
+		}
+		this.context.globalState.update('teamData', data2.data);
+		webviewPostMessage({ msg: 'onLogin', data: data2.data });
+	}
+
+	private async handleLogout(webviewPostMessage: (m: WebviewMessageType) => void) {
+		const sessionToken = this.context.globalState.get<string>('token');
+		if (sessionToken === undefined) {
+			webviewPostMessage({ msg: 'onLogout' });
+		}
+		const res = await fetch(urlJoin(this.webUrl, '/api/team/logout'), {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				token: sessionToken
+			})
+		});
+		if (res.status !== 200) {
+			return;
+		}
+		const data2 = await res.json();
+		if (data2.success === true) {
+			webviewPostMessage({ msg: 'onLogout' });
+			this.context.globalState.update('token', undefined);
+		}
+	}
+
 	public resolveWebviewView(webviewView: vscode.WebviewView) {
 		const webview = webviewView.webview;
 		webview.options = {
@@ -37,7 +90,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			webview.postMessage(m);
 		};
 
-		webview.onDidReceiveMessage(async (m: MessageType) => {
+		webview.onDidReceiveMessage((m: MessageType) => {
 			switch (m.msg) {
 				case 'onTestAndSubmit': {
 					if (this.context) {
@@ -46,9 +99,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 					break;
 				}
 				case 'onStartup': {
-					const token: string | undefined = this.context.globalState.get('token');
-					const teamData: TeamData | undefined = this.context.globalState.get('teamData');
-					if (token && teamData !== undefined) {
+					const token = this.context.globalState.get<string>('token');
+					const teamData = this.context.globalState.get<TeamData>('teamData');
+					if (token !== undefined && teamData !== undefined) {
 						webviewPostMessage({
 							msg: 'onLogin',
 							data: teamData
@@ -57,76 +110,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 					break;
 				}
 				case 'onClone': {
-					await cloneAndOpenRepo(m.data.contestId, m.data.teamId);
+					cloneAndOpenRepo(m.data.contestId, m.data.teamId);
 					break;
 				}
 				case 'onLogin': {
-					const res = await fetch(urlJoin(this.webUrl, '/api/team/login'), {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							teamname: m.data.teamName,
-							password: m.data.password
-						})
-					});
-					const resData = await res.json();
-					if (res.status !== 200 || resData.success !== true) {
-						vscode.window.showErrorMessage('BWContest: Invalid Login');
-						return;
-					}
-					const sessionToken = resData.token;
-					this.context.globalState.update('token', sessionToken);
-					const teamRes = await fetch(urlJoin(this.webUrl, `api/team/${sessionToken}`), {
-						method: 'GET'
-					});
-					const data2 = await teamRes.json();
-					if (!data2.success) {
-						return;
-					}
-					this.context.globalState.update('teamData', data2.data);
-					webviewPostMessage({ msg: 'onLogin', data: data2.data });
+					this.handleLogin(m.data.teamName, m.data.password, webviewPostMessage);
 					break;
 				}
 				case 'onLogout': {
-					const sessionToken = this.context.globalState.get<string>('token');
-					if (sessionToken === undefined) {
-						webviewPostMessage({ msg: 'onLogout' });
-					}
-					const res = await fetch(urlJoin(this.webUrl, '/api/team/logout'), {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							token: sessionToken
-						})
-					});
-					if (res.status !== 200) {
-						return;
-					}
-					const data2 = await res.json();
-					if (data2.success === true) {
-						webviewPostMessage({ msg: 'onLogout' });
-						this.context.globalState.update('token', undefined);
-					}
+					this.handleLogout(webviewPostMessage);
 					break;
 				}
-				// case 'onLogout': {
-				// 	this.context.globalState.update('token', null);
-				// 	break;
-				// }
-				// case 'onInfo': {
-				// 	if (!data.value) {
-				// 		return;
-				// 	}
-				// 	vscode.window.showInformationMessage(data.value);
-				// 	break;
-				// }
-				// case 'onError': {
-				// 	if (!data.value) {
-				// 		return;
-				// 	}
-				// 	vscode.window.showErrorMessage(data.value);
-				// 	break;
-				// }
 			}
 		});
 	}
