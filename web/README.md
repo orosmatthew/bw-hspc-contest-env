@@ -28,6 +28,18 @@ node build
 
 ### Docker
 
+Copy the example docker compose file
+```bash
+# pwd web/
+cp docker/docker-compose.example.yml ./docker-compose.yml
+```
+
+Fill out `.env` file
+```bash
+cp .env.example .env
+```
+
+Run the container
 ```bash
 docker compose up --build
 ```
