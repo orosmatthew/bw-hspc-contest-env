@@ -143,7 +143,7 @@ export class BWPanel {
 			vscode.window.showErrorMessage('Already Running');
 			return;
 		}
-		const problem = this.problemData.find((p) => (p.id = problemId));
+		const problem = this.problemData.find((p) => (p.id === problemId));
 		if (problem === undefined) {
 			return;
 		}
