@@ -44,46 +44,48 @@
 		}}
 	>
 		<div class="modal-body">
-			{#if editTeam !== undefined}
-				<input type="hidden" name="id" value={editTeam.id} />
+			{#key editTeam}
+				{#if editTeam !== undefined}
+					<input type="hidden" name="id" value={editTeam.id} />
 
-				<label class="form-label" for="editTeamName">Name</label>
-				<input
-					name="name"
-					id="editTeamName"
-					type="text"
-					class="form-control"
-					value={editTeam.name}
-					required
-				/>
-
-				<label class="mt-1 form-label" for="editTeamLang">Language</label>
-				<select
-					id="editTeamLang"
-					name="lang"
-					class="form-select"
-					value={editTeam.language}
-					required
-				>
-					<option value="Java">Java</option>
-					<option value="CSharp">C#</option>
-				</select>
-
-				<label class="mt-1 form-label" for="editTeamPassword">Password</label>
-				<div class="input-group">
+					<label class="form-label" for="editTeamName">Name</label>
 					<input
-						name="password"
-						id="editTeamPassword"
+						name="name"
+						id="editTeamName"
 						type="text"
 						class="form-control"
-						value={editTeam.password}
+						value={editTeam.name}
 						required
 					/>
-					<button on:click={editGenPassword} class="btn btn-outline-primary"
-						><i class="bi bi-arrow-clockwise"></i></button
+
+					<label class="mt-1 form-label" for="editTeamLang">Language</label>
+					<select
+						id="editTeamLang"
+						name="lang"
+						class="form-select"
+						value={editTeam.language}
+						required
 					>
-				</div>
-			{/if}
+						<option value="Java">Java</option>
+						<option value="CSharp">C#</option>
+					</select>
+
+					<label class="mt-1 form-label" for="editTeamPassword">Password</label>
+					<div class="input-group">
+						<input
+							name="password"
+							id="editTeamPassword"
+							type="text"
+							class="form-control"
+							value={editTeam.password}
+							required
+						/>
+						<button type="button" on:click={editGenPassword} class="btn btn-outline-primary"
+							><i class="bi bi-arrow-clockwise"></i></button
+						>
+					</div>
+				{/if}
+			{/key}
 		</div>
 		<div class="modal-footer">
 			<button

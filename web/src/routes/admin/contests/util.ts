@@ -1,41 +1,52 @@
 import { db } from '$lib/server/prisma';
-import fs from 'fs-extra';
+import hostFs from 'fs-extra';
+import memfs, { createFsFromVolume } from 'memfs';
 import { join } from 'path';
-import simpleGit from 'simple-git';
+import git from 'isomorphic-git';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import http from 'isomorphic-git/http/node';
 
 export async function createRepos(contestId: number) {
-	if (fs.existsSync('temp')) {
-		fs.rmSync('temp', { recursive: true });
-	}
-	fs.mkdirSync('temp');
+	const vol = new memfs.Volume();
+	const fs = createFsFromVolume(vol);
+
 	const contest = await db.contest.findUnique({
 		where: { id: contestId },
 		include: { teams: true, problems: true }
 	});
-	if (!contest) {
+	if (contest === null) {
+		console.error('Invalid contest');
 		return;
 	}
+
+	const templateDir = join(dirname(fileURLToPath(import.meta.url)), '../../../../templates');
+
+	const template = hostFs.readFileSync(join(templateDir, 'java/problem/Main.java')).toString();
+
 	contest.teams.forEach(async (team) => {
-		fs.mkdirSync(join('temp', team.id.toString()));
-		const git = simpleGit({ baseDir: join('temp', team.id.toString()) });
-		await git.init();
-		await git.checkoutLocalBranch('master');
+		fs.mkdirSync(team.id.toString(), { recursive: true });
+		await git.init({ fs: fs, bare: false, defaultBranch: 'master', dir: team.id.toString() });
 		contest.problems.forEach((problem) => {
-			fs.mkdirSync(join('temp', team.id.toString(), problem.pascalName));
+			fs.mkdirSync(join(team.id.toString(), problem.pascalName));
+			const filledTemplate = template.replaceAll('%%pascalName%%', problem.pascalName);
 			fs.writeFileSync(
-				join('temp', team.id.toString(), problem.pascalName, problem.pascalName + '.java'),
-				`public class ${problem.pascalName} {
-    public static void main(String[] args) {
-        System.out.println("Hello ${problem.pascalName}!");
-    }
-}`
+				join(team.id.toString(), problem.pascalName, `${problem.pascalName}.java`),
+				filledTemplate
 			);
 		});
-		await git.add('.');
-		await git.commit('Initial', { '--author': 'Admin <>' });
-		await git.push(
-			'http://localhost:7006/' + contest.id.toString() + '/' + team.id.toString(),
-			'master'
-		);
+		await git.add({ fs: fs, dir: team.id.toString(), filepath: '.' });
+		await git.commit({
+			fs: fs,
+			dir: team.id.toString(),
+			message: 'Initial',
+			author: { name: 'Admin' }
+		});
+		await git.push({
+			fs: fs,
+			http,
+			dir: team.id.toString(),
+			url: `http://localhost:${process.env.GIT_PORT}/${contest.id.toString()}/${team.id.toString()}`
+		});
 	});
 }
