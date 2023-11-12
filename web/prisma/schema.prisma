@@ -65,6 +65,12 @@ model Team {
   contests    Contest[]    @relation("TeamContestRelation")
   password    String
   activeTeam  ActiveTeam?
+  language    Language
+}
+
+enum Language {
+  Java
+  CSharp
 }
 
 model ActiveTeam {

@@ -3,7 +3,7 @@
 	import { theme } from '../stores';
 </script>
 
-<nav class="main-nav mt-2 mb-3 navbar navbar-expand-lg bg-body-secondary">
+<nav class="main-nav mt-2 mb-3 navbar navbar-expand-lg bg-body-secondary shadow-sm">
 	<div class="container-fluid">
 		<button
 			class="navbar-toggler"
@@ -22,6 +22,9 @@
 					<a href="/admin" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
 				</li>
 				<li class="nav-item">
+					<a href="/admin/teams" class="nav-link"><i class="bi bi-people"></i> Teams</a>
+				</li>
+				<li class="nav-item">
 					<a href="/admin/reviews" class="nav-link"><i class="bi bi-eye"></i> Reviews</a>
 				</li>
 				<li class="nav-item">
@@ -36,9 +39,6 @@
 				</li>
 				<li class="nav-item">
 					<a href="/admin/scoreboard" class="nav-link"><i class="bi bi-trophy"></i> Scoreboards</a>
-				</li>
-				<li class="nav-item">
-					<a href="/admin/teams" class="nav-link"><i class="bi bi-people"></i> Teams</a>
 				</li>
 				<li class="nav-item">
 					<a href="/admin/contests" class="nav-link"><i class="bi bi-flag"></i> Contests</a>
