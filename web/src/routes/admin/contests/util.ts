@@ -7,12 +7,14 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import http from 'isomorphic-git/http/node';
 
-async function addProblemsJava(opts: {
+type OptsAddProblems = {
 	fs: memfs.IFs;
 	templateDir: string;
 	dir: string;
 	contest: { problems: { pascalName: string }[] };
-}) {
+};
+
+async function addProblemsJava(opts: OptsAddProblems) {
 	const template = hostFs
 		.readFileSync(join(opts.templateDir, 'java/problem/problem.java'))
 		.toString();
@@ -27,12 +29,7 @@ async function addProblemsJava(opts: {
 	});
 }
 
-async function addProblemsCSharp(opts: {
-	fs: memfs.IFs;
-	templateDir: string;
-	dir: string;
-	contest: { problems: { pascalName: string }[] };
-}) {
+async function addProblemsCSharp(opts: OptsAddProblems) {
 	const project = hostFs
 		.readFileSync(join(opts.templateDir, 'csharp/problem/problem.csproj'))
 		.toString();
