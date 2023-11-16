@@ -4,9 +4,12 @@ import { cloneAndOpenRepo } from './extension';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
 
+export type ContestLanguage = 'Java' | 'CSharp';
+
 export type TeamData = {
 	teamId: number;
 	contestId: number;
+	language: ContestLanguage;
 };
 
 export type WebviewMessageType = { msg: 'onLogin'; data: TeamData } | { msg: 'onLogout' };

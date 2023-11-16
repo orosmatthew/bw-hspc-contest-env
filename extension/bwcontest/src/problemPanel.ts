@@ -6,6 +6,7 @@ import { runJava } from './run/java';
 import { join } from 'path';
 import { TeamData } from './SidebarProvider';
 import { submitProblem } from './submit';
+import { runCSharp } from './run/csharp';
 
 export type ProblemData = {
 	id: number;
@@ -143,7 +144,7 @@ export class BWPanel {
 			vscode.window.showErrorMessage('Already Running');
 			return;
 		}
-		const problem = this.problemData.find((p) => (p.id === problemId));
+		const problem = this.problemData.find((p) => p.id === problemId);
 		if (problem === undefined) {
 			return;
 		}
@@ -153,33 +154,56 @@ export class BWPanel {
 		this.webviewPostMessage({ msg: 'onRunning' });
 		this.webviewPostMessage({ msg: 'onRunningOutput', data: '[Compiling...]' });
 
-		const killFunc = await runJava(
-			join(
-				repoDir,
-				'BWContest',
-				teamData.contestId.toString(),
-				teamData.teamId.toString(),
-				problem.pascalName
-			),
-			join(
-				repoDir,
-				'BWContest',
-				teamData.contestId.toString(),
-				teamData.teamId.toString(),
+		let killFunc: (() => void) | undefined;
+		if (teamData.language === 'Java') {
+			killFunc = await runJava(
+				join(
+					repoDir,
+					'BWContest',
+					teamData.contestId.toString(),
+					teamData.teamId.toString(),
+					problem.pascalName
+				),
+				join(
+					repoDir,
+					'BWContest',
+					teamData.contestId.toString(),
+					teamData.teamId.toString(),
+					problem.pascalName,
+					`${problem.pascalName}.java`
+				),
 				problem.pascalName,
-				`${problem.pascalName}.java`
-			),
-			problem.pascalName,
-			input,
-			(data: string) => {
-				outputBuffer.push(data);
-				this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
-			},
-			() => {
-				this.runningProgram = undefined;
-				this.webviewPostMessage({ msg: 'onRunningDone' });
-			}
-		);
+				input,
+				(data: string) => {
+					outputBuffer.push(data);
+					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
+				},
+				() => {
+					this.runningProgram = undefined;
+					this.webviewPostMessage({ msg: 'onRunningDone' });
+				}
+			);
+		} else if (teamData.language === 'CSharp') {
+			killFunc = await runCSharp(
+				join(
+					repoDir,
+					'BWContest',
+					teamData.contestId.toString(),
+					teamData.teamId.toString(),
+					problem.pascalName
+				),
+				input,
+				(data: string) => {
+					outputBuffer.push(data);
+					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
+				},
+				() => {
+					this.runningProgram = undefined;
+					this.webviewPostMessage({ msg: 'onRunningDone' });
+				}
+			);
+		}
+
 		if (killFunc !== undefined) {
 			this.runningProgram = {
 				problemId: problemId,

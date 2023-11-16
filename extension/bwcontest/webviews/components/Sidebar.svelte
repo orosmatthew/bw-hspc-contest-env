@@ -33,6 +33,8 @@
 		postMessage({
 			msg: 'onLogout'
 		});
+		loggedIn = false;
+		teamData = undefined;
 	}
 
 	function onTestAndSubmit() {
@@ -49,8 +51,8 @@
 			loggedIn = true;
 			teamData = m.data;
 		} else if (m.msg === 'onLogout') {
-			loggedIn = false;
-			teamData = undefined;
+			// loggedIn = false;
+			// teamData = undefined;
 		}
 	});
 </script>
@@ -68,6 +70,7 @@
 {:else}
 	<button on:click={onLogout}>Logout</button>
 	{#if teamData}
+		<p>Language: {teamData.language}</p>
 		<p>TeamID: {teamData.teamId}</p>
 		<p>ContestID: {teamData.contestId}</p>
 		<button on:click={onClone}>Clone and Open Repo</button>
