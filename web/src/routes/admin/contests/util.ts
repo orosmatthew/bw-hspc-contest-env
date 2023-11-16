@@ -63,7 +63,7 @@ export async function createRepos(contestId: number) {
 		return;
 	}
 
-	const templateDir = join(dirname(fileURLToPath(import.meta.url)), '../../../../templates');
+	const templateDir = join(dirname(fileURLToPath(import.meta.url)), '../../../templates');
 
 	contest.teams.forEach(async (team) => {
 		fs.mkdirSync(team.id.toString(), { recursive: true });
