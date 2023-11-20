@@ -45,7 +45,7 @@ sudo service postgresql enable
 
 We will now create a database and user to work with
 
-```
+```bash
 sudo -u postgres psql
 ```
 
