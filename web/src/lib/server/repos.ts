@@ -1,27 +1,25 @@
 import { db } from '$lib/server/prisma';
-import hostFs from 'fs-extra';
 import memfs, { createFsFromVolume } from 'memfs';
 import { join } from 'path';
 import git from 'isomorphic-git';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
 import http from 'isomorphic-git/http/node';
+import {
+	templateCSharpGitIgnore,
+	templateCSharpProblem,
+	templateCSharpProblemProj,
+	templateJavaProblem
+} from './templates';
 
 type OptsAddProblems = {
 	fs: memfs.IFs;
-	templateDir: string;
 	dir: string;
 	contest: { problems: { pascalName: string }[] };
 };
 
 async function addProblemsJava(opts: OptsAddProblems) {
-	const template = hostFs
-		.readFileSync(join(opts.templateDir, 'java/problem/problem.java'))
-		.toString();
-
 	opts.contest.problems.forEach((problem) => {
 		opts.fs.mkdirSync(join(opts.dir, problem.pascalName));
-		const filledTemplate = template.replaceAll('%%pascalName%%', problem.pascalName);
+		const filledTemplate = templateJavaProblem.replaceAll('%%pascalName%%', problem.pascalName);
 		opts.fs.writeFileSync(
 			join(opts.dir, problem.pascalName, `${problem.pascalName}.java`),
 			filledTemplate
@@ -30,19 +28,13 @@ async function addProblemsJava(opts: OptsAddProblems) {
 }
 
 async function addProblemsCSharp(opts: OptsAddProblems) {
-	const project = hostFs
-		.readFileSync(join(opts.templateDir, 'csharp/problem/problem.csproj'))
-		.toString();
-	const template = hostFs
-		.readFileSync(join(opts.templateDir, 'csharp/problem/problem.cs'))
-		.toString();
 	opts.contest.problems.forEach((problem) => {
 		opts.fs.mkdirSync(join(opts.dir, problem.pascalName));
 		opts.fs.writeFileSync(
 			join(opts.dir, problem.pascalName, `${problem.pascalName}.csproj`),
-			project
+			templateCSharpProblemProj
 		);
-		const filledTemplate = template.replaceAll('%%pascalName%%', problem.pascalName);
+		const filledTemplate = templateCSharpProblem.replaceAll('%%pascalName%%', problem.pascalName);
 		opts.fs.writeFileSync(
 			join(opts.dir, problem.pascalName, `${problem.pascalName}.cs`),
 			filledTemplate
@@ -63,17 +55,14 @@ export async function createRepos(contestId: number) {
 		return;
 	}
 
-	const templateDir = join(dirname(fileURLToPath(import.meta.url)), '../../../templates');
-
 	contest.teams.forEach(async (team) => {
 		fs.mkdirSync(team.id.toString(), { recursive: true });
 		await git.init({ fs: fs, bare: false, defaultBranch: 'master', dir: team.id.toString() });
 		if (team.language === 'Java') {
-			addProblemsJava({ fs, templateDir, dir: team.id.toString(), contest });
+			addProblemsJava({ fs, dir: team.id.toString(), contest });
 		} else if (team.language === 'CSharp') {
-			addProblemsCSharp({ fs, templateDir, dir: team.id.toString(), contest });
-			const gitignore = hostFs.readFileSync(join(templateDir, 'csharp/.gitignore')).toString();
-			fs.writeFileSync(join(team.id.toString(), '.gitignore'), gitignore);
+			addProblemsCSharp({ fs, dir: team.id.toString(), contest });
+			fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCSharpGitIgnore);
 		} else {
 			console.error('Language not supported');
 			return;
@@ -89,7 +78,9 @@ export async function createRepos(contestId: number) {
 			fs: fs,
 			http,
 			dir: team.id.toString(),
-			url: `http://localhost:${process.env.GIT_PORT}/${contest.id.toString()}/${team.id.toString()}`
+			url: `http://localhost:${
+				process.env.GIT_PORT ?? 7006
+			}/${contest.id.toString()}/${team.id.toString()}`
 		});
 	});
 }
