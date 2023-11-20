@@ -29,7 +29,7 @@ export function startGitServer() {
 		});
 
 		repos.listen(port, { type: 'http' }, () => {
-			console.log(`node-git-server running at http://localhost:${port}`);
+			console.log(`node-git-server running at http://127.0.0.1:${port}`);
 			gitRunning = true;
 		});
 	}

@@ -78,7 +78,7 @@ export async function createRepos(contestId: number) {
 			fs: fs,
 			http,
 			dir: team.id.toString(),
-			url: `http://localhost:${
+			url: `http://127.0.0.1:${
 				process.env.GIT_PORT ?? 7006
 			}/${contest.id.toString()}/${team.id.toString()}`
 		});
