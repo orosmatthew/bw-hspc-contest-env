@@ -1,6 +1,6 @@
 import { db } from '$lib/server/prisma';
+import { createRepos } from '$lib/server/repos';
 import type { Actions, PageServerLoad } from './$types';
-import { createRepos } from '../util';
 
 export const load = (async () => {
 	const teams = await db.team.findMany();

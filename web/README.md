@@ -45,7 +45,6 @@ sudo service postgresql enable
 
 We will now create a database and user to work with
 
-
 ```
 sudo -u postgres psql
 ```
@@ -82,7 +81,6 @@ Now you need to fill out an environment file for local development. Create a `.e
 ```env
 DATABASE_URL=postgresql://bwcontest:pass123@127.0.0.1:5432/bwcontest
 ```
-
 
 You now need to push the schema generated via the Prisma ORM to set up the tables in the database. This can be done by running...
 

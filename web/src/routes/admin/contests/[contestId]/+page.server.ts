@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/prisma';
 import fs from 'fs-extra';
 import { join } from 'path';
-import { createRepos } from '../util';
+import { createRepos } from '$lib/server/repos';
 
 export const load = (async ({ params }) => {
 	const contestId = parseInt(params.contestId);
