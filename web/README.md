@@ -80,7 +80,7 @@ npm install
 Now you need to fill out an environment file for local development. Create a `.env` file in `web/.env`. Add this information or changed with the relevant details related to how you set up your database.
 
 ```env
-DATABASE_URL=postgresql://bwcontest2:pass123@127.0.0.1:5432/bwcontest2
+DATABASE_URL=postgresql://bwcontest:pass123@127.0.0.1:5432/bwcontest
 ```
 
 
