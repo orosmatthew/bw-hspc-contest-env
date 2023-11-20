@@ -106,10 +106,11 @@ INIT=true npm run dev
 
 The `INIT=true` environment variable indicates that the git server should start and that the default login account of username `admin` and password `bw123` should be created. Note that the development server should always be running when programming as it generates types for proper intellisense even if you don't necessarily need to look at the browser output.
 
+If you want to change the port of the development server to match the same port as the built project then you can add the `-- --port=3000` to the end of the dev command as so.
 
-
-
-
+```bash
+INIT=true npm run dev -- --port=3000
+```
 
 ## Build Instructions
 
