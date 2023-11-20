@@ -69,7 +69,7 @@ git clone https://github.com/orosmatthew/bw-hspc-contest-env
 
 Next, you want to use VSCode for development which can be downloaded [here](https://code.visualstudio.com/)
 
-Make sure you have the WSL extension installed. You can then connect WSL by opening VSCode and pressing `ctrl+shift+p` and searching for `Connect to WSL` and pressing enter. You can now press `File -> Open Folder` and it will now show the WSL file directories instead of Windows. Find and open the `web` directory in the `bw-hspc-contest-env` repo. You can now open the terminal in VSCode by pressing `ctrl+j`. This should be the terminal inside of WSL. This can be verified by running `uname` and it should return `Linux`. Install node dependencies by running...
+Make sure you have the WSL extension installed. You can then connect WSL by opening VSCode and pressing `ctrl+shift+p` and searching for `Connect to WSL` and pressing enter. I would also install the Svelte and Prisma extensions. Note that you need to click `install in WSL` on the extension as well. You can now press `File -> Open Folder` and it will now show the WSL file directories instead of Windows. Find and open the `web` directory in the `bw-hspc-contest-env` repo. You can now open the terminal in VSCode by pressing `ctrl+j`. This should be the terminal inside of WSL. This can be verified by running `uname` and it should return `Linux`. Install node dependencies by running...
 
 ```bash
 # make sure you are in the bw-hspc-contest-env/web dir
@@ -109,6 +109,21 @@ If you want to change the port of the development server to match the same port 
 ```bash
 INIT=true npm run dev -- --port=3000
 ```
+
+Some useful commands for development are...
+
+```bash
+# This will format all files
+npm run format
+
+# This will report any linting errors/warnings
+npm run lint
+
+# This will report any typescript/svelte errors
+npm run check
+```
+
+I usually run all 3 of these commands before I commit to make sure everything is formatted and checked.
 
 ## Build Instructions
 
