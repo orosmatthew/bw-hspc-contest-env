@@ -8,7 +8,7 @@ First install WSL on windows by going to the terminal and entering
 wsl --install
 ```
 
-Then you will need to restart your computer. More details about WSL can be found [here](https://learn.microsoft.com/en-us/windows/wsl/). WSL is essentially an Ubuntu VM on windows, this is where all development will be done. Once WSL is installed, you should be able to open it by searching for Ubuntu in the start menu which will then open a terminal into the Ubuntu VM. First you will need to install NodeJS. We want NodeJS 20 but the current version on Ubuntu is outdated so we will use the NodeSource repository to download a later version. Run these command to do so.
+Then you will need to restart your computer. More details about WSL can be found [here](https://learn.microsoft.com/en-us/windows/wsl/). WSL is essentially an Ubuntu VM on windows, this is where all development will be done. Once WSL is installed, you should be able to open it by searching for Ubuntu in the start menu which will then open a terminal into the Ubuntu VM. First you will need to install NodeJS. We want NodeJS 20 but the current version on Ubuntu is outdated so we will use the NodeSource repository to download a later version. Run these commands to do so.
 
 ```bash
 sudo apt update
@@ -70,7 +70,7 @@ git clone https://github.com/orosmatthew/bw-hspc-contest-env
 
 Next, you want to use VSCode for development which can be downloaded [here](https://code.visualstudio.com/)
 
-Make sure you have the WSL extension installed. You can then connect WSL by opening VSCode and pressing `ctrl+shift+p` and searching for `Connect to WSL` and pressing enter. You can now press `File -> Open Folder` and it will now show the WSL file directories instead of Windows. Find and open the `web` directory in the `bw-hspc-contest-env` repo. You can now open the terminal in VSCode by pressing `ctrl+j`. This should be the terminal inside of WSL. This can be verifies by running `uname` and it should return `Linux`. Install node dependencies by running...
+Make sure you have the WSL extension installed. You can then connect WSL by opening VSCode and pressing `ctrl+shift+p` and searching for `Connect to WSL` and pressing enter. You can now press `File -> Open Folder` and it will now show the WSL file directories instead of Windows. Find and open the `web` directory in the `bw-hspc-contest-env` repo. You can now open the terminal in VSCode by pressing `ctrl+j`. This should be the terminal inside of WSL. This can be verified by running `uname` and it should return `Linux`. Install node dependencies by running...
 
 ```bash
 # make sure you are in the bw-hspc-contest-env/web dir
