@@ -1,11 +1,13 @@
 import dotenv from 'dotenv';
 import fs from 'fs-extra';
 import urlJoin from 'url-join';
-import { z } from 'zod';
-import os from 'os';
+import { string, z } from 'zod';
+import os, { EOL } from 'os';
 import { join } from 'path';
 import { simpleGit, SimpleGit } from 'simple-git';
 import { runJava } from './run/java.js';
+
+export const timeoutSeconds = 30;
 
 const submissionGetData = z
 	.object({
@@ -14,7 +16,9 @@ const submissionGetData = z
 			.object({
 				id: z.number(),
 				contestId: z.number(),
+				contestName: z.string(),
 				teamId: z.number(),
+				teamName: z.string(),
 				problem: z.object({
 					id: z.number(),
 					pascalName: z.string(),
@@ -26,14 +30,37 @@ const submissionGetData = z
 	})
 	.strict();
 
+export type RunResult = {
+	kind: RunResultKind,
+	teamOutput?: string,
+	exitCode?: number,
+	runtimeMilliseconds?: number
+	buildErrors?: string,
+	sandboxErrorText?: string,
+}
+
+export enum RunResultKind {
+	CompileFailed,
+	TimeLimitExceeded,
+	Completed,
+	SandboxError
+}
+
+enum SubmissionProcessingResult {
+	NoSubmissions,
+	SubmissionProcessed,
+	Error
+}
+
 type SubmissionGetData = z.infer<typeof submissionGetData>;
 
 async function fetchQueuedSubmission(): Promise<SubmissionGetData | undefined> {
-	const res = await fetch(urlJoin(adminUrl, 'api/submission'), { method: 'GET' });
+	const res = await fetch(submissionApiUrl, { method: 'GET' });
 	if (res.status !== 200) {
-		console.error('Failed to fetch submission');
+		console.error(`Failed to fetch from ${submissionApiUrl} with status: ${res.status} ${res.statusText}`);
 		return undefined;
 	}
+
 	const data = submissionGetData.parse(await res.json());
 	if (!data.success) {
 		return undefined;
@@ -54,20 +81,24 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 	const repoDir = join(buildDir, 'src');
 	fs.mkdirSync(repoDir);
 
+	const teamRepoUrl = urlJoin(
+		repoUrl,
+		submissionData.submission.contestId.toString(),
+		submissionData.submission.teamId.toString() + '.git'
+	);
+
+	console.log(`- CLONE: from ${teamRepoUrl}`);
 	const git: SimpleGit = simpleGit({ baseDir: repoDir });
 	await git.clone(
-		urlJoin(
-			repoUrl,
-			submissionData.submission.contestId.toString(),
-			submissionData.submission.teamId.toString() + '.git'
-		),
+		teamRepoUrl,
 		'.'
 	);
 	await git.checkout(submissionData.submission.commitHash);
 	const problemName = submissionData.submission.problem.pascalName;
-	let output: string;
+	let runResult: RunResult;
+
 	try {
-		output = await runJava(
+		runResult = await runJava(
 			javaBinPath,
 			buildDir,
 			join(repoDir, problemName, problemName + '.java'),
@@ -75,21 +106,70 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 			submissionData.submission.problem.realInput
 		);
 	} catch (error) {
-		output = `[An error occurred while running]\n${error}`;
+		runResult = {
+			kind: RunResultKind.SandboxError, 
+			sandboxErrorText: `An unexpected error occurred: ${EOL} ${error}`};
 	}
+
+	printRunResult(runResult);
 
 	const res = await fetch(urlJoin(adminUrl, 'api/submission'), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ submissionId: submissionData.submission.id, output: output })
+		body: JSON.stringify(makePostBody(submissionData.submission.id, runResult))
 	});
 	if (res.status !== 200) {
-		console.error('Failed to POST output');
+		console.error('- POST: Failed with error code: ' + res.status + " " + res.statusText);
+		return;
 	}
+
 	const data = (await res.json()) as { success: boolean };
 	if (!data.success) {
-		console.error('Output POST unsuccessful');
+		console.error('- POST: Failed with response: ' + JSON.stringify(data));
+		return;
 	}
+
+	console.log(`- POST: Succeeded`);
+}
+
+function printRunResult(runResult: RunResult) {
+	console.log(`- RESULT: ${getRunResultDisplayText()}`);
+
+	function getRunResultDisplayText() {
+		if (runResult.kind == RunResultKind.SandboxError) {
+			return "Sandbox error: " + runResult.sandboxErrorText;
+		}
+
+		if (runResult.kind == RunResultKind.CompileFailed) {
+			return "Failed to compile";
+		}
+
+		if (runResult.kind == RunResultKind.TimeLimitExceeded) {
+			return `Time limit exceeded. Output Length: ${runResult.teamOutput?.length}.`;
+		}
+
+		return `Run completed. Time: ${runResult.runtimeMilliseconds}ms. Output Length: ${runResult.teamOutput?.length}. Exit Code: ${runResult.exitCode}`;
+	}
+}
+
+function makePostBody(submissionId: number, runResult: RunResult): { submissionId: number, output: string } {
+	let output: string;
+	switch (runResult.kind) {
+		case RunResultKind.CompileFailed:
+			output = `[Build Errors] ${EOL} ${runResult.buildErrors}`;
+			break;
+		case RunResultKind.TimeLimitExceeded:
+			output = `${runResult.teamOutput} ${EOL} [Timeout after ${timeoutSeconds} seconds]`;
+			break;
+		case RunResultKind.Completed:
+			output = runResult.teamOutput!;
+			break;
+		case RunResultKind.SandboxError:
+			output = `[Sandbox Error] ${EOL} ${runResult.sandboxErrorText}`;
+			break;
+	}
+
+	return { submissionId, output }
 }
 
 function validateEnv(): boolean {
@@ -110,30 +190,88 @@ const adminUrl = process.env.ADMIN_URL as string;
 const repoUrl = process.env.REPO_URL as string;
 const javaBinPath = process.env.JAVA_PATH as string;
 
-async function loop() {
+const submissionApiUrl = urlJoin(adminUrl, 'api/submission');
+
+async function processNextSubmission(): Promise<SubmissionProcessingResult> {
 	let submissionData: SubmissionGetData | undefined;
 	try {
 		submissionData = await fetchQueuedSubmission();
-	} catch {
-		console.error('Failed to fetch submission');
-		return;
+	} catch (e) {
+		console.error(`Failed to fetch from ${submissionApiUrl} with error: ${e}`);
+		return SubmissionProcessingResult.Error;
 	}
 
 	if (!submissionData) {
 		console.error('Unable to fetch submission data');
-	} else {
-		try {
-			cloneAndRun(submissionData);
-		} catch {
-			console.error('Unable to clone and run');
-		}
+		return SubmissionProcessingResult.Error;
 	}
+
+	if (!submissionData.submission) {
+		return SubmissionProcessingResult.NoSubmissions;
+	}
+	
+	printSubmissionHeader(submissionData);
+
+	let processingResult: SubmissionProcessingResult;
+	try {
+		await cloneAndRun(submissionData);
+		processingResult = SubmissionProcessingResult.SubmissionProcessed;
+	} catch {
+		console.error('Failed to clone/run.');
+		processingResult = SubmissionProcessingResult.Error;
+	}
+
+	printSubmissionFooter(submissionData);
+	return processingResult;
+}
+
+function printSubmissionHeader(submissionData: SubmissionGetData) {
+	const submission = submissionData.submission;
+	if (!submission) {
+		return;
+	}
+
+	console.log(`--- Submission ${submission.id} ---`);
+	console.log(`- INFO: Contest ${submission.contestId} '${submission.contestName}', ` +
+		`Team ${submission.teamId} '${submission.teamName}', ` +
+		`Problem ${submission.problem.id} '${submission.problem.pascalName}', ` +
+		`SHA '${submission.commitHash}'`);
+}
+
+function printSubmissionFooter(submissionData: SubmissionGetData) {
+	const submission = submissionData.submission;
+	if (!submission) {
+		return;
+	}
+
+	console.log(`--- End Submission ${submission.id} ---`);
 }
 
 async function run() {
+	console.log("Sandbox started. Periodically checking for submissions.");
+
+	let iterationsSinceProcessedSubmission = 0;
+	let anySubmissionsProcessed = false;
 	while (true) {
-		await loop();
-		await new Promise((resolve) => setTimeout(resolve, 10000));
+		switch (await processNextSubmission()) {
+			case SubmissionProcessingResult.SubmissionProcessed:
+				iterationsSinceProcessedSubmission = 0;
+				anySubmissionsProcessed = true;
+				break;
+			case SubmissionProcessingResult.NoSubmissions:
+				if (iterationsSinceProcessedSubmission > 0 && iterationsSinceProcessedSubmission % 6 == 0) {
+					const numMinutes = iterationsSinceProcessedSubmission / 6;
+					console.log(`${numMinutes} minute${(numMinutes > 1 ? 's' : '')} since ` +
+						`${(anySubmissionsProcessed ? `last submission processed` : `sandbox startup with no submissions`)}`);
+				}
+
+				await new Promise((resolve) => setTimeout(resolve, 10000));
+				iterationsSinceProcessedSubmission++;
+				break;
+			case SubmissionProcessingResult.Error:
+				await new Promise((resolve) => setTimeout(resolve, 10000));
+				break;
+		}
 	}
 }
 
