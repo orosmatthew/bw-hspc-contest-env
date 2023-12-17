@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { exec, spawn } from 'child_process';
 import util from 'util';
+import { RunResult, RunResultKind, timeoutSeconds } from '../index.js';
 
 const execPromise = util.promisify(exec);
 
@@ -10,15 +11,23 @@ export async function runJava(
 	mainFile: string,
 	mainClass: string,
 	input: string
-): Promise<string> {
+): Promise<RunResult> {
+	console.log(`- BUILD: ${mainFile}`);
 	const compileCommand = `${join(javaBinPath, 'javac')} -cp ${join(
 		buildDir,
 		'src'
 	)} ${mainFile} -d ${join(buildDir, 'build')}`;
-	await execPromise(compileCommand);
 
+	try {
+		await execPromise(compileCommand);
+	} catch(e) {
+		const buildErrorText = e?.toString() ?? "Unknown build errors.";
+		console.log("Build errors: " + buildErrorText);
+		return {kind: RunResultKind.CompileFailed, buildErrors: buildErrorText};
+	}
+
+	console.log(`- RUN: ${mainClass}`);
 	const runCommand = `${join(javaBinPath, 'java')} -cp "${join(buildDir, 'build')}" ${mainClass}`;
-
 	return new Promise((resolve) => {
 		let outputBuffer = '';
 		const child = spawn(runCommand, { shell: true });
@@ -30,25 +39,44 @@ export async function runJava(
 		child.stderr.on('data', (data) => {
 			outputBuffer += data.toString();
 		});
+
+		let runStartTime = performance.now();
 		child.stdin.write(input);
 		child.stdin.end();
 
-		let resolved = false;
-
+		let timeLimitExceeded = false;
+		let completedNormally = false;
+		
 		child.on('close', () => {
-			if (!resolved) {
-				resolved = true;
-				resolve(outputBuffer);
+			completedNormally = !timeLimitExceeded;
+
+			let runEndTime = performance.now();
+			const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
+
+			if (completedNormally) {
+				clearTimeout(timeoutHandle);
+				resolve({kind: RunResultKind.Completed, teamOutput: outputBuffer, 
+					exitCode: child.exitCode!, runtimeMilliseconds});
+			}
+			else {
+				console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
+				resolve({kind: RunResultKind.TimeLimitExceeded, teamOutput: outputBuffer});
 			}
 		});
 
-		setTimeout(() => {
-			if (!resolved) {
-				console.log('30 seconds reached, killing process');
-				resolved = true;
-				child.kill('SIGKILL');
-				resolve(outputBuffer + '\n[Timeout after 30 seconds]');
+		let timeoutHandle = setTimeout(() => {
+			if (completedNormally) {
+				return;
 			}
-		}, 30000);
+
+			console.log(`Run timed out after ${timeoutSeconds} seconds, killing process...`);
+			timeLimitExceeded = true;
+
+			child.stdin.end();
+			child.stdin.destroy();
+			child.stdout.destroy();
+			child.stderr.destroy();
+			child.kill('SIGKILL');
+		}, timeoutSeconds * 1000);
 	});
 }

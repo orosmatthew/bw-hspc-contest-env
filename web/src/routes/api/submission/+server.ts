@@ -9,7 +9,7 @@ export const GET = (async () => {
 	const submissions = await db.submission.findMany({
 		where: { state: SubmissionState.Queued },
 		orderBy: { createdAt: 'asc' },
-		include: { problem: true },
+		include: { problem: true, contest: true, team: true },
 		take: 1
 	});
 	if (submissions.length !== 0) {
@@ -17,8 +17,10 @@ export const GET = (async () => {
 			success: true,
 			submission: {
 				id: submissions[0].id,
-				contestId: submissions[0].contestId,
-				teamId: submissions[0].teamId,
+				contestId: submissions[0].contest.id,
+				contestName: submissions[0].contest.name,
+				teamId: submissions[0].team.id,
+				teamName: submissions[0].team.name,
 				problem: {
 					id: submissions[0].problemId,
 					pascalName: submissions[0].problem.pascalName,
