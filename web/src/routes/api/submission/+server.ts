@@ -105,7 +105,7 @@ export const POST = (async ({ request }) => {
 			console.log('compile failed...');
 			await db.submission.update({
 				where: { id: data.data.submissionId },
-				data: { state: SubmissionState.Incorrect, 
+				data: { state: SubmissionState.Incorrect, gradedAt: new Date(),
 					stateReason: SubmissionStateReason.BuildError, stateReasonDetails: data.data.result.resultKindReason }
 			});
 			return json({ success: true });
@@ -113,7 +113,7 @@ export const POST = (async ({ request }) => {
 		case 'TimeLimitExceeded':
 			await db.submission.update({
 				where: { id: data.data.submissionId },
-				data: { state: SubmissionState.Incorrect, actualOutput: data.data.result.output,
+				data: { state: SubmissionState.Incorrect, gradedAt: new Date(), actualOutput: data.data.result.output,
 					stateReason: SubmissionStateReason.TimeLimitExceeded, stateReasonDetails: data.data.result.resultKindReason }
 			});
 			return json({ success: true });
