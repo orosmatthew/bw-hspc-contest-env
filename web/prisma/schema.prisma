@@ -29,11 +29,20 @@ enum SubmissionState {
   Incorrect
 }
 
+enum SubmissionStateReason {
+  BuildError
+  TimeLimitExceeded
+  IncorrectOverriddenAsCorrect
+  SandboxError
+}
+
 model Submission {
   id           Int             @id @default(autoincrement())
   createdAt    DateTime        @default(now())
   gradedAt     DateTime?
   state        SubmissionState
+  stateReason  SubmissionStateReason?
+  stateReasonDetails  String?
   actualOutput String?
   commitHash   String
   diff         String?
