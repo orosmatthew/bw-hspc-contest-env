@@ -1,7 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/prisma';
-import { SubmissionState } from '@prisma/client';
+import { SubmissionState, SubmissionStateReason } from '@prisma/client';
 
 export const load = (async ({ params }) => {
 	const submissionId = parseInt(params.submissionId);
@@ -38,6 +38,7 @@ export const actions = {
 			where: { id: submissionId },
 			data: {
 				state: correctBool ? SubmissionState.Correct : SubmissionState.Incorrect,
+				stateReason : correctBool ? SubmissionStateReason.IncorrectOverriddenAsCorrect : null,
 				message: message ? message.toString() : '',
 				gradedAt: gradedTime
 			}

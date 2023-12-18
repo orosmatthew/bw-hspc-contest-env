@@ -13,6 +13,7 @@ export const load = (async () => {
 				createdAt: row.createdAt,
 				gradedAt: row.gradedAt,
 				state: row.state,
+				stateReason: row.stateReason,
 				problemName: problems.find((problem) => {
 					return problem.id == row.problemId;
 				})?.friendlyName,

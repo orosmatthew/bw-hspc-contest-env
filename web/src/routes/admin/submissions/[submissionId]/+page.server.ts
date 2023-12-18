@@ -22,6 +22,8 @@ export const load = (async ({ params }) => {
 	return {
 		id: submission.id,
 		state: submission.state,
+		stateReason: submission.stateReason,
+		stateReasonDetails: submission.stateReasonDetails,
 		teamName: team.name,
 		problemName: problem.friendlyName,
 		submitTime: submission.createdAt,

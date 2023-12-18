@@ -100,6 +100,14 @@
 					{:else if data.state === 'Incorrect'}
 						<span class="badge bg-danger">Incorrect</span>
 					{/if}
+
+					{#if data.stateReason === 'BuildError'}
+						<span class="badge bg-danger opacity-50">Build Error</span>
+					{:else if data.stateReason === 'TimeLimitExceeded'}
+						<span class="badge bg-danger opacity-50">Time Limit Exceeded</span>
+					{:else if data.stateReason === 'IncorrectOverriddenAsCorrect'}
+						<span class="badge bg-success opacity-50">Manually Graded</span>
+					{/if}
 				</td>
 				<td>{data.submitTime.toLocaleDateString() + ' ' + data.submitTime.toLocaleTimeString()}</td>
 				<td>
@@ -119,7 +127,13 @@
 			<a href={'/admin/diff/' + data.id} class="btn btn-warning">Review Submission</a>
 		</div>
 	</div>
-{:else if data.state == 'Incorrect'}
+{:else if data.state == 'Incorrect' && data.stateReason == 'BuildError'}
+	<h3 style="text-align:center">Build Output</h3>
+	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.stateReasonDetails}</textarea>
+{:else if data.state == 'Incorrect' && data.stateReason == 'TimeLimitExceeded'}
+	<h3 style="text-align:center">Details</h3>
+	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.stateReasonDetails}</textarea>
+{:else}
 	<h3 style="text-align:center">Output</h3>
 	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.output}</textarea>
 	<h3 style="text-align:center">Diff</h3>
