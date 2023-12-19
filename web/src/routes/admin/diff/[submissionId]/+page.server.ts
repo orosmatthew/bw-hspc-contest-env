@@ -6,15 +6,15 @@ import { SubmissionState, SubmissionStateReason } from '@prisma/client';
 export const load = (async ({ params }) => {
 	const submissionId = parseInt(params.submissionId);
 	if (isNaN(submissionId)) {
-		throw error(400, 'Invalid request');
+		error(400, 'Invalid request');
 	}
 	const submission = await db.submission.findUnique({ where: { id: submissionId } });
 	if (!submission) {
-		throw redirect(302, '/admin/reviews');
+		redirect(302, '/admin/reviews');
 	}
 	const problem = await db.problem.findUnique({ where: { id: submission.problemId } });
 	if (!problem) {
-		throw error(500, 'Invalid problem');
+		error(500, 'Invalid problem');
 	}
 
 	return { diff: submission.diff, submissionId: submission.id, output: submission.actualOutput };
@@ -38,7 +38,7 @@ export const actions = {
 			where: { id: submissionId },
 			data: {
 				state: correctBool ? SubmissionState.Correct : SubmissionState.Incorrect,
-				stateReason : correctBool ? SubmissionStateReason.IncorrectOverriddenAsCorrect : null,
+				stateReason: correctBool ? SubmissionStateReason.IncorrectOverriddenAsCorrect : null,
 				message: message ? message.toString() : '',
 				gradedAt: gradedTime
 			}

@@ -34,9 +34,9 @@ export const GET = (async () => {
 	}
 }) satisfies RequestHandler;
 
-const RunResultKind = z.enum(["CompileFailed", "TimeLimitExceeded", "Completed", "SandboxError"]);
+const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'SandboxError']);
 export type RunResultKind = z.infer<typeof RunResultKind>;
-  
+
 const RunResult = z
 	.object({
 		kind: RunResultKind,
@@ -58,8 +58,10 @@ export const POST = (async ({ request }) => {
 	const requestJson = await request.json();
 	const data = submissionPostData.safeParse(requestJson);
 	if (!data.success) {
-		console.log("Error: POST to Submission API failed to parse given object: " + JSON.stringify(requestJson));
-		throw error(400);
+		console.log(
+			'Error: POST to Submission API failed to parse given object: ' + JSON.stringify(requestJson)
+		);
+		error(400);
 	}
 
 	const submission = await db.submission.findUnique({
@@ -68,12 +70,16 @@ export const POST = (async ({ request }) => {
 	});
 
 	if (!submission) {
-		console.log("Error: POST to Submission API for unknown submissionId: " + data.data.submissionId);
+		console.log(
+			'Error: POST to Submission API for unknown submissionId: ' + data.data.submissionId
+		);
 		return json({ success: false });
 	}
 
 	if (submission.state !== SubmissionState.Queued) {
-		console.log("Error: POST to Submission API for already judged submissionId: " + data.data.submissionId);
+		console.log(
+			'Error: POST to Submission API for already judged submissionId: ' + data.data.submissionId
+		);
 		return json({ success: false });
 	}
 
@@ -82,8 +88,13 @@ export const POST = (async ({ request }) => {
 			if (data.data.result.output!.trimEnd() === submission.problem.realOutput.trimEnd()) {
 				await db.submission.update({
 					where: { id: data.data.submissionId },
-					data: { state: SubmissionState.Correct, gradedAt: new Date(), actualOutput: data.data.result.output,
-						stateReason: null, stateReasonDetails: null }
+					data: {
+						state: SubmissionState.Correct,
+						gradedAt: new Date(),
+						actualOutput: data.data.result.output,
+						stateReason: null,
+						stateReasonDetails: null
+					}
 				});
 				return json({ success: true });
 			} else {
@@ -95,8 +106,13 @@ export const POST = (async ({ request }) => {
 				);
 				await db.submission.update({
 					where: { id: data.data.submissionId },
-					data: { state: SubmissionState.InReview, diff: diff, actualOutput: data.data.result.output,
-						stateReason: null, stateReasonDetails: null }
+					data: {
+						state: SubmissionState.InReview,
+						diff: diff,
+						actualOutput: data.data.result.output,
+						stateReason: null,
+						stateReasonDetails: null
+					}
 				});
 				return json({ success: true });
 			}
@@ -105,16 +121,25 @@ export const POST = (async ({ request }) => {
 			console.log('compile failed...');
 			await db.submission.update({
 				where: { id: data.data.submissionId },
-				data: { state: SubmissionState.Incorrect, gradedAt: new Date(),
-					stateReason: SubmissionStateReason.BuildError, stateReasonDetails: data.data.result.resultKindReason }
+				data: {
+					state: SubmissionState.Incorrect,
+					gradedAt: new Date(),
+					stateReason: SubmissionStateReason.BuildError,
+					stateReasonDetails: data.data.result.resultKindReason
+				}
 			});
 			return json({ success: true });
 
 		case 'TimeLimitExceeded':
 			await db.submission.update({
 				where: { id: data.data.submissionId },
-				data: { state: SubmissionState.Incorrect, gradedAt: new Date(), actualOutput: data.data.result.output,
-					stateReason: SubmissionStateReason.TimeLimitExceeded, stateReasonDetails: data.data.result.resultKindReason }
+				data: {
+					state: SubmissionState.Incorrect,
+					gradedAt: new Date(),
+					actualOutput: data.data.result.output,
+					stateReason: SubmissionStateReason.TimeLimitExceeded,
+					stateReasonDetails: data.data.result.resultKindReason
+				}
 			});
 			return json({ success: true });
 
@@ -122,7 +147,10 @@ export const POST = (async ({ request }) => {
 			// TODO: Raise to admins somehow. For now, just mark stateReason so it *could* be observed
 			await db.submission.update({
 				where: { id: data.data.submissionId },
-				data: { stateReason: SubmissionStateReason.SandboxError, stateReasonDetails: data.data.result.resultKindReason }
+				data: {
+					stateReason: SubmissionStateReason.SandboxError,
+					stateReasonDetails: data.data.result.resultKindReason
+				}
 			});
 			return json({ success: true });
 	}

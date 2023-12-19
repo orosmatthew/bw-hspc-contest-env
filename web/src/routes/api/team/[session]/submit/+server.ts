@@ -19,11 +19,11 @@ export const POST = (async ({ params, request }) => {
 		}
 	});
 	if (!activeTeam) {
-		throw error(400);
+		error(400);
 	}
 	const data = submitPostData.safeParse(await request.json());
 	if (!data.success) {
-		throw error(400);
+		error(400);
 	}
 
 	if (
@@ -31,7 +31,7 @@ export const POST = (async ({ params, request }) => {
 			return problem.id == data.data.problemId;
 		})
 	) {
-		throw error(400);
+		error(400);
 	}
 
 	// Make sure no submission is currently marked correct

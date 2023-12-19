@@ -12,7 +12,7 @@ const logoutPostData = z
 export const POST = (async ({ request }) => {
 	const data = logoutPostData.safeParse(await request.json());
 	if (!data.success) {
-		throw error(400);
+		error(400);
 	}
 	await db.activeTeam.update({
 		where: { sessionToken: data.data.token },

@@ -5,7 +5,7 @@ import { db } from '$lib/server/prisma';
 export const DELETE = (async ({ params }) => {
 	const problemId = parseInt(params.problemId);
 	if (isNaN(problemId)) {
-		throw error(400, 'Invalid problem');
+		error(400, 'Invalid problem');
 	}
 	try {
 		await db.problem.delete({ where: { id: problemId } });

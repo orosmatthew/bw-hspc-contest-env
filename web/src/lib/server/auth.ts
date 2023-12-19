@@ -30,7 +30,7 @@ export async function logout(cookies: Cookies): Promise<boolean> {
 	if (sessionCookie === undefined) {
 		return false;
 	}
-	cookies.delete('session');
+	cookies.delete('session', { path: '/' });
 	try {
 		await db.session.delete({ where: { token: sessionCookie } });
 	} catch {
@@ -57,6 +57,7 @@ export async function attemptLogin(
 		const session = await db.session.create({ data: { userId: user.id } });
 		cookies.set('session', session.token, {
 			// secure: process.env.NODE_ENV === 'development' ? false : true,
+			path: '/',
 			secure: false,
 			httpOnly: true,
 			sameSite: 'strict',
@@ -85,6 +86,6 @@ export async function isSessionValid(cookies: Cookies): Promise<boolean> {
 
 export async function redirectIfSessionInvalid(url: string, cookies: Cookies): Promise<void> {
 	if (!(await isSessionValid(cookies))) {
-		throw redirect(302, url);
+		redirect(302, url);
 	}
 }

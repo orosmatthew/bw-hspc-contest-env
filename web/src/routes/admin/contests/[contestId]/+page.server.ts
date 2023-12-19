@@ -8,14 +8,14 @@ import { createRepos } from '$lib/server/repos';
 export const load = (async ({ params }) => {
 	const contestId = parseInt(params.contestId);
 	if (isNaN(contestId)) {
-		throw error(400, 'Invalid request');
+		error(400, 'Invalid request');
 	}
 	const contest = await db.contest.findUnique({
 		where: { id: contestId },
 		include: { problems: true, teams: true, activeTeams: true }
 	});
 	if (!contest) {
-		throw redirect(302, '/admin/contests');
+		redirect(302, '/admin/contests');
 	}
 	return {
 		name: contest.name,
@@ -39,7 +39,7 @@ export const actions = {
 		} catch {
 			return { success: false };
 		}
-		throw redirect(302, '/admin/contests');
+		redirect(302, '/admin/contests');
 	},
 	start: async ({ params }) => {
 		if (!params.contestId) {

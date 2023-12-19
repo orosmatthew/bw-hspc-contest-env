@@ -4,11 +4,11 @@ import { db } from '$lib/server/prisma';
 
 export const load = (async ({ params }) => {
 	if (!params.contestId) {
-		throw redirect(302, '/admin/contests');
+		redirect(302, '/admin/contests');
 	}
 	const contestId = parseInt(params.contestId);
 	if (isNaN(contestId)) {
-		throw redirect(302, '/admin/contests');
+		redirect(302, '/admin/contests');
 	}
 
 	const contest = await db.contest.findUnique({
@@ -16,7 +16,7 @@ export const load = (async ({ params }) => {
 		include: { teams: true }
 	});
 	if (!contest) {
-		throw redirect(302, '/admin/contests');
+		redirect(302, '/admin/contests');
 	}
 
 	return {

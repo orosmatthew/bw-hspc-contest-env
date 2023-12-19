@@ -14,7 +14,7 @@ const loginPostData = z
 export const POST = (async ({ request }) => {
 	const data = loginPostData.safeParse(await request.json());
 	if (!data.success) {
-		throw error(400);
+		error(400);
 	}
 	const team = await db.team.findUnique({
 		where: { name: data.data.teamname },

@@ -38,13 +38,13 @@ export const handle = (async ({ event, resolve }) => {
 
 	if (event.url.pathname.startsWith('/login')) {
 		if ((await isSessionValid(event.cookies)) === true) {
-			throw redirect(302, '/admin');
+			redirect(302, '/admin');
 		}
 	}
 	if (event.url.pathname.startsWith('/admin')) {
 		if ((await isSessionValid(event.cookies)) !== true) {
 			logout(event.cookies);
-			throw redirect(302, '/login');
+			redirect(302, '/login');
 		}
 	}
 	const res = await resolve(event, {

@@ -129,10 +129,14 @@
 	</div>
 {:else if data.state == 'Incorrect' && data.stateReason == 'BuildError'}
 	<h3 style="text-align:center">Build Output</h3>
-	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.stateReasonDetails}</textarea>
+	<textarea use:stretchTextarea class="code mb-3 form-control" disabled
+		>{data.stateReasonDetails}</textarea
+	>
 {:else if data.state == 'Incorrect' && data.stateReason == 'TimeLimitExceeded'}
 	<h3 style="text-align:center">Details</h3>
-	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.stateReasonDetails}</textarea>
+	<textarea use:stretchTextarea class="code mb-3 form-control" disabled
+		>{data.stateReasonDetails}</textarea
+	>
 {:else}
 	<h3 style="text-align:center">Output</h3>
 	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.output}</textarea>

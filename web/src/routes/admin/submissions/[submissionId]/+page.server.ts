@@ -5,19 +5,19 @@ import { db } from '$lib/server/prisma';
 export const load = (async ({ params }) => {
 	const submissionId = parseInt(params.submissionId);
 	if (isNaN(submissionId)) {
-		throw error(400, 'Invalid submission');
+		error(400, 'Invalid submission');
 	}
 	const submission = await db.submission.findUnique({ where: { id: submissionId } });
 	if (!submission) {
-		throw redirect(302, '/admin/submissions');
+		redirect(302, '/admin/submissions');
 	}
 	const team = await db.team.findUnique({ where: { id: submission.teamId } });
 	if (!team) {
-		throw error(500, 'Invalid team');
+		error(500, 'Invalid team');
 	}
 	const problem = await db.problem.findUnique({ where: { id: submission.problemId } });
 	if (!problem) {
-		throw error(500, 'Invalid problem');
+		error(500, 'Invalid problem');
 	}
 	return {
 		id: submission.id,
@@ -42,6 +42,6 @@ export const actions = {
 		} catch {
 			return { success: false };
 		}
-		throw redirect(302, '/admin/submissions');
+		redirect(302, '/admin/submissions');
 	}
 } satisfies Actions;

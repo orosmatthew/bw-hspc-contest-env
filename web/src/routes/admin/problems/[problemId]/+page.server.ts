@@ -5,11 +5,11 @@ import type { Actions, PageServerLoad } from './$types';
 export const load = (async ({ params }) => {
 	const problemId = parseInt(params.problemId);
 	if (isNaN(problemId)) {
-		throw error(400, 'Invalid request');
+		error(400, 'Invalid request');
 	}
 	const query = await db.problem.findUnique({ where: { id: problemId } });
 	if (!query) {
-		throw redirect(302, '/admin/problems');
+		redirect(302, '/admin/problems');
 	}
 	return { problemData: query };
 }) satisfies PageServerLoad;
@@ -18,7 +18,7 @@ export const actions = {
 	edit: async ({ params, request }) => {
 		const problemId = parseInt(params.problemId);
 		if (isNaN(problemId)) {
-			throw error(400, 'Invalid problem');
+			error(400, 'Invalid problem');
 		}
 		const data = await request.formData();
 		const name = data.get('name');
