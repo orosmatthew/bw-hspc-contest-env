@@ -75,6 +75,14 @@
 						{:else if submission.state === 'Incorrect'}
 							<span class="badge bg-danger">Incorrect</span>
 						{/if}
+
+						{#if submission.stateReason === 'BuildError'}
+							<span class="badge bg-danger opacity-50">Build Error</span>
+						{:else if submission.stateReason === 'TimeLimitExceeded'}
+							<span class="badge bg-danger opacity-50">Time Limit Exceeded</span>
+						{:else if submission.stateReason === 'IncorrectOverriddenAsCorrect'}
+							<span class="badge bg-success opacity-50">Manually Graded</span>
+						{/if}
 					</td>
 					<td
 						>{submission.createdAt.toLocaleDateString() +

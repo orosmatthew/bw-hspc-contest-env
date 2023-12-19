@@ -23,7 +23,7 @@ export async function runJava(
 	} catch(e) {
 		const buildErrorText = e?.toString() ?? "Unknown build errors.";
 		console.log("Build errors: " + buildErrorText);
-		return {kind: RunResultKind.CompileFailed, buildErrors: buildErrorText};
+		return {kind: 'CompileFailed', resultKindReason: buildErrorText};
 	}
 
 	console.log(`- RUN: ${mainClass}`);
@@ -55,12 +55,12 @@ export async function runJava(
 
 			if (completedNormally) {
 				clearTimeout(timeoutHandle);
-				resolve({kind: RunResultKind.Completed, teamOutput: outputBuffer, 
+				resolve({kind: 'Completed', output: outputBuffer, 
 					exitCode: child.exitCode!, runtimeMilliseconds});
 			}
 			else {
 				console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
-				resolve({kind: RunResultKind.TimeLimitExceeded, teamOutput: outputBuffer});
+				resolve({kind: 'TimeLimitExceeded', output: outputBuffer, resultKindReason: `Timeout after ${timeoutSeconds} seconds`});
 			}
 		});
 

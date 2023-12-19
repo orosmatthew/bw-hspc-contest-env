@@ -9,6 +9,26 @@ import { runJava } from './run/java.js';
 
 export const timeoutSeconds = 30;
 
+const RunResultKind = z.enum(["CompileFailed", "TimeLimitExceeded", "Completed", "SandboxError"]);
+export type RunResultKind = z.infer<typeof RunResultKind>;
+  
+const RunResult = z
+	.object({
+		kind: RunResultKind,
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		runtimeMilliseconds: z.number().optional(),
+		resultKindReason: z.string().optional()
+	})
+	.strict();
+
+const submissionPostData = z
+	.object({
+		submissionId: z.number(),
+		result: RunResult
+	})
+	.strict();
+
 const submissionGetData = z
 	.object({
 		success: z.boolean(),
@@ -30,29 +50,15 @@ const submissionGetData = z
 	})
 	.strict();
 
-export type RunResult = {
-	kind: RunResultKind,
-	teamOutput?: string,
-	exitCode?: number,
-	runtimeMilliseconds?: number
-	buildErrors?: string,
-	sandboxErrorText?: string,
-}
-
-export enum RunResultKind {
-	CompileFailed,
-	TimeLimitExceeded,
-	Completed,
-	SandboxError
-}
+export type RunResult = z.infer<typeof RunResult>;
+type SubmissionGetData = z.infer<typeof submissionGetData>;
+type SubmissionPostData = z.infer<typeof submissionPostData>;
 
 enum SubmissionProcessingResult {
 	NoSubmissions,
 	SubmissionProcessed,
 	Error
 }
-
-type SubmissionGetData = z.infer<typeof submissionGetData>;
 
 async function fetchQueuedSubmission(): Promise<SubmissionGetData | undefined> {
 	const res = await fetch(submissionApiUrl, { method: 'GET' });
@@ -107,16 +113,17 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		);
 	} catch (error) {
 		runResult = {
-			kind: RunResultKind.SandboxError, 
-			sandboxErrorText: `An unexpected error occurred: ${EOL} ${error}`};
+			kind: 'SandboxError', 
+			resultKindReason: `An unexpected error occurred: ${EOL} ${error}`};
 	}
 
 	printRunResult(runResult);
 
+	const postBodyObject: SubmissionPostData = { submissionId: submissionData.submission.id, result: runResult };
 	const res = await fetch(urlJoin(adminUrl, 'api/submission'), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(makePostBody(submissionData.submission.id, runResult))
+		body: JSON.stringify(postBodyObject)
 	});
 	if (res.status !== 200) {
 		console.error('- POST: Failed with error code: ' + res.status + " " + res.statusText);
@@ -136,40 +143,20 @@ function printRunResult(runResult: RunResult) {
 	console.log(`- RESULT: ${getRunResultDisplayText()}`);
 
 	function getRunResultDisplayText() {
-		if (runResult.kind == RunResultKind.SandboxError) {
-			return "Sandbox error: " + runResult.sandboxErrorText;
+		if (runResult.kind == 'SandboxError') {
+			return "Sandbox error: " + runResult.resultKindReason;
 		}
 
-		if (runResult.kind == RunResultKind.CompileFailed) {
+		if (runResult.kind == 'CompileFailed') {
 			return "Failed to compile";
 		}
 
-		if (runResult.kind == RunResultKind.TimeLimitExceeded) {
-			return `Time limit exceeded. Output Length: ${runResult.teamOutput?.length}.`;
+		if (runResult.kind == 'TimeLimitExceeded') {
+			return `Time limit exceeded. Output Length: ${runResult.output?.length}.`;
 		}
 
-		return `Run completed. Time: ${runResult.runtimeMilliseconds}ms. Output Length: ${runResult.teamOutput?.length}. Exit Code: ${runResult.exitCode}`;
+		return `Run completed. Time: ${runResult.runtimeMilliseconds}ms. Output Length: ${runResult.output?.length}. Exit Code: ${runResult.exitCode}`;
 	}
-}
-
-function makePostBody(submissionId: number, runResult: RunResult): { submissionId: number, output: string } {
-	let output: string;
-	switch (runResult.kind) {
-		case RunResultKind.CompileFailed:
-			output = `[Build Errors] ${EOL} ${runResult.buildErrors}`;
-			break;
-		case RunResultKind.TimeLimitExceeded:
-			output = `${runResult.teamOutput} ${EOL} [Timeout after ${timeoutSeconds} seconds]`;
-			break;
-		case RunResultKind.Completed:
-			output = runResult.teamOutput!;
-			break;
-		case RunResultKind.SandboxError:
-			output = `[Sandbox Error] ${EOL} ${runResult.sandboxErrorText}`;
-			break;
-	}
-
-	return { submissionId, output }
 }
 
 function validateEnv(): boolean {
