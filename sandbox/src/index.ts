@@ -9,9 +9,9 @@ import { runJava } from './run/java.js';
 
 export const timeoutSeconds = 30;
 
-const RunResultKind = z.enum(["CompileFailed", "TimeLimitExceeded", "Completed", "SandboxError"]);
+const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'SandboxError']);
 export type RunResultKind = z.infer<typeof RunResultKind>;
-  
+
 const RunResult = z
 	.object({
 		kind: RunResultKind,
@@ -63,7 +63,9 @@ enum SubmissionProcessingResult {
 async function fetchQueuedSubmission(): Promise<SubmissionGetData | undefined> {
 	const res = await fetch(submissionApiUrl, { method: 'GET' });
 	if (res.status !== 200) {
-		console.error(`Failed to fetch from ${submissionApiUrl} with status: ${res.status} ${res.statusText}`);
+		console.error(
+			`Failed to fetch from ${submissionApiUrl} with status: ${res.status} ${res.statusText}`
+		);
 		return undefined;
 	}
 
@@ -95,10 +97,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 
 	console.log(`- CLONE: from ${teamRepoUrl}`);
 	const git: SimpleGit = simpleGit({ baseDir: repoDir });
-	await git.clone(
-		teamRepoUrl,
-		'.'
-	);
+	await git.clone(teamRepoUrl, '.');
 	await git.checkout(submissionData.submission.commitHash);
 	const problemName = submissionData.submission.problem.pascalName;
 	let runResult: RunResult;
@@ -113,20 +112,24 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		);
 	} catch (error) {
 		runResult = {
-			kind: 'SandboxError', 
-			resultKindReason: `An unexpected error occurred: ${EOL} ${error}`};
+			kind: 'SandboxError',
+			resultKindReason: `An unexpected error occurred: ${EOL} ${error}`
+		};
 	}
 
 	printRunResult(runResult);
 
-	const postBodyObject: SubmissionPostData = { submissionId: submissionData.submission.id, result: runResult };
+	const postBodyObject: SubmissionPostData = {
+		submissionId: submissionData.submission.id,
+		result: runResult
+	};
 	const res = await fetch(urlJoin(adminUrl, 'api/submission'), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(postBodyObject)
 	});
 	if (res.status !== 200) {
-		console.error('- POST: Failed with error code: ' + res.status + " " + res.statusText);
+		console.error('- POST: Failed with error code: ' + res.status + ' ' + res.statusText);
 		return;
 	}
 
@@ -144,11 +147,11 @@ function printRunResult(runResult: RunResult) {
 
 	function getRunResultDisplayText() {
 		if (runResult.kind == 'SandboxError') {
-			return "Sandbox error: " + runResult.resultKindReason;
+			return 'Sandbox error: ' + runResult.resultKindReason;
 		}
 
 		if (runResult.kind == 'CompileFailed') {
-			return "Failed to compile";
+			return 'Failed to compile';
 		}
 
 		if (runResult.kind == 'TimeLimitExceeded') {
@@ -196,7 +199,7 @@ async function processNextSubmission(): Promise<SubmissionProcessingResult> {
 	if (!submissionData.submission) {
 		return SubmissionProcessingResult.NoSubmissions;
 	}
-	
+
 	printSubmissionHeader(submissionData);
 
 	let processingResult: SubmissionProcessingResult;
@@ -219,10 +222,12 @@ function printSubmissionHeader(submissionData: SubmissionGetData) {
 	}
 
 	console.log(`--- Submission ${submission.id} ---`);
-	console.log(`- INFO: Contest ${submission.contestId} '${submission.contestName}', ` +
-		`Team ${submission.teamId} '${submission.teamName}', ` +
-		`Problem ${submission.problem.id} '${submission.problem.pascalName}', ` +
-		`SHA '${submission.commitHash}'`);
+	console.log(
+		`- INFO: Contest ${submission.contestId} '${submission.contestName}', ` +
+			`Team ${submission.teamId} '${submission.teamName}', ` +
+			`Problem ${submission.problem.id} '${submission.problem.pascalName}', ` +
+			`SHA '${submission.commitHash}'`
+	);
 }
 
 function printSubmissionFooter(submissionData: SubmissionGetData) {
@@ -235,7 +240,7 @@ function printSubmissionFooter(submissionData: SubmissionGetData) {
 }
 
 async function run() {
-	console.log("Sandbox started. Periodically checking for submissions.");
+	console.log('Sandbox started. Periodically checking for submissions.');
 
 	let iterationsSinceProcessedSubmission = 0;
 	let anySubmissionsProcessed = false;
@@ -248,8 +253,14 @@ async function run() {
 			case SubmissionProcessingResult.NoSubmissions:
 				if (iterationsSinceProcessedSubmission > 0 && iterationsSinceProcessedSubmission % 6 == 0) {
 					const numMinutes = iterationsSinceProcessedSubmission / 6;
-					console.log(`${numMinutes} minute${(numMinutes > 1 ? 's' : '')} since ` +
-						`${(anySubmissionsProcessed ? `last submission processed` : `sandbox startup with no submissions`)}`);
+					console.log(
+						`${numMinutes} minute${numMinutes > 1 ? 's' : ''} since ` +
+							`${
+								anySubmissionsProcessed
+									? `last submission processed`
+									: `sandbox startup with no submissions`
+							}`
+					);
 				}
 
 				await new Promise((resolve) => setTimeout(resolve, 10000));

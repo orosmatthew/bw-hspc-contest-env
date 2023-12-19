@@ -13,14 +13,14 @@
 	"license": "ISC",
 	"devDependencies": {
 		"@types/fs-extra": "^11.0.4",
-		"@types/node": "^20.9.2",
-		"prettier": "^3.1.0",
-		"typescript": "^5.2.2"
+		"@types/node": "^20.10.5",
+		"prettier": "^3.1.1",
+		"typescript": "^5.3.3"
 	},
 	"dependencies": {
 		"dotenv": "^16.3.1",
-		"fs-extra": "^11.1.1",
-		"simple-git": "^3.20.0",
+		"fs-extra": "^11.2.0",
+		"simple-git": "^3.21.0",
 		"url-join": "^5.0.0",
 		"zod": "^3.22.4"
 	}

@@ -20,10 +20,10 @@ export async function runJava(
 
 	try {
 		await execPromise(compileCommand);
-	} catch(e) {
-		const buildErrorText = e?.toString() ?? "Unknown build errors.";
-		console.log("Build errors: " + buildErrorText);
-		return {kind: 'CompileFailed', resultKindReason: buildErrorText};
+	} catch (e) {
+		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
+		console.log('Build errors: ' + buildErrorText);
+		return { kind: 'CompileFailed', resultKindReason: buildErrorText };
 	}
 
 	console.log(`- RUN: ${mainClass}`);
@@ -46,7 +46,7 @@ export async function runJava(
 
 		let timeLimitExceeded = false;
 		let completedNormally = false;
-		
+
 		child.on('close', () => {
 			completedNormally = !timeLimitExceeded;
 
@@ -55,12 +55,19 @@ export async function runJava(
 
 			if (completedNormally) {
 				clearTimeout(timeoutHandle);
-				resolve({kind: 'Completed', output: outputBuffer, 
-					exitCode: child.exitCode!, runtimeMilliseconds});
-			}
-			else {
+				resolve({
+					kind: 'Completed',
+					output: outputBuffer,
+					exitCode: child.exitCode!,
+					runtimeMilliseconds
+				});
+			} else {
 				console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
-				resolve({kind: 'TimeLimitExceeded', output: outputBuffer, resultKindReason: `Timeout after ${timeoutSeconds} seconds`});
+				resolve({
+					kind: 'TimeLimitExceeded',
+					output: outputBuffer,
+					resultKindReason: `Timeout after ${timeoutSeconds} seconds`
+				});
 			}
 		});
 
