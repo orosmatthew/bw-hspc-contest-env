@@ -120,7 +120,6 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 	printRunResult(runResult);
 
 	const postBodyObject: SubmissionPostData = { submissionId: submissionData.submission.id, result: runResult };
-	console.log("Posting: " + JSON.stringify(postBodyObject));
 	const res = await fetch(urlJoin(adminUrl, 'api/submission'), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
