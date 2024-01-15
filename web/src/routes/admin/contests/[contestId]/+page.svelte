@@ -57,9 +57,7 @@
 		<a href={`${$page.url}/logins`} class="mb-2 btn btn-outline-secondary">Printable Logins</a>
 		<div class="list-group">
 			{#each data.teams as team}
-				<a href={`/admin/teams/${team.id}`} class="list-group-item list-group-item-action"
-					>{team.name}</a
-				>
+				<div class="list-group-item">{team.name}</div>
 			{/each}
 		</div>
 	</div>
