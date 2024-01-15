@@ -1,49 +1,29 @@
+import * as fs from 'fs-extra';
 import { join } from 'path';
-import { exec, spawn } from 'child_process';
-import util from 'util';
-import { RunResult, timeoutSeconds } from '../index.js';
-import { IRunner, IRunnerParams, IRunnerReturn } from './types.js';
+import os = require('os');
+import { spawn } from 'child_process';
 import kill from 'tree-kill';
+import { RunResult, timeoutSeconds } from '../index.js';
+import { IRunner, IRunnerReturn } from './types.js';
 
-const execPromise = util.promisify(exec);
-
-interface IRunnerParamsJava extends IRunnerParams {
+export const runCSharp: IRunner = async function (params: {
 	srcDir: string;
-	mainFile: string;
-	mainClass: string;
 	input: string;
 	outputCallback?: (data: string) => void;
-}
-
-export const runJava: IRunner<IRunnerParamsJava> = async function (
-	params: IRunnerParamsJava
-): IRunnerReturn {
-	console.log(`- BUILD: ${params.mainFile}`);
-	const compileCommand = `javac -cp ${join(params.srcDir, 'src')} ${params.mainFile} -d ${join(params.srcDir, 'build')}`;
-
-	try {
-		await execPromise(compileCommand);
-	} catch (e) {
-		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
-		console.log('Build errors: ' + buildErrorText);
-		return {
-			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText }
-		};
-	}
-
-	console.log(`- RUN: ${params.mainClass}`);
-	const runCommand = `java -cp "${join(params.srcDir, 'build')}" ${params.mainClass}`;
+}): IRunnerReturn {
+	console.log(`- RUN: ${params.srcDir}`);
+	const child = spawn('dotnet run', { shell: true, cwd: params.srcDir });
 
 	let outputBuffer = '';
-	const child = spawn(runCommand, { shell: true });
 	child.stdout.setEncoding('utf8');
 	child.stdout.on('data', (data) => {
 		outputBuffer += data.toString();
+		params.outputCallback?.(data.toString());
 	});
 	child.stderr.setEncoding('utf8');
 	child.stderr.on('data', (data) => {
 		outputBuffer += data.toString();
+		params.outputCallback?.(data.toString());
 	});
 
 	let runStartTime = performance.now();
@@ -55,7 +35,7 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 
 	return {
 		success: true,
-		runResult: new Promise<RunResult>(async (resolve) => {
+		runResult: new Promise<RunResult>((resolve) => {
 			child.on('close', () => {
 				completedNormally = !timeLimitExceeded;
 
@@ -92,7 +72,9 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 				child.stdin.destroy();
 				child.stdout.destroy();
 				child.stderr.destroy();
-				child.kill('SIGKILL');
+				if (child.pid !== undefined) {
+					kill(child.pid);
+				}
 			}, timeoutSeconds * 1000);
 		}),
 		killFunc() {

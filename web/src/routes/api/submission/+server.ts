@@ -21,6 +21,7 @@ export const GET = (async () => {
 				contestName: submissions[0].contest.name,
 				teamId: submissions[0].team.id,
 				teamName: submissions[0].team.name,
+				teamLanguage: submissions[0].team.language,
 				problem: {
 					id: submissions[0].problemId,
 					pascalName: submissions[0].problem.pascalName,

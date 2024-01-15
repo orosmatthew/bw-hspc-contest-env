@@ -6,6 +6,7 @@
 	import { enhance } from '$app/forms';
 	import { stretchTextarea } from '$lib/util';
 	import ConfirmModal from '$lib/ConfirmModal.svelte';
+	import { theme } from '../../../stores';
 
 	export let data: PageData;
 	export let form: Actions;
@@ -141,56 +142,10 @@
 	<h3 style="text-align:center">Output</h3>
 	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.output}</textarea>
 	<h3 style="text-align:center">Diff</h3>
-	<div id="diff" class="dark-diff" />
+	<div
+		id="diff"
+		class="dark-diff"
+		class:d2h-dark-color-scheme={$theme === 'dark'}
+		class:d2h-light-color-scheme={$theme === 'light'}
+	/>
 {/if}
-
-<style lang="scss">
-	:global(.dark-diff) {
-		:global(.d2h-code-side-linenumber),
-		:global(.d2h-info),
-		:global(.d2h-emptyplaceholder),
-		:global(.d2h-code-side-emptyplaceholder),
-		:global(.d2h-file-header),
-		:global(.d2h-tag) {
-			background-color: var(--bs-body-bg);
-			color: var(--bs-body-color);
-		}
-		:global(span) {
-			color: var(--bs-body-color);
-		}
-
-		:global(.d2h-file-wrapper) {
-			border-color: var(--bs-border-color);
-		}
-
-		:global(.d2h-file-header) {
-			border-bottom-color: var(--bs-border-color);
-		}
-
-		:global(.d2h-info) {
-			border-color: var(--bs-border-color);
-		}
-
-		:global(.d2h-del) {
-			background-color: var(--bs-danger-border-subtle);
-			border-color: var(--bs-danger);
-		}
-
-		:global(del) {
-			background-color: rgba(210, 85, 97, 0.5);
-		}
-		:global(.d2h-ins) {
-			background-color: var(--bs-success-border-subtle);
-			border-color: var(--bs-success);
-		}
-
-		:global(.d2h-code-side-emptyplaceholder),
-		:global(.d2h-emptyplaceholder) {
-			border-color: var(--bs-border-color);
-		}
-
-		:global(ins) {
-			background-color: rgba(13, 125, 75, 0.5);
-		}
-	}
-</style>

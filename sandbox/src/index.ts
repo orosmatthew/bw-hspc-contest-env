@@ -6,6 +6,7 @@ import os, { EOL } from 'os';
 import { join } from 'path';
 import { simpleGit, SimpleGit } from 'simple-git';
 import { runJava } from './run/java.js';
+import { runCSharp } from './run/csharp.js';
 
 export const timeoutSeconds = 30;
 
@@ -39,6 +40,7 @@ const submissionGetData = z
 				contestName: z.string(),
 				teamId: z.number(),
 				teamName: z.string(),
+				teamLanguage: z.enum(['Java', 'CSharp']),
 				problem: z.object({
 					id: z.number(),
 					pascalName: z.string(),
@@ -81,7 +83,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		return;
 	}
 	const tmpDir = os.tmpdir();
-	const buildDir = join(tmpDir, 'bwcontest_java');
+	const buildDir = join(tmpDir, 'bwcontest-build');
 	if (fs.existsSync(buildDir)) {
 		fs.removeSync(buildDir);
 	}
@@ -100,16 +102,32 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 	await git.clone(teamRepoUrl, '.');
 	await git.checkout(submissionData.submission.commitHash);
 	const problemName = submissionData.submission.problem.pascalName;
-	let runResult: RunResult;
+	let runResult: RunResult | undefined;
 
 	try {
-		runResult = await runJava(
-			javaBinPath,
-			buildDir,
-			join(repoDir, problemName, problemName + '.java'),
-			problemName,
-			submissionData.submission.problem.realInput
-		);
+		if (submissionData.submission.teamLanguage === 'Java') {
+			let res = await runJava({
+				srcDir: buildDir,
+				mainFile: join(repoDir, problemName, problemName + '.java'),
+				mainClass: problemName,
+				input: submissionData.submission.problem.realInput
+			});
+			if (res.success === true) {
+				runResult = await res.runResult;
+			} else {
+				runResult = res.runResult;
+			}
+		} else if (submissionData.submission.teamLanguage === 'CSharp') {
+			let res = await runCSharp({
+				srcDir: join(repoDir, problemName),
+				input: submissionData.submission.problem.realInput
+			});
+			if (res.success === true) {
+				runResult = await res.runResult;
+			} else {
+				runResult = res.runResult;
+			}
+		}
 	} catch (error) {
 		runResult = {
 			kind: 'SandboxError',
@@ -117,29 +135,33 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		};
 	}
 
-	printRunResult(runResult);
+	if (runResult !== undefined) {
+		printRunResult(runResult);
 
-	const postBodyObject: SubmissionPostData = {
-		submissionId: submissionData.submission.id,
-		result: runResult
-	};
-	const res = await fetch(urlJoin(adminUrl, 'api/submission'), {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(postBodyObject)
-	});
-	if (res.status !== 200) {
-		console.error('- POST: Failed with error code: ' + res.status + ' ' + res.statusText);
-		return;
+		const postBodyObject: SubmissionPostData = {
+			submissionId: submissionData.submission.id,
+			result: runResult
+		};
+		const res = await fetch(urlJoin(adminUrl, 'api/submission'), {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(postBodyObject)
+		});
+		if (res.status !== 200) {
+			console.error('- POST: Failed with error code: ' + res.status + ' ' + res.statusText);
+			return;
+		}
+
+		const data = (await res.json()) as { success: boolean };
+		if (!data.success) {
+			console.error('- POST: Failed with response: ' + JSON.stringify(data));
+			return;
+		}
+
+		console.log(`- POST: Succeeded`);
+	} else {
+		console.warn(`runResult is undefined`);
 	}
-
-	const data = (await res.json()) as { success: boolean };
-	if (!data.success) {
-		console.error('- POST: Failed with response: ' + JSON.stringify(data));
-		return;
-	}
-
-	console.log(`- POST: Succeeded`);
 }
 
 function printRunResult(runResult: RunResult) {
@@ -163,11 +185,7 @@ function printRunResult(runResult: RunResult) {
 }
 
 function validateEnv(): boolean {
-	return (
-		process.env.ADMIN_URL !== undefined &&
-		process.env.REPO_URL !== undefined &&
-		process.env.JAVA_PATH !== undefined
-	);
+	return process.env.ADMIN_URL !== undefined && process.env.REPO_URL !== undefined;
 }
 
 dotenv.config();
