@@ -37,22 +37,22 @@ enum SubmissionStateReason {
 }
 
 model Submission {
-  id           Int             @id @default(autoincrement())
-  createdAt    DateTime        @default(now())
-  gradedAt     DateTime?
-  state        SubmissionState
-  stateReason  SubmissionStateReason?
-  stateReasonDetails  String?
-  actualOutput String?
-  commitHash   String
-  diff         String?
-  message      String?
-  team         Team            @relation(fields: [teamId], references: [id])
-  teamId       Int
-  problem      Problem         @relation(fields: [problemId], references: [id])
-  problemId    Int
-  contestId    Int
-  contest      Contest         @relation(fields: [contestId], references: [id])
+  id                 Int                    @id @default(autoincrement())
+  createdAt          DateTime               @default(now())
+  gradedAt           DateTime?
+  state              SubmissionState
+  stateReason        SubmissionStateReason?
+  stateReasonDetails String?
+  actualOutput       String?
+  commitHash         String
+  diff               String?
+  message            String?
+  team               Team                   @relation(fields: [teamId], references: [id])
+  teamId             Int
+  problem            Problem                @relation(fields: [problemId], references: [id])
+  problemId          Int
+  contestId          Int
+  contest            Contest                @relation(fields: [contestId], references: [id])
 }
 
 model Problem {
@@ -80,6 +80,7 @@ model Team {
 enum Language {
   Java
   CSharp
+  CPP
 }
 
 model ActiveTeam {

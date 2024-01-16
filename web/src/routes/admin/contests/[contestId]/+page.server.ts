@@ -36,7 +36,8 @@ export const actions = {
 		}
 		try {
 			await db.contest.delete({ where: { id: parseInt(params.contestId) } });
-		} catch {
+		} catch (e) {
+			console.error(e);
 			return { success: false };
 		}
 		redirect(302, '/admin/contests');

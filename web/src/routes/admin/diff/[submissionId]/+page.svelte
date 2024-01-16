@@ -73,7 +73,12 @@
 <textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.output}</textarea>
 
 <h3>Diff</h3>
-<div class="mt-3" id="diff" class:d2h-dark-color-scheme={$theme === 'dark'} class:d2h-light-color-scheme={$theme === 'light'}/>
+<div
+	class="mt-3"
+	id="diff"
+	class:d2h-dark-color-scheme={$theme === 'dark'}
+	class:d2h-light-color-scheme={$theme === 'light'}
+/>
 
 <form method="POST" action="?/submit" use:enhance>
 	<h5>Message</h5>

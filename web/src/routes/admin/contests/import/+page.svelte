@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import FormAlert from '$lib/FormAlert.svelte';
 	import type { Actions } from './$types';
@@ -48,7 +49,7 @@
 
 <FormAlert />
 
-<form method="POST">
+<form method="POST" use:enhance>
 	<div class="mb-4">
 		<h3>Contest JSON:</h3>
 		<textarea
@@ -57,7 +58,9 @@
 			class="form-control"
 			rows="10"
 			bind:value={jsonText}
-			style="{parsesCorrectly == null ? "" : `border: 2px solid ${parsesCorrectly ? 'green' : 'red'}`}"
+			style={parsesCorrectly == null
+				? ''
+				: `border: 2px solid ${parsesCorrectly ? 'green' : 'red'}`}
 		/>
 	</div>
 
@@ -65,9 +68,9 @@
 		<h3>Import Info:</h3>
 		<span>{numTeams ?? 'No'} Teams</span><br />
 		<span>{numProblems ?? 'No'} Problems</span><br />
-		<span>{numSubmissions ?? 'No'} Submissions</span> 
-			(<input type="checkbox" checked name="includeSubmissions" id="includeSubmissions" />
-			<label id="includeSubmissionsLabel" for="includeSubmissions">Include</label>)
+		<span>{numSubmissions ?? 'No'} Submissions</span>
+		(<input type="checkbox" checked name="includeSubmissions" id="includeSubmissions" />
+		<label id="includeSubmissionsLabel" for="includeSubmissions">Include</label>)
 	</div>
 
 	<div class="d-flex flex-row justify-content-end gap-2 m-2">

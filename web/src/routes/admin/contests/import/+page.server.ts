@@ -4,37 +4,37 @@ import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { genPassword } from '../../teams/util';
 
-export const load = (async () => { }) satisfies PageServerLoad;
+export const load = (async () => {}) satisfies PageServerLoad;
 
 export type ContestImportData = {
-	Name: string,
-	Problems: ProblemImportData[],
-	Teams: TeamImportData[],
-	Submissions: SubmissionImportData[]
-}
+	Name: string;
+	Problems: ProblemImportData[];
+	Teams: TeamImportData[];
+	Submissions: SubmissionImportData[];
+};
 
 export type ProblemImportData = {
-	ProblemName: string,
-	ShortName: string,
-	SampleInput: string,
-	SampleOutput: string,
-	RealInput: string,
-	RealOutput: string
-}
+	ProblemName: string;
+	ShortName: string;
+	SampleInput: string;
+	SampleOutput: string;
+	RealInput: string;
+	RealOutput: string;
+};
 
 export type TeamImportData = {
-	TeamName: string
-}
+	TeamName: string;
+};
 
 export type SubmissionImportData = {
-	TeamName: string,
-	ProblemShortName: string,
-	State: string,
-	SubmitTime: number,
-	TeamOutput: string,
-	Code: string | null,
-	Language: "Java" | "C#" | "C++" | null
-}
+	TeamName: string;
+	ProblemShortName: string;
+	State: string;
+	SubmitTime: number;
+	TeamOutput: string;
+	Code: string | null;
+	Language: 'Java' | 'C#' | 'C++' | null;
+};
 
 export const actions = {
 	default: async ({ request }) => {
@@ -45,14 +45,13 @@ export const actions = {
 			const formData = await request.formData();
 			const contestJson = formData.get('jsonText')?.toString();
 			if (!contestJson) {
-				return fail(400, { message: "Could not get json text" });
+				return fail(400, { message: 'Could not get json text' });
 			}
 
 			parsedContest = JSON.parse(contestJson);
-			includeSubmissions = formData.get('includeSubmissions')?.toString() == "on";
-		}
-		catch (err) {
-			return fail(400, { message: "Could not parse contest data: " + err?.toString() });
+			includeSubmissions = formData.get('includeSubmissions')?.toString() == 'on';
+		} catch (err) {
+			return fail(400, { message: 'Could not parse contest data: ' + err?.toString() });
 		}
 
 		try {
@@ -62,7 +61,9 @@ export const actions = {
 			if (includeSubmissions && parsedContest.Submissions.length > 0) {
 				hasSubmissions = true;
 
-				const maxSubmitTimeMinutes = Math.max(...parsedContest.Submissions.map(s => s.SubmitTime));
+				const maxSubmitTimeMinutes = Math.max(
+					...parsedContest.Submissions.map((s) => s.SubmitTime)
+				);
 				const now = new Date();
 				contestStart = new Date(now.getTime() - maxSubmitTimeMinutes * 60 * 1000);
 			}
@@ -73,24 +74,24 @@ export const actions = {
 					name: parsedContest.Name,
 					startTime: contestStart,
 					teams: {
-						connectOrCreate: parsedContest.Teams.map(team => ({
+						connectOrCreate: parsedContest.Teams.map((team) => ({
 							where: { name: team.TeamName },
 							create: {
 								name: team.TeamName,
 								password: genPassword(),
 								language: inferTeamLanguage(parsedContest, team) ?? Language.Java
 							}
-						})),
+						}))
 					},
 					problems: {
-						connectOrCreate: parsedContest.Problems.map(problem => ({
-							where: { 
+						connectOrCreate: parsedContest.Problems.map((problem) => ({
+							where: {
 								friendlyName: problem.ProblemName,
 								pascalName: problem.ShortName,
 								sampleInput: problem.SampleInput,
 								sampleOutput: problem.SampleOutput,
 								realInput: problem.RealInput,
-								realOutput: problem.RealOutput,
+								realOutput: problem.RealOutput
 							},
 							create: {
 								friendlyName: problem.ProblemName,
@@ -100,65 +101,72 @@ export const actions = {
 								realInput: problem.RealInput,
 								realOutput: problem.RealOutput
 							}
-						})),
+						}))
 					},
 					submissions: {
 						create: hasSubmissions
-							? parsedContest.Submissions.toSorted((a, b) => a.SubmitTime - b.SubmitTime).map(submission => ({
-								createdAt: dateFromContestMinutes(contestStart!, submission.SubmitTime),
-								gradedAt: dateFromContestMinutes(contestStart!, submission.SubmitTime + 1),
-								state: convertSubmissionState(submission),
-								actualOutput: submission.TeamOutput,
-								commitHash: "",
-								problem: {
-									connect: {
-										pascalName: submission.ProblemShortName
-									}
-								},
-								team: {
-									connect: {
-										name: submission.TeamName
-									}
-								}
-							}))
+							? parsedContest.Submissions.toSorted((a, b) => a.SubmitTime - b.SubmitTime).map(
+									(submission) => ({
+										createdAt: dateFromContestMinutes(contestStart!, submission.SubmitTime),
+										gradedAt: dateFromContestMinutes(contestStart!, submission.SubmitTime + 1),
+										state: convertSubmissionState(submission),
+										actualOutput: submission.TeamOutput,
+										commitHash: '',
+										problem: {
+											connect: {
+												pascalName: submission.ProblemShortName
+											}
+										},
+										team: {
+											connect: {
+												name: submission.TeamName
+											}
+										}
+									})
+								)
 							: []
 					}
 				}
 			});
 		} catch (err) {
-			return fail(400, { message: "Error updating database: " + err?.toString() });
+			return fail(400, { message: 'Error updating database: ' + err?.toString() });
 		}
 
-		return redirect(303, "/admin/contests");
+		return redirect(303, '/admin/contests');
 	}
 } satisfies Actions;
 
 function convertSubmissionState(submission: SubmissionImportData): SubmissionState {
 	switch (submission.State) {
-		case "Correct":
+		case 'Correct':
 			return SubmissionState.Correct;
-		case "Incorrect":
+		case 'Incorrect':
 			return SubmissionState.Incorrect;
 		default:
 			return SubmissionState.InReview;
 	}
 }
 
-function inferTeamLanguage(parsedContest: ContestImportData, team: TeamImportData): Language | null {
-	const submissionWithCode = parsedContest.Submissions.find(s => s.TeamName == team.TeamName && s.Code != null);
+function inferTeamLanguage(
+	parsedContest: ContestImportData,
+	team: TeamImportData
+): Language | null {
+	const submissionWithCode = parsedContest.Submissions.find(
+		(s) => s.TeamName == team.TeamName && s.Code != null
+	);
 	if (!submissionWithCode) {
 		return null;
 	}
 
 	switch (submissionWithCode.Language) {
-		case "Java":
+		case 'Java':
 			return Language.Java;
-		case "C#":
+		case 'C#':
 			return Language.CSharp;
-		case "C++":
+		case 'C++':
 			return Language.CPP;
 		default:
-			throw new Error("Unrecognized language: " + submissionWithCode.Language);
+			throw new Error('Unrecognized language: ' + submissionWithCode.Language);
 	}
 }
 
