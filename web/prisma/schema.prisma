@@ -94,7 +94,7 @@ model ActiveTeam {
 
 model Contest {
   id          Int          @id @default(autoincrement())
-  name        String
+  name        String       @unique
   teams       Team[]       @relation("TeamContestRelation")
   problems    Problem[]    @relation("ProblemContestRelation")
   activeTeams ActiveTeam[]
