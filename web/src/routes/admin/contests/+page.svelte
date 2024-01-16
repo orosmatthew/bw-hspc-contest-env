@@ -11,7 +11,8 @@
 <h1 style="text-align:center" class="mb-1"><i class="bi bi-flag"></i> Contests</h1>
 
 <div class="d-flex flex-row justify-content-end">
-	<a href="/admin/contests/create" class="btn btn-outline-success">Create</a>
+	<a href="/admin/contests/create" class="btn btn-outline-success m-1">Create</a>
+	<a href="/admin/contests/import" class="btn btn-outline-success m-1">Import</a>
 </div>
 
 <div class="mt-3 table-responsive">
