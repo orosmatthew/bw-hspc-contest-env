@@ -8,7 +8,7 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_DB=${DATABASE_DB}
-    restart: always
+    restart: unless-stopped
   web:
     build: .
     ports:
@@ -22,4 +22,4 @@ services:
       - ./repo:/app/repo
     depends_on:
       - db
-    restart: always
+    restart: unless-stopped
