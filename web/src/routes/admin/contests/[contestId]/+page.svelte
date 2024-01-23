@@ -8,6 +8,17 @@
 	export let data: PageData;
 
 	let confirmModal: ConfirmModal;
+
+	function enhanceConfirm(form: HTMLFormElement, text: string) {
+		enhance(form, async ({ cancel }) => {
+			if ((await confirmModal.prompt(text)) !== true) {
+				cancel();
+			}
+			return async ({ update }) => {
+				await update();
+			};
+		});
+	}
 </script>
 
 <svelte:head>
@@ -29,25 +40,41 @@
 		<a href="/admin/contests" class="btn btn-outline-primary">All Contests</a>
 	</div>
 	<div class="col-6 text-end">
-		<form
-			method="POST"
-			use:enhance={async ({ cancel }) => {
-				if ((await confirmModal.prompt('Are you sure?')) !== true) {
-					cancel();
-				}
-				return async ({ update }) => {
-					await update();
-				};
-			}}
-		>
-			{#if data.activeTeams === 0}
-				<button type="submit" formaction="?/delete" class="btn btn-danger">Delete</button>
-				<button type="submit" formaction="?/repo" class="btn btn-warning">Recreate Repos</button>
-				<button type="submit" formaction="?/start" class="btn btn-success">Start</button>
-			{:else}
-				<button type="submit" formaction="?/stop" class="btn btn-outline-danger">Stop</button>
-			{/if}
-		</form>
+		{#if data.activeTeams === 0}
+			<form
+				method="POST"
+				action="?/delete"
+				class="d-inline"
+				use:enhanceConfirm={'Are you sure you want to delete the contest? This WILL DELETE ALL DATA AND SUBMISSIONS!!'}
+			>
+				<button type="submit" class="btn btn-danger">Delete</button>
+			</form>
+			<form
+				method="POST"
+				action="?/repo"
+				class="d-inline"
+				use:enhanceConfirm={'Are you sure you want to recreate repos? This WILL DELETE ALL DATA on the repos currently.'}
+			>
+				<button type="submit" class="btn btn-warning">Recreate Repos</button>
+			</form>
+			<form
+				method="POST"
+				action="?/start"
+				class="d-inline"
+				use:enhanceConfirm={'Are you sure you want to start the contest?'}
+			>
+				<button type="submit" class="btn btn-success">Start</button>
+			</form>
+		{:else}
+			<form
+				method="POST"
+				action="?/stop"
+				class="d-inline"
+				use:enhanceConfirm={'Are you sure you want to stop the contest?'}
+			>
+				<button type="submit" class="btn btn-outline-danger">Stop</button>
+			</form>
+		{/if}
 	</div>
 </div>
 
