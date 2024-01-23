@@ -31,14 +31,15 @@ export const load = (async ({ params }) => {
 
 export const actions = {
 	delete: async ({ params }) => {
-		if (!params.contestId) {
-			return { success: false };
+		if (!params.contestId || isNaN(parseInt(params.contestId))) {
+			return { success: false, message: 'Invalid contest Id' };
 		}
 		try {
+			await db.submission.deleteMany({ where: { contestId: parseInt(params.contestId) } });
 			await db.contest.delete({ where: { id: parseInt(params.contestId) } });
 		} catch (e) {
 			console.error(e);
-			return { success: false };
+			return { success: false, message: `Database error: ${e}` };
 		}
 		redirect(302, '/admin/contests');
 	},
