@@ -68,6 +68,7 @@
 					>
 						<option value="Java">Java</option>
 						<option value="CSharp">C#</option>
+						<option value="CPP">C++</option>
 					</select>
 
 					<label class="mt-1 form-label" for="editTeamPassword">Password</label>
@@ -109,6 +110,7 @@
 			<select id="addTeamLang" name="lang" class="form-select" required>
 				<option value="Java">Java</option>
 				<option value="CSharp">C#</option>
+				<option value="CPP">C++</option>
 			</select>
 		</div>
 		<div class="modal-footer">

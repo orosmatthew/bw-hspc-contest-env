@@ -18,15 +18,15 @@ export const actions = {
 		if (name === null || lang === null) {
 			return { success: false, message: 'Incomplete form data' };
 		}
-		if (lang !== 'Java' && lang !== 'CSharp') {
+		if (lang !== 'Java' && lang !== 'CSharp' && lang !== 'CPP') {
 			return { success: false, message: 'Invalid language' };
 		}
 		try {
 			await db.team.create({
 				data: { name: name.toString(), password: genPassword(), language: lang }
 			});
-		} catch {
-			return { success: false, message: 'Database error' };
+		} catch (e) {
+			return { success: false, message: `Database error: ${e}` };
 		}
 		return { success: true };
 	},
@@ -53,7 +53,7 @@ export const actions = {
 		if (teamId === null || name === null || lang === null || password === null) {
 			return { success: false, message: 'Incomplete form data' };
 		}
-		if (lang !== 'Java' && lang !== 'CSharp') {
+		if (lang !== 'Java' && lang !== 'CSharp' && lang !== 'CPP') {
 			return { success: false, message: 'Invalid language' };
 		}
 		try {
