@@ -159,6 +159,7 @@
 							class="badge"
 							class:bg-warning={team.language === 'Java'}
 							class:bg-success={team.language === 'CSharp'}
+							class:bg-info={team.language === 'CPP'}
 						>
 							{team.language}</span
 						></td
