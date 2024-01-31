@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import { join } from 'path';
 import os = require('os');
 import { spawn } from 'child_process';
-import * as kill from 'tree-kill';
+import kill = require('tree-kill');
 
 export async function runCSharp(
 	srcDir: string,
