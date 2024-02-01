@@ -26,3 +26,20 @@ export const templateCSharpProblemProj = `<Project Sdk="Microsoft.NET.Sdk">
 </PropertyGroup>
 
 </Project>`;
+
+export const templateCppCMakeLists = `cmake_minimum_required(VERSION 3.5)
+
+project(bwcontest)
+
+`;
+
+export const templateCppProblem = `#include <iostream>
+
+int main()
+{
+    std::cout << "Hello %%pascalName%%!" << std::endl;
+    return 0;
+}`;
+
+export const templateCppGitIgnore = `/build
+`;

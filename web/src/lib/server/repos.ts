@@ -7,6 +7,9 @@ import {
 	templateCSharpGitIgnore,
 	templateCSharpProblem,
 	templateCSharpProblemProj,
+	templateCppCMakeLists,
+	templateCppGitIgnore,
+	templateCppProblem,
 	templateJavaProblem
 } from './templates';
 
@@ -42,6 +45,23 @@ async function addProblemsCSharp(opts: OptsAddProblems) {
 	});
 }
 
+async function addProblemsCPP(opts: OptsAddProblems) {
+	let cmakeLists = templateCppCMakeLists;
+	opts.contest.problems.forEach((problem) => {
+		cmakeLists += `add_executable(${problem.pascalName} ${problem.pascalName}/${problem.pascalName}.cpp)`;
+	});
+	opts.fs.writeFileSync(join(opts.dir, 'CMakeLists.txt'), cmakeLists);
+
+	opts.contest.problems.forEach((problem) => {
+		opts.fs.mkdirSync(join(opts.dir, problem.pascalName));
+		const filledTemplate = templateCppProblem.replaceAll('%%pascalName%%', problem.pascalName);
+		opts.fs.writeFileSync(
+			join(opts.dir, problem.pascalName, `${problem.pascalName}.cpp`),
+			filledTemplate
+		);
+	});
+}
+
 export async function createRepos(contestId: number) {
 	const vol = new memfs.Volume();
 	const fs = createFsFromVolume(vol);
@@ -63,6 +83,9 @@ export async function createRepos(contestId: number) {
 		} else if (team.language === 'CSharp') {
 			addProblemsCSharp({ fs, dir: team.id.toString(), contest });
 			fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCSharpGitIgnore);
+		} else if (team.language === 'CPP') {
+			addProblemsCPP({ fs, dir: team.id.toString(), contest });
+			fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCppGitIgnore);
 		} else {
 			console.error('Language not supported');
 			return;
