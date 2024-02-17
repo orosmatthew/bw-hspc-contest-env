@@ -4,7 +4,7 @@ import { cloneAndOpenRepo } from './extension';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
 
-export type ContestLanguage = 'Java' | 'CSharp';
+export type ContestLanguage = 'Java' | 'CSharp' | 'CPP';
 
 export type TeamData = {
 	teamId: number;
