@@ -35,73 +35,77 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 	console.log(`- RUN: ${params.mainClass}`);
 	const runCommand = `java -cp "${join(params.srcDir, 'build')}" ${params.mainClass}`;
 
-	let outputBuffer = '';
-	const child = spawn(runCommand, { shell: true });
-	child.stdout.setEncoding('utf8');
-	child.stdout.on('data', (data) => {
-		outputBuffer += data.toString();
-	});
-	child.stderr.setEncoding('utf8');
-	child.stderr.on('data', (data) => {
-		outputBuffer += data.toString();
-	});
+	try {
+		let outputBuffer = '';
+		const child = spawn(runCommand, { shell: true });
+		child.stdout.setEncoding('utf8');
+		child.stdout.on('data', (data) => {
+			outputBuffer += data.toString();
+		});
+		child.stderr.setEncoding('utf8');
+		child.stderr.on('data', (data) => {
+			outputBuffer += data.toString();
+		});
 
-	let runStartTime = performance.now();
-	child.stdin.write(params.input);
-	child.stdin.end();
+		let runStartTime = performance.now();
+		child.stdin.write(params.input);
+		child.stdin.end();
 
-	let timeLimitExceeded = false;
-	let completedNormally = false;
+		let timeLimitExceeded = false;
+		let completedNormally = false;
 
-	return {
-		success: true,
-		runResult: new Promise<RunResult>(async (resolve) => {
-			child.on('close', () => {
-				completedNormally = !timeLimitExceeded;
+		return {
+			success: true,
+			runResult: new Promise<RunResult>(async (resolve) => {
+				child.on('close', () => {
+					completedNormally = !timeLimitExceeded;
 
-				let runEndTime = performance.now();
-				const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
+					let runEndTime = performance.now();
+					const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
 
-				if (completedNormally) {
-					clearTimeout(timeoutHandle);
-					resolve({
-						kind: 'Completed',
-						output: outputBuffer,
-						exitCode: child.exitCode!,
-						runtimeMilliseconds
-					});
-				} else {
-					console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
-					resolve({
-						kind: 'TimeLimitExceeded',
-						output: outputBuffer,
-						resultKindReason: `Timeout after ${timeoutSeconds} seconds`
-					});
-				}
-			});
+					if (completedNormally) {
+						clearTimeout(timeoutHandle);
+						resolve({
+							kind: 'Completed',
+							output: outputBuffer,
+							exitCode: child.exitCode!,
+							runtimeMilliseconds
+						});
+					} else {
+						console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
+						resolve({
+							kind: 'TimeLimitExceeded',
+							output: outputBuffer,
+							resultKindReason: `Timeout after ${timeoutSeconds} seconds`
+						});
+					}
+				});
 
-			let timeoutHandle = setTimeout(() => {
-				if (completedNormally) {
-					return;
-				}
+				let timeoutHandle = setTimeout(() => {
+					if (completedNormally) {
+						return;
+					}
 
-				console.log(`Run timed out after ${timeoutSeconds} seconds, killing process...`);
-				timeLimitExceeded = true;
+					console.log(`Run timed out after ${timeoutSeconds} seconds, killing process...`);
+					timeLimitExceeded = true;
 
-				child.stdin.end();
-				child.stdin.destroy();
-				child.stdout.destroy();
-				child.stderr.destroy();
-				child.kill('SIGKILL');
-			}, timeoutSeconds * 1000);
-		}),
-		killFunc() {
-			if (child.pid !== undefined) {
-				if (!completedNormally && !timeLimitExceeded) {
-					kill(child.pid);
-					params.outputCallback?.('\n[Manually stopped]');
+					child.stdin.end();
+					child.stdin.destroy();
+					child.stdout.destroy();
+					child.stderr.destroy();
+					child.kill('SIGKILL');
+				}, timeoutSeconds * 1000);
+			}),
+			killFunc() {
+				if (child.pid !== undefined) {
+					if (!completedNormally && !timeLimitExceeded) {
+						kill(child.pid);
+						params.outputCallback?.('\n[Manually stopped]');
+					}
 				}
 			}
-		}
-	};
+		};
+	} catch (error) {
+		return { success: false, runResult: { kind: 'RunError' } };
+	}
 };

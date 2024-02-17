@@ -11,7 +11,13 @@ import { runCpp } from './run/cpp.js';
 
 export const timeoutSeconds = 30;
 
-const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'SandboxError', 'RunError']);
+const RunResultKind = z.enum([
+	'CompileFailed',
+	'TimeLimitExceeded',
+	'Completed',
+	'SandboxError',
+	'RunError'
+]);
 export type RunResultKind = z.infer<typeof RunResultKind>;
 
 const RunResult = z

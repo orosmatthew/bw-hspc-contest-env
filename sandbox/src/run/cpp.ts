@@ -4,7 +4,6 @@ import util from 'util';
 import { RunResult, timeoutSeconds } from '../index.js';
 import { IRunner, IRunnerParams, IRunnerReturn } from './types.js';
 import kill from 'tree-kill';
-import * as fs from 'fs';
 
 const execPromise = util.promisify(exec);
 
