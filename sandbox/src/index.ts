@@ -7,10 +7,11 @@ import { join } from 'path';
 import { simpleGit, SimpleGit } from 'simple-git';
 import { runJava } from './run/java.js';
 import { runCSharp } from './run/csharp.js';
+import { runCpp } from './run/cpp.js';
 
 export const timeoutSeconds = 30;
 
-const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'SandboxError']);
+const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'SandboxError', 'RunError']);
 export type RunResultKind = z.infer<typeof RunResultKind>;
 
 const RunResult = z
@@ -40,7 +41,7 @@ const submissionGetData = z
 				contestName: z.string(),
 				teamId: z.number(),
 				teamName: z.string(),
-				teamLanguage: z.enum(['Java', 'CSharp']),
+				teamLanguage: z.enum(['Java', 'CSharp', 'CPP']),
 				problem: z.object({
 					id: z.number(),
 					pascalName: z.string(),
@@ -121,6 +122,18 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 			let res = await runCSharp({
 				srcDir: join(repoDir, problemName),
 				input: submissionData.submission.problem.realInput
+			});
+			if (res.success === true) {
+				runResult = await res.runResult;
+			} else {
+				runResult = res.runResult;
+			}
+		} else if (submissionData.submission.teamLanguage === 'CPP') {
+			let res = await runCpp({
+				srcDir: repoDir,
+				input: submissionData.submission.problem.realInput,
+				cppPlatform: 'GCC',
+				problemName: submissionData.submission.problem.pascalName
 			});
 			if (res.success === true) {
 				runResult = await res.runResult;
