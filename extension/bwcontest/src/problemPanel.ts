@@ -7,6 +7,7 @@ import { join } from 'path';
 import { TeamData } from './SidebarProvider';
 import { submitProblem } from './submit';
 import { runCSharp } from './run/csharp';
+import { runCpp } from './run/cpp';
 
 export type ProblemData = {
 	id: number;
@@ -193,6 +194,21 @@ export class BWPanel {
 					problem.pascalName
 				),
 				input,
+				(data: string) => {
+					outputBuffer.push(data);
+					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
+				},
+				() => {
+					this.runningProgram = undefined;
+					this.webviewPostMessage({ msg: 'onRunningDone' });
+				}
+			);
+		} else if (teamData.language === 'CPP') {
+			killFunc = await runCpp(
+				join(repoDir, 'BWContest', teamData.contestId.toString(), teamData.teamId.toString()),
+				problem.pascalName,
+				input,
+				process.platform === 'win32' ? 'VisualStudio' : 'GCC',
 				(data: string) => {
 					outputBuffer.push(data);
 					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
