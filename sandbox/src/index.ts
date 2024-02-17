@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import fs from 'fs-extra';
 import urlJoin from 'url-join';
-import { string, z } from 'zod';
+import { z } from 'zod';
 import os, { EOL } from 'os';
 import { join } from 'path';
 import { simpleGit, SimpleGit } from 'simple-git';
@@ -90,12 +90,10 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		return;
 	}
 	const tmpDir = os.tmpdir();
-	const buildDir = join(tmpDir, 'bwcontest-build');
-	if (fs.existsSync(buildDir)) {
-		fs.removeSync(buildDir);
+	const repoDir = join(tmpDir, 'bwcontest-src');
+	if (fs.existsSync(repoDir)) {
+		fs.removeSync(repoDir);
 	}
-	fs.mkdirSync(buildDir);
-	const repoDir = join(buildDir, 'src');
 	fs.mkdirSync(repoDir);
 
 	const teamRepoUrl = urlJoin(
@@ -114,7 +112,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 	try {
 		if (submissionData.submission.teamLanguage === 'Java') {
 			let res = await runJava({
-				srcDir: buildDir,
+				srcDir: repoDir,
 				mainFile: join(repoDir, problemName, problemName + '.java'),
 				mainClass: problemName,
 				input: submissionData.submission.problem.realInput
