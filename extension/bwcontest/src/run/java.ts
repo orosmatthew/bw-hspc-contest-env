@@ -1,84 +1,112 @@
-import * as fs from 'fs-extra';
 import { join } from 'path';
-import os = require('os');
 import { exec, spawn } from 'child_process';
-import { extensionSettings } from '../extension';
-import { error } from 'console';
-import util = require('node:util');
+import * as util from 'util';
+import { timeoutSeconds, type IRunner, type IRunnerParams, type IRunnerReturn, type RunResult } from './types';
 import kill = require('tree-kill');
 
 const execPromise = util.promisify(exec);
 
-export async function runJava(
-	srcDir: string,
-	mainFile: string,
-	mainClass: string,
-	input: string,
-	outputCallback: (data: string) => void,
-	doneCallback: () => void
-): Promise<(() => void) | undefined> {
-	const javaPath = extensionSettings().javaPath;
-	if (javaPath == '') {
-		throw error('Java path not set');
-	}
-	const tempDir = os.tmpdir();
-	const buildDir = join(tempDir, 'bwcontest_java');
-	if (await fs.exists(buildDir)) {
-		await fs.remove(buildDir);
-	}
-	await fs.mkdir(buildDir);
+interface IRunnerParamsJava extends IRunnerParams {
+	srcDir: string;
+	mainFile: string;
+	mainClass: string;
+	input: string;
+	outputCallback?: (data: string) => void;
+}
 
-	const compileCommand = `${join(javaPath, 'javac')} -cp ${srcDir} ${mainFile} -d ${buildDir}`;
+export const runJava: IRunner<IRunnerParamsJava> = async function (
+	params: IRunnerParamsJava
+): IRunnerReturn {
+	console.log(`- BUILD: ${params.mainFile}`);
+	const compileCommand = `javac -cp ${join(params.srcDir, 'src')} ${params.mainFile} -d ${join(params.srcDir, 'build')}`;
+
 	try {
 		await execPromise(compileCommand);
-	} catch (error) {
-		outputCallback('[Compile Error]\n\n');
-		outputCallback(String(error));
-		return;
+	} catch (e) {
+		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
+		console.log('Build errors: ' + buildErrorText);
+		return {
+			success: false,
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText }
+		};
 	}
 
-	const runCommand = `${join(javaPath, 'java')} -cp "${buildDir}" ${mainClass}`;
+	console.log(`- RUN: ${params.mainClass}`);
+	const runCommand = `java -cp "${join(params.srcDir, 'build')}" ${params.mainClass}`;
 
-	const child = spawn(runCommand, { shell: true });
+	try {
+		let outputBuffer = '';
+		const child = spawn(runCommand, { shell: true });
+		child.stdout.setEncoding('utf8');
+		child.stdout.on('data', (data) => {
+			outputBuffer += data.toString();
+			params.outputCallback?.(data.toString());
+		});
+		child.stderr.setEncoding('utf8');
+		child.stderr.on('data', (data) => {
+			outputBuffer += data.toString();
+			params.outputCallback?.(data.toString());
+		});
 
-	child.stdout.setEncoding('utf8');
-	child.stdout.on('data', (data) => {
-		outputCallback(data.toString());
-	});
-	child.stderr.setEncoding('utf8');
-	child.stderr.on('data', (data) => {
-		outputCallback(data.toString());
-	});
-	child.stdin.write(input);
-	child.stdin.end();
+		const runStartTime = performance.now();
+		child.stdin.write(params.input);
+		child.stdin.end();
 
-	let done = false;
+		let timeLimitExceeded = false;
+		let completedNormally = false;
 
-	child.on('close', () => {
-		if (done === false) {
-			done = true;
-			doneCallback();
-		}
-	});
+		return {
+			success: true,
+			runResult: new Promise<RunResult>((resolve) => {
+				child.on('close', () => {
+					completedNormally = !timeLimitExceeded;
 
-	setTimeout(() => {
-		if (done === false) {
-			console.log('\n[30 seconds reached, killing process...]');
-			done = true;
-			if (child.pid) {
-				kill(child.pid);
+					const runEndTime = performance.now();
+					const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
+
+					if (completedNormally) {
+						clearTimeout(timeoutHandle);
+						resolve({
+							kind: 'Completed',
+							output: outputBuffer,
+							exitCode: child.exitCode!,
+							runtimeMilliseconds
+						});
+					} else {
+						console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
+						resolve({
+							kind: 'TimeLimitExceeded',
+							output: outputBuffer,
+							resultKindReason: `Timeout after ${timeoutSeconds} seconds`
+						});
+					}
+				});
+
+				const timeoutHandle = setTimeout(() => {
+					if (completedNormally) {
+						return;
+					}
+
+					console.log(`Run timed out after ${timeoutSeconds} seconds, killing process...`);
+					timeLimitExceeded = true;
+
+					child.stdin.end();
+					child.stdin.destroy();
+					child.stdout.destroy();
+					child.stderr.destroy();
+					child.kill('SIGKILL');
+				}, timeoutSeconds * 1000);
+			}),
+			killFunc() {
+				if (child.pid !== undefined) {
+					if (!completedNormally && !timeLimitExceeded) {
+						kill(child.pid);
+						params.outputCallback?.('\n[Manually stopped]');
+					}
+				}
 			}
-			outputCallback('\n[Timeout after 30 seconds]');
-			doneCallback();
-		}
-	}, 30000);
-
-	return () => {
-		if (child.pid) {
-			done = true;
-			kill(child.pid);
-			outputCallback('\n[Manually stopped]');
-			doneCallback();
-		}
-	};
-}
+		};
+	} catch (error) {
+		return { success: false, runResult: { kind: 'RunError' } };
+	}
+};
