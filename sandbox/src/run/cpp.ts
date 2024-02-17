@@ -4,7 +4,8 @@ import util from 'util';
 import { RunResult, timeoutSeconds } from '../index.js';
 import { IRunner, IRunnerParams, IRunnerReturn } from './types.js';
 import kill from 'tree-kill';
-import * as fs from 'fs';
+import os from 'os';
+import fs from 'fs-extra';
 
 const execPromise = util.promisify(exec);
 
@@ -21,9 +22,16 @@ interface IRunnerParamsCpp extends IRunnerParams {
 export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 	params: IRunnerParamsCpp
 ): IRunnerReturn {
+	const tmpDir = os.tmpdir();
+	const buildDir = join(tmpDir, 'bwcontest-cpp');
+	if (fs.existsSync(buildDir)) {
+		fs.removeSync(buildDir);
+	}
+	fs.mkdirSync(buildDir);
+
 	console.log(`- BUILD: ${params.problemName}`);
 
-	const configureCommand = `cmake -S ${params.srcDir} -B ${join(params.srcDir, 'build')}`;
+	const configureCommand = `cmake -S ${params.srcDir} -B ${buildDir}`;
 	try {
 		await execPromise(configureCommand);
 	} catch (e) {
@@ -35,7 +43,7 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 		};
 	}
 
-	const compileCommand = `cmake --build ${join(params.srcDir, 'build')} --target ${params.problemName}`;
+	const compileCommand = `cmake --build ${buildDir} --target ${params.problemName}`;
 	try {
 		await execPromise(compileCommand);
 	} catch (e) {
@@ -51,9 +59,9 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 
 	let runCommand = '';
 	if (params.cppPlatform === 'VisualStudio') {
-		runCommand = `${join(params.srcDir, 'build', 'Debug', `${params.problemName}.exe`)}`;
+		runCommand = `${join(buildDir, 'Debug', `${params.problemName}.exe`)}`;
 	} else {
-		runCommand = `${join(params.srcDir, 'build', params.problemName)}`;
+		runCommand = `${join(buildDir, params.problemName)}`;
 	}
 	try {
 		let outputBuffer = '';
