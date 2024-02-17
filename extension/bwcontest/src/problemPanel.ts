@@ -157,15 +157,10 @@ export class BWPanel {
 
 		let killFunc: (() => void) | undefined;
 		if (teamData.language === 'Java') {
-			killFunc = await runJava(
-				join(
-					repoDir,
-					'BWContest',
-					teamData.contestId.toString(),
-					teamData.teamId.toString(),
-					problem.pascalName
-				),
-				join(
+			const res = await runJava({
+				input,
+				mainClass: problem.pascalName,
+				mainFile: join(
 					repoDir,
 					'BWContest',
 					teamData.contestId.toString(),
@@ -173,53 +168,87 @@ export class BWPanel {
 					problem.pascalName,
 					`${problem.pascalName}.java`
 				),
-				problem.pascalName,
-				input,
-				(data: string) => {
-					outputBuffer.push(data);
-					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
-				},
-				() => {
-					this.runningProgram = undefined;
-					this.webviewPostMessage({ msg: 'onRunningDone' });
-				}
-			);
-		} else if (teamData.language === 'CSharp') {
-			killFunc = await runCSharp(
-				join(
+				srcDir: join(
 					repoDir,
 					'BWContest',
 					teamData.contestId.toString(),
 					teamData.teamId.toString(),
 					problem.pascalName
 				),
-				input,
-				(data: string) => {
+				outputCallback: (data) => {
 					outputBuffer.push(data);
 					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
-				},
-				() => {
+				}
+			});
+			if (res.success === true) {
+				killFunc = res.killFunc;
+				res.runResult.then(() => {
 					this.runningProgram = undefined;
 					this.webviewPostMessage({ msg: 'onRunningDone' });
+				})
+			} else {
+				this.runningProgram = undefined;
+				this.webviewPostMessage({
+					msg: 'onRunningOutput',
+					data: `${res.runResult.kind}:\n${res.runResult.output}`
+				});
+				this.webviewPostMessage({ msg: 'onRunningDone' });
+			}
+		} else if (teamData.language === 'CSharp') {
+			const res = await runCSharp({
+				input, 
+				srcDir: join(
+					repoDir,
+					'BWContest',
+					teamData.contestId.toString(),
+					teamData.teamId.toString(),
+					problem.pascalName
+				),
+				outputCallback: (data) => {
+					outputBuffer.push(data);
+					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
 				}
-			);
+			})
+			if (res.success === true) {
+				killFunc = res.killFunc;
+				res.runResult.then(() => {
+					this.runningProgram = undefined;
+					this.webviewPostMessage({ msg: 'onRunningDone' });
+				})
+			} else {
+				this.runningProgram = undefined;
+				this.webviewPostMessage({
+					msg: 'onRunningOutput',
+					data: `${res.runResult.kind}:\n${res.runResult.output}`
+				});
+				this.webviewPostMessage({ msg: 'onRunningDone' });
+			}
 		} else if (teamData.language === 'CPP') {
-			killFunc = await runCpp(
-				join(repoDir, 'BWContest', teamData.contestId.toString(), teamData.teamId.toString()),
-				problem.pascalName,
+			const res = await runCpp({
 				input,
-				process.platform === 'win32' ? 'VisualStudio' : 'GCC',
-				(data: string) => {
+				cppPlatform: process.platform === 'win32' ? 'VisualStudio' : 'GCC',
+				problemName: problem.pascalName,
+				srcDir: join(repoDir, 'BWContest', teamData.contestId.toString(), teamData.teamId.toString()),
+				outputCallback: (data) => {
 					outputBuffer.push(data);
 					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
-				},
-				() => {
+				}
+			})
+			if (res.success === true) {
+				killFunc = res.killFunc;
+				res.runResult.then(() => {
 					this.runningProgram = undefined;
 					this.webviewPostMessage({ msg: 'onRunningDone' });
-				}
-			);
+				})
+			} else {
+				this.runningProgram = undefined;
+				this.webviewPostMessage({
+					msg: 'onRunningOutput',
+					data: `${res.runResult.kind}:\n${res.runResult.output}`
+				});
+				this.webviewPostMessage({ msg: 'onRunningDone' });
+			}
 		}
-
 		if (killFunc !== undefined) {
 			this.runningProgram = {
 				problemId: problemId,
