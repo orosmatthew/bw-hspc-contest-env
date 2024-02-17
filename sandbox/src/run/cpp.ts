@@ -75,7 +75,7 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 			outputBuffer += data.toString();
 		});
 
-		let runStartTime = performance.now();
+		const runStartTime = performance.now();
 		child.stdin.write(params.input);
 		child.stdin.end();
 
@@ -84,11 +84,11 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 
 		return {
 			success: true,
-			runResult: new Promise<RunResult>(async (resolve) => {
+			runResult: new Promise<RunResult>((resolve) => {
 				child.on('close', () => {
 					completedNormally = !timeLimitExceeded;
 
-					let runEndTime = performance.now();
+					const runEndTime = performance.now();
 					const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
 
 					if (completedNormally) {
@@ -109,7 +109,7 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 					}
 				});
 
-				let timeoutHandle = setTimeout(() => {
+				const timeoutHandle = setTimeout(() => {
 					if (completedNormally) {
 						return;
 					}

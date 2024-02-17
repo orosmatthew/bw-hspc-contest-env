@@ -111,7 +111,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 
 	try {
 		if (submissionData.submission.teamLanguage === 'Java') {
-			let res = await runJava({
+			const res = await runJava({
 				srcDir: repoDir,
 				mainFile: join(repoDir, problemName, problemName + '.java'),
 				mainClass: problemName,
@@ -123,7 +123,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 				runResult = res.runResult;
 			}
 		} else if (submissionData.submission.teamLanguage === 'CSharp') {
-			let res = await runCSharp({
+			const res = await runCSharp({
 				srcDir: join(repoDir, problemName),
 				input: submissionData.submission.problem.realInput
 			});
@@ -133,7 +133,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 				runResult = res.runResult;
 			}
 		} else if (submissionData.submission.teamLanguage === 'CPP') {
-			let res = await runCpp({
+			const res = await runCpp({
 				srcDir: repoDir,
 				input: submissionData.submission.problem.realInput,
 				cppPlatform: 'GCC',
@@ -213,7 +213,6 @@ if (!validateEnv()) {
 
 const adminUrl = process.env.ADMIN_URL as string;
 const repoUrl = process.env.REPO_URL as string;
-const javaBinPath = process.env.JAVA_PATH as string;
 
 const submissionApiUrl = urlJoin(adminUrl, 'api/submission');
 
@@ -279,6 +278,7 @@ async function run() {
 
 	let iterationsSinceProcessedSubmission = 0;
 	let anySubmissionsProcessed = false;
+	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		switch (await processNextSubmission()) {
 			case SubmissionProcessingResult.SubmissionProcessed:

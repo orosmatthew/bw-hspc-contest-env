@@ -1,6 +1,3 @@
-import * as fs from 'fs-extra';
-import { join } from 'path';
-import os = require('os');
 import { spawn } from 'child_process';
 import kill from 'tree-kill';
 import { RunResult, timeoutSeconds } from '../index.js';
@@ -27,7 +24,7 @@ export const runCSharp: IRunner = async function (params: {
 			params.outputCallback?.(data.toString());
 		});
 
-		let runStartTime = performance.now();
+		const runStartTime = performance.now();
 		child.stdin.write(params.input);
 		child.stdin.end();
 
@@ -40,7 +37,7 @@ export const runCSharp: IRunner = async function (params: {
 				child.on('close', () => {
 					completedNormally = !timeLimitExceeded;
 
-					let runEndTime = performance.now();
+					const runEndTime = performance.now();
 					const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
 
 					if (completedNormally) {
@@ -61,7 +58,7 @@ export const runCSharp: IRunner = async function (params: {
 					}
 				});
 
-				let timeoutHandle = setTimeout(() => {
+				const timeoutHandle = setTimeout(() => {
 					if (completedNormally) {
 						return;
 					}
