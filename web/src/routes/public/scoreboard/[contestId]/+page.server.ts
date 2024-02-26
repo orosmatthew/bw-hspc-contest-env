@@ -70,7 +70,7 @@ export const load = (async ({ params }) => {
 								})
 									? team.submissions.find((submission) => {
 											return submission.problemId === problem.id && submission.state === 'Correct';
-									  })
+										})
 										? 'correct'
 										: 'incorrect'
 									: null,

@@ -64,7 +64,7 @@ export const load = (async () => {
 												return (
 													submission.problemId === problem.id && submission.state === 'Correct'
 												);
-										  })
+											})
 											? 'correct'
 											: 'incorrect'
 										: null,
