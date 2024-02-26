@@ -1,16 +1,16 @@
 version: '3'
 services:
   db:
-    image: "postgres:latest"
+    image: 'postgres:latest'
     container_name: 'bwcontest-postgres'
     restart: unless-stopped
     environment:
       POSTGRES_DB: 'bwcontest'
       POSTGRES_USER: 'bwcontest'
-      POSTGRES_PASSWORD: 'password'
+      POSTGRES_PASSWORD: 'pass123'
       TZ: America/New_York
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - bwcontest-postgres-data:/var/lib/postgresql/data
 
