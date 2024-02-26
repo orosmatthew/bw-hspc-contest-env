@@ -3,6 +3,7 @@ import { getNonce } from './getNonce';
 import { cloneAndOpenRepo } from './extension';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
+import outputPanelLog from './outputPanelLog';
 
 export type ContestLanguage = 'Java' | 'CSharp' | 'CPP';
 
@@ -42,43 +43,79 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			})
 		});
 		const resData = await res.json();
-		if (res.status !== 200 || resData.success !== true) {
+		if (res.status !== 200) {
+			outputPanelLog.error('Invalid Login: API returned ' + res.status);
+			vscode.window.showErrorMessage('BWContest: Login Failure');
+			return;
+		}
+
+		if (resData.success !== true) {
+			outputPanelLog.error('Invalid Login attempt with message: ' + (resData.message ?? "<none>"));
 			vscode.window.showErrorMessage('BWContest: Invalid Login');
 			return;
 		}
+
 		const sessionToken = resData.token;
-		this.context.globalState.update('token', sessionToken);
 		const teamRes = await fetch(urlJoin(this.webUrl, `api/team/${sessionToken}`), {
 			method: 'GET'
 		});
 		const data2 = await teamRes.json();
 		if (!data2.success) {
+			outputPanelLog.error('Login attempt retrieved token but not team details. Staying logged out.');
+			vscode.window.showErrorMessage('BWContest: Invalid Login');
 			return;
 		}
+
+		this.context.globalState.update('token', sessionToken);
 		this.context.globalState.update('teamData', data2.data);
+		outputPanelLog.error('Login succeeded');
+
 		webviewPostMessage({ msg: 'onLogin', data: data2.data });
 	}
 
 	private async handleLogout(webviewPostMessage: (m: WebviewMessageType) => void) {
 		const sessionToken = this.context.globalState.get<string>('token');
 		if (sessionToken === undefined) {
+			outputPanelLog.error("Team requested logout, but no token was stored locally. Switching to logged out state.");
 			webviewPostMessage({ msg: 'onLogout' });
+			return;
 		}
+
+		const teamData = this.context.globalState.get<TeamData>('teamData');
+		if (teamData === undefined) {
+			outputPanelLog.error("Team requested logout with a locally stored token but no teamData. Switching to logged out state.");
+			webviewPostMessage({ msg: 'onLogout' });
+			return;
+		}
+
 		const res = await fetch(urlJoin(this.webUrl, '/api/team/logout'), {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
+				teamId: teamData.teamId,
 				token: sessionToken
 			})
 		});
+
 		if (res.status !== 200) {
+			outputPanelLog.error(`Team requested logout, failed with status code ${res.status}. Not modifying local state.`);
+			vscode.window.showErrorMessage(`BWContest: Logout failed with code ${res.status}`);
+			return;
+		};
+
+		const data2 = await res.json();
+		const responseMessage = data2.message ? `Message: ${data2.message}` : '';
+
+		if (data2.success !== true) {
+			outputPanelLog.error(`Team requested logout, failed with normal status code. Not modifying local state. ` + responseMessage);
+			vscode.window.showErrorMessage(`BWContest: Logout failed.`);
 			return;
 		}
-		const data2 = await res.json();
-		if (data2.success === true) {
-			webviewPostMessage({ msg: 'onLogout' });
-			this.context.globalState.update('token', undefined);
-		}
+
+		outputPanelLog.info(`Team requested logout, completed successfully. ` + responseMessage);
+		webviewPostMessage({ msg: 'onLogout' });
+		this.context.globalState.update('token', undefined);
+		this.context.globalState.update('teamData', undefined);
 	}
 
 	public resolveWebviewView(webviewView: vscode.WebviewView) {

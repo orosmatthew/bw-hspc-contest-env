@@ -20,12 +20,23 @@ export const POST = (async ({ request }) => {
 		where: { name: data.data.teamname },
 		include: { activeTeam: true }
 	});
-	if (!team || !team.activeTeam || team.password !== data.data.password) {
-		return json({ success: false, message: 'Invalid login' });
+
+	if (!team) {
+		return json({ success: false, message: 'Invalid team' });
 	}
+
+	if (team.password !== data.data.password) {
+		return json({ success: false, message: 'Invalid password' });
+	}
+
+	if (!team.activeTeam) {
+		return json({ success: false, message: 'No active contest for team' });
+	}
+
 	const activeTeam = await db.activeTeam.update({
 		where: { id: team.activeTeam.id },
 		data: { sessionToken: UUID.v4(), sessionCreatedAt: new Date() }
 	});
+	
 	return json({ success: true, token: activeTeam.sessionToken });
 }) satisfies RequestHandler;
