@@ -57,9 +57,8 @@
 	});
 </script>
 
-<h1>Contest</h1>
-
 {#if !loggedIn}
+	<h1>Contest Login</h1>
 	<label for="teamname">Team Name</label>
 	<input bind:value={teamname} id="teamname" type="text" />
 
@@ -68,12 +67,23 @@
 
 	<button on:click={onLogin}>Login</button>
 {:else}
+	<h1>Contest</h1>
 	<button on:click={onLogout}>Logout</button>
 	{#if teamData}
-		<p>Language: {teamData.language}</p>
-		<p>TeamID: {teamData.teamId}</p>
-		<p>ContestID: {teamData.contestId}</p>
+		<p><span class="infoLabel">Team:</span> {teamData.teamName} <span class="extraInfo">(#{teamData.teamId})</span></p>
+		<p><span class="infoLabel">Contest:</span> {teamData.contestName} <span class="extraInfo">(#{teamData.contestId})</span></p>
+		<p><span class="infoLabel">Language:</span> {teamData.language}</p>
 		<button on:click={onClone}>Clone and Open Repo</button>
 		<button on:click={onTestAndSubmit}>Test & Submit</button>
 	{/if}
 {/if}
+
+<style>
+	.infoLabel {
+		font-weight: bold;
+	}
+
+	.extraInfo {
+		font-size: smaller;
+	}
+</style>
