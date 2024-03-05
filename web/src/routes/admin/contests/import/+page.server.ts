@@ -52,7 +52,8 @@ export const actions = {
 
 			parsedContest = JSON.parse(contestJson);
 			includeSubmissions = formData.get('includeSubmissions')?.toString() == 'on';
-			createReposAndKeepContestRunning = formData.get('createReposAndKeepContestRunning')?.toString() == 'on';
+			createReposAndKeepContestRunning =
+				formData.get('createReposAndKeepContestRunning')?.toString() == 'on';
 		} catch (err) {
 			return fail(400, { message: 'Could not parse contest data: ' + err?.toString() });
 		}

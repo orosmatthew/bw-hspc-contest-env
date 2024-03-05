@@ -6,10 +6,10 @@ export const GET = (async ({ params }) => {
 	const session = params.session;
 	const activeTeam = await db.activeTeam.findUnique({
 		where: { sessionToken: session },
-		include: { 
+		include: {
 			team: { select: { language: true, name: true } },
 			contest: { select: { name: true } }
-	 	}
+		}
 	});
 	if (activeTeam === null) {
 		return json({ success: false });

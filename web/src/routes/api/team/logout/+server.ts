@@ -21,21 +21,30 @@ export const POST = (async ({ request }) => {
 	});
 
 	if (!activeTeam) {
-		return json({ success: true, message: "No active team found with the provided teamId. Client should log out." });
+		return json({
+			success: true,
+			message: 'No active team found with the provided teamId. Client should log out.'
+		});
 	}
 
 	if (activeTeam.sessionToken !== data.data.token) {
-		return json({ success: true, message: "Active team found, but provided sessionToken is incorrect.  Client should log out." });
-	}	
+		return json({
+			success: true,
+			message: 'Active team found, but provided sessionToken is incorrect.  Client should log out.'
+		});
+	}
 
 	try {
 		await db.activeTeam.update({
 			where: { sessionToken: data.data.token },
 			data: { sessionToken: null, sessionCreatedAt: null }
-		});	
-	}
-	catch (error) {
-		return json({ success: true, message: "Active team found with correct sessionToken, but couldn't clear it out. Client should still log out." });
+		});
+	} catch (error) {
+		return json({
+			success: true,
+			message:
+				"Active team found with correct sessionToken, but couldn't clear it out. Client should still log out."
+		});
 	}
 
 	return json({ success: true });

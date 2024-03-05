@@ -72,8 +72,14 @@
 		(<input type="checkbox" checked name="includeSubmissions" id="includeSubmissions" />
 		<label id="includeSubmissionsLabel" for="includeSubmissions">Include</label>)<br />
 
-		<label id="createReposAndKeepContestRunningLabel" for="createReposAndKeepContestRunning">Create Repos & Activate Contest? </label>
-		<input type="checkbox" name="createReposAndKeepContestRunning" id="createReposAndKeepContestRunning" />
+		<label id="createReposAndKeepContestRunningLabel" for="createReposAndKeepContestRunning"
+			>Create Repos & Activate Contest?
+		</label>
+		<input
+			type="checkbox"
+			name="createReposAndKeepContestRunning"
+			id="createReposAndKeepContestRunning"
+		/>
 	</div>
 
 	<div class="d-flex flex-row justify-content-end gap-2 m-2">

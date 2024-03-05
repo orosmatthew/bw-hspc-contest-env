@@ -37,6 +37,6 @@ export const POST = (async ({ request }) => {
 		where: { id: team.activeTeam.id },
 		data: { sessionToken: UUID.v4(), sessionCreatedAt: new Date() }
 	});
-	
+
 	return json({ success: true, token: activeTeam.sessionToken });
 }) satisfies RequestHandler;
