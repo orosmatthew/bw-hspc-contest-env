@@ -3,30 +3,65 @@ import { getNonce } from './getNonce';
 import { cloneAndOpenRepo } from './extension';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
+import outputPanelLog from './outputPanelLog';
+import { ContestStateForExtension, ProblemNameForExtension, SubmissionForExtension, SubmissionStateForExtension } from './contestMonitor/contestMonitorSharedTypes';
+import { TeamData } from './sharedTypes';
+import { ContestTeamState, getCachedContestTeamState, clearCachedContestTeamState, submissionsListChanged } from './contestMonitor/contestStateSyncManager';
+import { startTeamStatusPolling, stopTeamStatusPolling } from './contestMonitor/pollingService';
 
-export type ContestLanguage = 'Java' | 'CSharp' | 'CPP';
-
-export type TeamData = {
-	teamId: number;
-	contestId: number;
-	language: ContestLanguage;
-};
-
-export type WebviewMessageType = { msg: 'onLogin'; data: TeamData } | { msg: 'onLogout' };
+export type WebviewMessageType =
+	{ msg: 'onLogin'; data: TeamData } |
+	{ msg: 'onLogout' } |
+	{ msg: 'teamStatusUpdated'; data: SidebarTeamStatus | null };
 
 export type MessageType =
 	| { msg: 'onTestAndSubmit' }
-	| { msg: 'onStartup' }
+	| { msg: 'onUIMount' }
 	| { msg: 'onClone'; data: { contestId: number; teamId: number } }
 	| { msg: 'onLogin'; data: { teamName: string; password: string } }
 	| { msg: 'onLogout' };
 
+export type SidebarTeamStatus = {
+	contestState: ContestStateForExtension;
+	correctProblems: SidebarProblemWithSubmissions[];
+	processingProblems: SidebarProblemWithSubmissions[];
+	incorrectProblems: SidebarProblemWithSubmissions[];
+	notStartedProblems: SidebarProblemWithSubmissions[];
+}
+
+export type SidebarProblemWithSubmissions = {
+	problem: ProblemNameForExtension;
+	overallState: SubmissionStateForExtension | null;
+	submissions: SubmissionForExtension[];
+	modified: boolean;
+}
+
 export class SidebarProvider implements vscode.WebviewViewProvider {
+	private webview: vscode.Webview | null = null;
+
 	constructor(
 		private readonly extensionUri: vscode.Uri,
 		private readonly context: vscode.ExtensionContext,
 		private readonly webUrl: string
-	) {}
+	) { 
+		outputPanelLog.info("Constructing SidebarProvider");
+
+		const currentSubmissionsList = getCachedContestTeamState();
+		outputPanelLog.info("When SidebarProvider constructed, cached submission list is: " + JSON.stringify(currentSubmissionsList));
+		this.updateTeamStatus(currentSubmissionsList);
+
+		submissionsListChanged.add(submissionsChangedEventArgs => {
+			outputPanelLog.trace("Sidebar submission list updating from submissionsListChanged event");
+
+			if (!submissionsChangedEventArgs) {
+				return;
+			}
+
+			this.updateTeamStatus(
+				submissionsChangedEventArgs.contestTeamState, 
+				submissionsChangedEventArgs.changedProblemIds
+			)});
+	}
 
 	private async handleLogin(
 		teamName: string,
@@ -42,47 +77,135 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			})
 		});
 		const resData = await res.json();
-		if (res.status !== 200 || resData.success !== true) {
+		if (res.status !== 200) {
+			outputPanelLog.error('Invalid Login: API returned ' + res.status);
+			vscode.window.showErrorMessage('BWContest: Login Failure');
+			return;
+		}
+
+		if (resData.success !== true) {
+			outputPanelLog.error('Invalid Login attempt with message: ' + (resData.message ?? "<none>"));
 			vscode.window.showErrorMessage('BWContest: Invalid Login');
 			return;
 		}
+
 		const sessionToken = resData.token;
-		this.context.globalState.update('token', sessionToken);
 		const teamRes = await fetch(urlJoin(this.webUrl, `api/team/${sessionToken}`), {
 			method: 'GET'
 		});
 		const data2 = await teamRes.json();
 		if (!data2.success) {
+			outputPanelLog.error('Login attempt retrieved token but not team details. Staying logged out.');
+			vscode.window.showErrorMessage('BWContest: Invalid Login');
 			return;
 		}
+
+		this.context.globalState.update('token', sessionToken);
 		this.context.globalState.update('teamData', data2.data);
+
+		startTeamStatusPolling();
+
+		outputPanelLog.info('Login succeeded');
 		webviewPostMessage({ msg: 'onLogin', data: data2.data });
+
+		const currentSubmissionsList = getCachedContestTeamState();
+		outputPanelLog.info("After login, cached submission list is: " + JSON.stringify(currentSubmissionsList));
+		this.updateTeamStatus(currentSubmissionsList);
 	}
 
 	private async handleLogout(webviewPostMessage: (m: WebviewMessageType) => void) {
 		const sessionToken = this.context.globalState.get<string>('token');
 		if (sessionToken === undefined) {
-			webviewPostMessage({ msg: 'onLogout' });
+			outputPanelLog.error("Team requested logout, but no token was stored locally. Switching to logged out state.");
+			this.clearLocalTeamDataAndFinishLogout(webviewPostMessage);
+			return;
 		}
+
+		const teamData = this.context.globalState.get<TeamData>('teamData');
+		if (teamData === undefined) {
+			outputPanelLog.error("Team requested logout with a locally stored token but no teamData. Switching to logged out state.");
+			this.clearLocalTeamDataAndFinishLogout(webviewPostMessage);
+			return;
+		}
+
 		const res = await fetch(urlJoin(this.webUrl, '/api/team/logout'), {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
+				teamId: teamData.teamId,
 				token: sessionToken
 			})
 		});
+
 		if (res.status !== 200) {
+			outputPanelLog.error(`Team requested logout, failed with status code ${res.status}. Not modifying local state.`);
+			vscode.window.showErrorMessage(`BWContest: Logout failed with code ${res.status}`);
+			return;
+		};
+
+		const data2 = await res.json();
+		const responseMessage = data2.message ? `Message: ${data2.message}` : '';
+
+		if (data2.success !== true) {
+			outputPanelLog.error(`Team requested logout, failed with normal status code. Not modifying local state. ` + responseMessage);
+			vscode.window.showErrorMessage(`BWContest: Logout failed.`);
 			return;
 		}
-		const data2 = await res.json();
-		if (data2.success === true) {
-			webviewPostMessage({ msg: 'onLogout' });
-			this.context.globalState.update('token', undefined);
+
+		outputPanelLog.info(`Team requested logout, completed successfully. ` + responseMessage);
+		this.clearLocalTeamDataAndFinishLogout(webviewPostMessage);
+	}
+
+	private clearLocalTeamDataAndFinishLogout(webviewPostMessage: (m: WebviewMessageType) => void) {
+		webviewPostMessage({ msg: 'onLogout' });
+
+		stopTeamStatusPolling();
+		clearCachedContestTeamState();
+
+		this.context.globalState.update('token', undefined);
+		this.context.globalState.update('teamData', undefined);
+	}
+
+	public updateTeamStatus(contestTeamState : ContestTeamState | null, changedProblemIds = new Set<number>) {
+		if (contestTeamState == null) {
+			outputPanelLog.trace("Not updating sidebar submission list because provided state is null");
+			return;
 		}
+
+		if (this.webview == null) {
+			outputPanelLog.trace("Not updating sidebar submission list because webview is null");
+			return;
+		}
+
+		const contestState = contestTeamState.contestState;
+		const problemsWithSubmissions = contestState.problems.map<SidebarProblemWithSubmissions>(p => ({
+			problem: p,
+			overallState: calculateOverallState(contestTeamState.submissionsList.get(p.id) ?? []),
+			submissions: contestTeamState.submissionsList.get(p.id) ?? [],
+			modified: changedProblemIds.has(p.id)
+		}));
+
+		const teamStatus: SidebarTeamStatus = {
+			contestState,
+			correctProblems: problemsWithSubmissions.filter(p => p.overallState === 'Correct'),
+			processingProblems: problemsWithSubmissions.filter(p => p.overallState === 'Processing'),
+			incorrectProblems: problemsWithSubmissions.filter(p => p.overallState === 'Incorrect'),
+			notStartedProblems: problemsWithSubmissions.filter(p => p.overallState === null),
+		}
+
+		const message: WebviewMessageType = {
+			msg: 'teamStatusUpdated',
+			data: teamStatus
+		};
+
+		outputPanelLog.trace("Posting teamStatusUpdated to webview with message: " + JSON.stringify(message));
+		this.webview.postMessage(message);
 	}
 
 	public resolveWebviewView(webviewView: vscode.WebviewView) {
+		outputPanelLog.trace("SidebarProvider resolveWebviewView");
 		const webview = webviewView.webview;
+		this.webview = webview;
 		webview.options = {
 			enableScripts: true,
 			localResourceRoots: [this.extensionUri]
@@ -101,7 +224,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 					}
 					break;
 				}
-				case 'onStartup': {
+				case 'onUIMount': {
+					outputPanelLog.trace("SidebarProvider onUIMount");
 					const token = this.context.globalState.get<string>('token');
 					const teamData = this.context.globalState.get<TeamData>('teamData');
 					if (token !== undefined && teamData !== undefined) {
@@ -109,6 +233,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 							msg: 'onLogin',
 							data: teamData
 						});
+
+						const currentSubmissionsList = getCachedContestTeamState();
+						outputPanelLog.trace("onUIMount, currentSubmissionsList is " + JSON.stringify(currentSubmissionsList));
+						this.updateTeamStatus(currentSubmissionsList);
 					}
 					break;
 				}
@@ -167,5 +295,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			</body>
             <script nonce="${nonce}" src="${scriptUri}"></script>
 			</html>`;
+	}
+}
+function calculateOverallState(submissions: SubmissionForExtension[]): SubmissionStateForExtension | null {
+	if (submissions.find(s => s.state === 'Correct')) {
+		return 'Correct';
+	}
+	else if (submissions.find(s => s.state === 'Processing')) {
+		return 'Processing';
+	}
+	else if (submissions.find(s => s.state === 'Incorrect')) {
+		return 'Incorrect';
+	}
+	else {
+		return null;
 	}
 }

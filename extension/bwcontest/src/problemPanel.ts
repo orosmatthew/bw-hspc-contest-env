@@ -4,10 +4,12 @@ import urlJoin from 'url-join';
 import { extensionSettings } from './extension';
 import { runJava } from './run/java';
 import { join } from 'path';
-import { TeamData } from './SidebarProvider';
 import { submitProblem } from './submit';
 import { runCSharp } from './run/csharp';
 import { runCpp } from './run/cpp';
+import { TeamData } from './sharedTypes';
+import outputPanelLog from './outputPanelLog';
+import { recordInitialSubmission } from './contestMonitor/contestStateSyncManager';
 
 export type ProblemData = {
 	id: number;
@@ -54,6 +56,7 @@ export class BWPanel {
 	}
 
 	public static show(context: vscode.ExtensionContext, webUrl: string) {
+		outputPanelLog.info("Showing BWPanel");
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
@@ -117,20 +120,27 @@ export class BWPanel {
 		}
 		await vscode.workspace.saveAll();
 		const ans = await vscode.window.showInformationMessage(
-			`Are you sure you want to submit ${problem.name}?`,
+			`Are you sure you want to submit '${problem.name}'?`,
 			'Yes',
 			'No'
 		);
 		if (ans !== 'Yes') {
 			return;
 		}
-		submitProblem(sessionToken, teamData.contestId, teamData.teamId, problemId).then((result) => {
-			if (result.success === true) {
-				vscode.window.showInformationMessage('Submitted!');
+
+		try {
+			const submissionResult = await submitProblem(sessionToken, teamData.contestId, teamData.teamId, problemId);
+			if (submissionResult.success === true) {
+				recordInitialSubmission(submissionResult.submission);
+				vscode.window.showInformationMessage(`Submitted '${problem.name}'!`);
 			} else {
-				vscode.window.showErrorMessage(`Error: ${result.message}`);
+				vscode.window.showErrorMessage(`Error submitting '${problem.name}': ${submissionResult.message}`);
 			}
-		});
+		}
+		catch (error) {
+			vscode.window.showErrorMessage(`Web error submitting '${problem.name}'`);
+			outputPanelLog.error(`Web error submitting '${problem.name}': ${error}`);
+		}
 	}
 
 	private async handleRun(problemId: number, input: string) {

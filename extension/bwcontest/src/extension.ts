@@ -5,12 +5,15 @@ import urlJoin from 'url-join';
 import git from 'isomorphic-git';
 import path = require('path');
 import http from 'isomorphic-git/http/node';
+import outputPanelLog from './outputPanelLog';
+import { startTeamStatusPollingOnActivation, stopTeamStatusPolling, useFastPolling } from './contestMonitor/pollingService';
 
 export interface BWContestSettings {
 	repoBaseUrl: string;
 	webUrl: string;
 	repoClonePath: string;
 	javaPath: string;
+	debugFastPolling: boolean;
 }
 
 export function extensionSettings(): BWContestSettings {
@@ -77,8 +80,16 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 	}
 
 	const dir = path.join(currentSettings.repoClonePath, 'BWContest', contestId.toString(), repoName);
-	await git.clone({ fs, http, dir, url: repoUrl });
+	outputPanelLog.info(`Running 'git clone' to directory: ${dir}`);
+	try {
+		await git.clone({ fs, http, dir, url: repoUrl });
+	}
+	catch (error) {
+		outputPanelLog.error("Failed to 'git clone'. The git server might be incorrectly configured. Error: " + error);
+		throw error;
+	}
 
+	outputPanelLog.info("Closing workspaces...");
 	closeAllWorkspaces();
 
 	const addedFolder = vscode.workspace.updateWorkspaceFolders(
@@ -96,14 +107,35 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+	outputPanelLog.info("BWContest Extension Activated");
+
 	const sidebarProvider = new SidebarProvider(
 		context.extensionUri,
 		context,
 		extensionSettings().webUrl
 	);
+
+	let fastPolling = extensionSettings().debugFastPolling;
+	useFastPolling(fastPolling);
+
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider)
+		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider),
+		vscode.commands.registerCommand('bwcontest.toggleFastPolling', () => {
+			if (!extensionSettings().debugFastPolling) {
+				outputPanelLog.trace("Tried to toggle fast polling, but not allowed.");
+				return;
+			}
+
+			fastPolling = !fastPolling;
+			useFastPolling(fastPolling);
+		})
 	);
+
+	startTeamStatusPollingOnActivation(context);
 }
 
-export function deactivate() {}
+export function deactivate() {
+	outputPanelLog.info("BWContest Extension Deactivated");
+	stopTeamStatusPolling();
+}
+

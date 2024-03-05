@@ -9,7 +9,7 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [],
+	"activationEvents": ["onStartupFinished"],
 	"main": "./out/main.js",
 	"contributes": {
 		"configuration": {
@@ -34,6 +34,11 @@
 					"type": "string",
 					"default": "",
 					"description": "Path of java bin folder"
+				},
+				"BWContest.debugFastPolling": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enables fast polling, with a command to toggle frequency"
 				}
 			}
 		},
@@ -57,7 +62,12 @@
 				}
 			]
 		},
-		"commands": []
+		"commands": [
+			{
+				"command": "bwcontest.toggleFastPolling",
+				"title": "BWContest Developer: Toggle Fast Polling"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
