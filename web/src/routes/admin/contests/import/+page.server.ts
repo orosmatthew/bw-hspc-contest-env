@@ -3,6 +3,7 @@ import { Language, SubmissionState } from '@prisma/client';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { genPassword } from '../../teams/util';
+import { createRepos } from '$lib/server/repos';
 
 export const load = (async () => {}) satisfies PageServerLoad;
 
@@ -40,6 +41,7 @@ export const actions = {
 	default: async ({ request }) => {
 		let parsedContest: ContestImportData;
 		let includeSubmissions: boolean;
+		let createReposAndKeepContestRunning: boolean;
 
 		try {
 			const formData = await request.formData();
@@ -50,6 +52,7 @@ export const actions = {
 
 			parsedContest = JSON.parse(contestJson);
 			includeSubmissions = formData.get('includeSubmissions')?.toString() == 'on';
+			createReposAndKeepContestRunning = formData.get('createReposAndKeepContestRunning')?.toString() == 'on';
 		} catch (err) {
 			return fail(400, { message: 'Could not parse contest data: ' + err?.toString() });
 		}
@@ -69,7 +72,7 @@ export const actions = {
 			}
 
 			// Single transaction
-			await db.contest.create({
+			const contest = await db.contest.create({
 				data: {
 					name: parsedContest.Name,
 					startTime: contestStart,
@@ -128,6 +131,30 @@ export const actions = {
 					}
 				}
 			});
+
+			if (createReposAndKeepContestRunning) {
+				const fullContest = await db.contest.findUnique({
+					where: { id: contest.id },
+					include: { teams: { include: { activeTeam: true } } }
+				});
+
+				if (fullContest && parsedContest.Problems.length > 0 && parsedContest.Teams.length > 0) {
+					if (!fullContest.startTime) {
+						await db.contest.update({
+							where: { id: fullContest.id },
+							data: {
+								startTime: new Date()
+							}
+						});
+					}
+
+					fullContest.teams.forEach(async (team) => {
+						await db.activeTeam.create({ data: { teamId: team.id, contestId: contest.id } });
+					});
+
+					await createRepos(contest.id);
+				}
+			}
 		} catch (err) {
 			return fail(400, { message: 'Error updating database: ' + err?.toString() });
 		}
