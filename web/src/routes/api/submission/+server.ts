@@ -126,7 +126,8 @@ export const POST = (async ({ request }) => {
 					state: SubmissionState.Incorrect,
 					gradedAt: new Date(),
 					stateReason: SubmissionStateReason.BuildError,
-					stateReasonDetails: data.data.result.resultKindReason
+					stateReasonDetails: data.data.result.resultKindReason,
+					message: "Compilation Failed"
 				}
 			});
 			return json({ success: true });
