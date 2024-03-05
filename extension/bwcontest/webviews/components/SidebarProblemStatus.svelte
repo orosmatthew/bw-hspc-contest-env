@@ -18,7 +18,6 @@
 <script lang="ts">
 	import type { SidebarProblemWithSubmissions } from '../../src/SidebarProvider';
 	import type { ContestStateForExtension, SubmissionForExtension, SubmissionStateForExtension } from '../../src/contestMonitor/contestMonitorSharedTypes';
-	import { pluralize } from '../../src/utilities/pluralize';
 
 	export let contestState: ContestStateForExtension;
 	export let problem: SidebarProblemWithSubmissions;
@@ -56,6 +55,10 @@
 		} catch (error) {
 			return '???';
 		}
+	}
+
+	function pluralize(num: number, singular: string, plural: string) {
+		return num === 1 ? singular : plural;
 	}
 </script>
 
