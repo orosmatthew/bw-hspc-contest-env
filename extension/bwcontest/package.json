@@ -34,6 +34,11 @@
 					"type": "string",
 					"default": "",
 					"description": "Path of java bin folder"
+				},
+				"BWContest.debugFastPolling": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enables fast polling, with a command to toggle frequency"
 				}
 			}
 		},

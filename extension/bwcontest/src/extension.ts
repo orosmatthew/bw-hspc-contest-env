@@ -13,6 +13,7 @@ export interface BWContestSettings {
 	webUrl: string;
 	repoClonePath: string;
 	javaPath: string;
+	debugFastPolling: boolean;
 }
 
 export function extensionSettings(): BWContestSettings {
@@ -114,12 +115,17 @@ export function activate(context: vscode.ExtensionContext) {
 		extensionSettings().webUrl
 	);
 
-	let fastPolling = false;
+	let fastPolling = extensionSettings().debugFastPolling;
+	useFastPolling(fastPolling);
+
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider),
 		vscode.commands.registerCommand('bwcontest.toggleFastPolling', () => {
-			// remove return to enable fastPolling toggling
-			return;
+			if (!extensionSettings().debugFastPolling) {
+				outputPanelLog.trace("Tried to toggle fast polling, but not allowed.");
+				return;
+			}
+
 			fastPolling = !fastPolling;
 			useFastPolling(fastPolling);
 		})
