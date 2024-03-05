@@ -107,7 +107,7 @@
 	<div style="display:flex">
 		<div style="flex:1; margin-right:20px">
 			<h3>Sample Input (You can edit this!)</h3>
-			<textarea bind:value={sampleInputValue} />
+			<textarea class="inputOutputArea" bind:value={sampleInputValue} />
 			<button style="margin-top:5px" on:click={resetInput} type="button">Reset Input</button>
 		</div>
 		<div style="flex:1">
@@ -117,7 +117,7 @@
 					<span class="loader"></span>
 				{/if}
 			</div>
-			<textarea bind:value={outputValue} readonly />
+			<textarea class="inputOutputArea" bind:value={outputValue} readonly />
 			{#if !running}
 				<button style="margin-top:5px" on:click={onRun} type="button">Run</button>
 			{:else}
@@ -163,6 +163,10 @@
 		display: inline-block;
 		box-sizing: border-box;
 		animation: rotation 1s linear infinite;
+	}
+
+	.inputOutputArea {
+		font-family: monospace;
 	}
 
 	@keyframes rotation {
