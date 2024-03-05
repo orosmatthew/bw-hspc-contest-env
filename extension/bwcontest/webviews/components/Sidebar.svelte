@@ -55,9 +55,10 @@
 		if (m.msg === 'onLogin') {
 			loggedIn = true;
 			teamData = m.data;
+			teamStatus = null;
 		} else if (m.msg === 'onLogout') {
-			// loggedIn = false;
-			// teamData = undefined;
+			loggedIn = false;
+			teamStatus = null;
 		} else if (m.msg === 'teamStatusUpdated') {
 			teamStatus = m.data;
 			totalProblems = teamStatus

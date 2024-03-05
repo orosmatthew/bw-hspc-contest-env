@@ -6,7 +6,7 @@ import git from 'isomorphic-git';
 import path = require('path');
 import http from 'isomorphic-git/http/node';
 import outputPanelLog from './outputPanelLog';
-import { startTeamStatusPolling, stopTeamStatusPolling, useFastPolling } from './contestMonitor/pollingService';
+import { startTeamStatusPollingOnActivation, stopTeamStatusPolling, useFastPolling } from './contestMonitor/pollingService';
 
 export interface BWContestSettings {
 	repoBaseUrl: string;
@@ -125,7 +125,7 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	startTeamStatusPolling(context);
+	startTeamStatusPollingOnActivation(context);
 }
 
 export function deactivate() {

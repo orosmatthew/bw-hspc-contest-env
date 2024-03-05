@@ -6,7 +6,8 @@ import urlJoin from 'url-join';
 import outputPanelLog from './outputPanelLog';
 import { ContestStateForExtension, ProblemNameForExtension, SubmissionForExtension, SubmissionStateForExtension } from './contestMonitor/contestMonitorSharedTypes';
 import { TeamData } from './sharedTypes';
-import { ContestTeamState, getCachedContestTeamState, submissionsListChanged } from './contestMonitor/contestStateSyncManager';
+import { ContestTeamState, getCachedContestTeamState, clearCachedContestTeamState, submissionsListChanged } from './contestMonitor/contestStateSyncManager';
+import { startTeamStatusPolling, stopTeamStatusPolling } from './contestMonitor/pollingService';
 
 export type WebviewMessageType =
 	{ msg: 'onLogin'; data: TeamData } |
@@ -101,8 +102,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
 		this.context.globalState.update('token', sessionToken);
 		this.context.globalState.update('teamData', data2.data);
-		outputPanelLog.info('Login succeeded');
 
+		startTeamStatusPolling();
+
+		outputPanelLog.info('Login succeeded');
 		webviewPostMessage({ msg: 'onLogin', data: data2.data });
 
 		const currentSubmissionsList = getCachedContestTeamState();
@@ -114,14 +117,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		const sessionToken = this.context.globalState.get<string>('token');
 		if (sessionToken === undefined) {
 			outputPanelLog.error("Team requested logout, but no token was stored locally. Switching to logged out state.");
-			webviewPostMessage({ msg: 'onLogout' });
+			this.clearLocalTeamDataAndFinishLogout(webviewPostMessage);
 			return;
 		}
 
 		const teamData = this.context.globalState.get<TeamData>('teamData');
 		if (teamData === undefined) {
 			outputPanelLog.error("Team requested logout with a locally stored token but no teamData. Switching to logged out state.");
-			webviewPostMessage({ msg: 'onLogout' });
+			this.clearLocalTeamDataAndFinishLogout(webviewPostMessage);
 			return;
 		}
 
@@ -150,7 +153,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		}
 
 		outputPanelLog.info(`Team requested logout, completed successfully. ` + responseMessage);
+		this.clearLocalTeamDataAndFinishLogout(webviewPostMessage);
+	}
+
+	private clearLocalTeamDataAndFinishLogout(webviewPostMessage: (m: WebviewMessageType) => void) {
 		webviewPostMessage({ msg: 'onLogout' });
+
+		stopTeamStatusPolling();
+		clearCachedContestTeamState();
+
 		this.context.globalState.update('token', undefined);
 		this.context.globalState.update('teamData', undefined);
 	}

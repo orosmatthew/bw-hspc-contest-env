@@ -21,6 +21,10 @@ export function getCachedContestTeamState(): ContestTeamState | null {
     return latestContestTeamState;
 }
 
+export function clearCachedContestTeamState(): void {
+    latestContestTeamState = null;
+}
+
 const onSubmissionsListChanged = new LiteEvent<SubmissionListStateChangedEventArgs>();
 export const submissionsListChanged = onSubmissionsListChanged.expose();
 
