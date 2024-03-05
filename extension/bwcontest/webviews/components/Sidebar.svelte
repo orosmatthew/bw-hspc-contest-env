@@ -1,17 +1,22 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { WebviewMessageType, MessageType, TeamData } from '../../src/SidebarProvider';
-
-	function postMessage(message: MessageType) {
-		vscode.postMessage(message);
-	}
+	import SidebarProblemStatus from './SidebarProblemStatus.svelte';
+	import type { TeamData } from '../../src/sharedTypes';
+	import type { WebviewMessageType, MessageType, SidebarTeamStatus } from '../../src/SidebarProvider';
 
 	let teamname: string;
 	let password: string;
 
 	let loggedIn = false;
 
-	let teamData: TeamData | undefined;
+	let teamData: TeamData | null = null;
+	let teamStatus: SidebarTeamStatus | null = null;
+
+	let totalProblems = 0;
+
+	function postMessage(message: MessageType) {
+		vscode.postMessage(message);
+	}
 
 	function onClone() {
 		if (teamData) {
@@ -34,7 +39,7 @@
 			msg: 'onLogout'
 		});
 		loggedIn = false;
-		teamData = undefined;
+		teamData = null;
 	}
 
 	function onTestAndSubmit() {
@@ -42,7 +47,7 @@
 	}
 
 	onMount(() => {
-		postMessage({ msg: 'onStartup' });
+		postMessage({ msg: 'onUIMount' });
 	});
 
 	window.addEventListener('message', (event) => {
@@ -53,6 +58,14 @@
 		} else if (m.msg === 'onLogout') {
 			// loggedIn = false;
 			// teamData = undefined;
+		} else if (m.msg === 'teamStatusUpdated') {
+			teamStatus = m.data;
+			totalProblems = teamStatus
+				? teamStatus.correctProblems.length +
+					teamStatus.processingProblems.length +
+					teamStatus.incorrectProblems.length +
+					teamStatus.notStartedProblems.length
+				: 0;
 		}
 	});
 </script>
@@ -65,25 +78,166 @@
 	<label for="password">Password</label>
 	<input bind:value={password} id="password" type="password" />
 
-	<button on:click={onLogin}>Login</button>
+	<div class="buttonContainer">
+		<button on:click={onLogin}>Login</button>
+	</div>
 {:else}
-	<h1>Contest</h1>
-	<button on:click={onLogout}>Logout</button>
+	<h2 class="sidebarSectionHeader">Contest Info</h2>
 	{#if teamData}
-		<p><span class="infoLabel">Team:</span> {teamData.teamName} <span class="extraInfo">(#{teamData.teamId})</span></p>
-		<p><span class="infoLabel">Contest:</span> {teamData.contestName} <span class="extraInfo">(#{teamData.contestId})</span></p>
-		<p><span class="infoLabel">Language:</span> {teamData.language}</p>
-		<button on:click={onClone}>Clone and Open Repo</button>
-		<button on:click={onTestAndSubmit}>Test & Submit</button>
+		<div class="sidebarSection">
+			<p>
+				<span class="infoLabel">Team:</span>
+				<span class="infoData">{teamData.teamName}</span>
+				<span class="extraInfo"> (#{teamData.teamId})</span>
+			</p>
+			<p>
+				<span class="infoLabel">Contest:</span>
+				<span class="infoData">{teamData.contestName}</span>
+				<span class="extraInfo"> (#{teamData.contestId})</span>
+			</p>
+			<p>
+				<span class="infoLabel">Language:</span>
+				<span class="infoData">{teamData.language}</span>
+			</p>
+			<div class="buttonContainer">
+				<button on:click={onLogout} class="sidebarButton">Logout</button>
+			</div>
+		</div>
+
+		<h2 class="sidebarSectionHeader">Actions</h2>
+		<div class="sidebarSection">
+			<div class="buttonContainer">
+				<button on:click={onClone} class="sidebarButton">Clone and Open Repo</button>
+				<button on:click={onTestAndSubmit} class="sidebarButton">Test & Submit</button>
+			</div>
+		</div>
+
+		<h2 class="sidebarSectionHeader">Problem Progress</h2>
+		<div class="sidebarSection">
+			{#if teamStatus}
+				<div class="problemResultsSection">
+					<div>
+						<span class="problemResultsSectionHeader inProgress">Pending Judgment </span>
+					</div>
+					{#if teamStatus.processingProblems.length > 0}
+						{#each teamStatus.processingProblems as inProgressProblem (JSON.stringify(inProgressProblem))}
+							<SidebarProblemStatus problem={inProgressProblem} contestState={teamStatus.contestState} />
+						{/each}
+					{:else}
+						<div class="problemSectionExplanation">No pending submissions</div>
+					{/if}
+				</div>
+				<div class="problemResultsSection">
+					<div>
+						<span class="problemResultsSectionHeader correct">Correct </span>
+						<span class="problemResultsSectionCount">{teamStatus.correctProblems.length} of {totalProblems}</span>
+					</div>
+					{#if teamStatus.correctProblems.length > 0}
+						{#each teamStatus.correctProblems as correctProblem (JSON.stringify(correctProblem))}
+							<SidebarProblemStatus problem={correctProblem} contestState={teamStatus.contestState} />
+						{/each}
+					{:else}
+						<div class="problemSectionExplanation">Solved problems appear here</div>
+					{/if}
+				</div>
+				<div class="problemResultsSection">
+					<div>
+						<span class="problemResultsSectionHeader incorrect">Incorrect </span>
+						<span class="problemResultsSectionCount">{teamStatus.incorrectProblems.length} of {totalProblems}</span>
+					</div>
+					{#if teamStatus.incorrectProblems.length > 0}
+						{#each teamStatus.incorrectProblems as incorrectProblem (JSON.stringify(incorrectProblem))}
+							<SidebarProblemStatus problem={incorrectProblem} contestState={teamStatus.contestState} />
+						{/each}
+					{:else}
+						<div class="problemSectionExplanation">
+							Attempted problems appear here until solved
+						</div>
+					{/if}
+				</div>
+				{#if teamStatus.notStartedProblems.length > 0}
+					<div class="problemResultsSection">
+						<div>
+							<span class="problemResultsSectionHeader notAttempted">Not Attempted </span>
+							<span class="problemResultsSectionCount">{teamStatus.notStartedProblems.length} of {totalProblems}</span>
+						</div>
+						{#each teamStatus.notStartedProblems as notStartedProblem (JSON.stringify(notStartedProblem))}
+							<SidebarProblemStatus problem={notStartedProblem} contestState={teamStatus.contestState} />
+						{/each}
+					</div>
+				{/if}
+			{:else}
+				<span>Fetching data...</span>
+			{/if}
+		</div>
 	{/if}
 {/if}
 
 <style>
+	.sidebarSectionHeader {
+		font-weight: bold;
+		border-bottom: 1px solid var(--vscode-charts-yellow);
+		color: var(--vscode-charts-yellow);
+	}
+
+	.sidebarSection {
+		margin-bottom: 12px;
+		padding-left: 8px;
+		margin-top: 6px;
+	}
+
+	.buttonContainer {
+		text-align: center;
+	}
+
+	.sidebarButton {
+		border-radius: 4px;
+		width: 80%;
+		margin-top: 4px;
+	}
+
 	.infoLabel {
+		font-weight: bold;
+		font-size: 15px;
+	}
+
+	.infoData {
 		font-weight: bold;
 	}
 
 	.extraInfo {
 		font-size: smaller;
+		visibility: collapse;
+	}
+
+	.problemResultsSection {
+		padding-bottom: 16px;
+	}
+
+	.problemResultsSectionHeader {
+		font-size: 16px;
+		font-weight: bold;
+	}
+
+	.problemSectionExplanation {
+		margin-left: 18px;
+		font-style: italic;
+	}
+
+	.problemResultsSectionHeader.correct {
+		color: var(--vscode-charts-green);
+	}
+
+	.problemResultsSectionHeader.inProgress {
+		color: var(--vscode-editorLightBulb-foreground);
+	}
+
+	.problemResultsSectionHeader.incorrect {
+		color: var(--vscode-charts-red);
+	}
+
+	.problemResultsSectionCount {
+		padding-left: 2px;
+		font-size: 14px;
 	}
 </style>

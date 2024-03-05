@@ -5,6 +5,8 @@ import urlJoin from 'url-join';
 import git from 'isomorphic-git';
 import path = require('path');
 import http from 'isomorphic-git/http/node';
+import outputPanelLog from './outputPanelLog';
+import { startTeamStatusPolling, stopTeamStatusPolling, useFastPolling } from './contestMonitor/pollingService';
 
 export interface BWContestSettings {
 	repoBaseUrl: string;
@@ -77,8 +79,16 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 	}
 
 	const dir = path.join(currentSettings.repoClonePath, 'BWContest', contestId.toString(), repoName);
-	await git.clone({ fs, http, dir, url: repoUrl });
+	outputPanelLog.info(`Running 'git clone' to directory: ${dir}`);
+	try {
+		await git.clone({ fs, http, dir, url: repoUrl });
+	}
+	catch (error) {
+		outputPanelLog.error("Failed to 'git clone'. The git server might be incorrectly configured. Error: " + error);
+		throw error;
+	}
 
+	outputPanelLog.info("Closing workspaces...");
 	closeAllWorkspaces();
 
 	const addedFolder = vscode.workspace.updateWorkspaceFolders(
@@ -96,14 +106,30 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+	outputPanelLog.info("BWContest Extension Activated");
+
 	const sidebarProvider = new SidebarProvider(
 		context.extensionUri,
 		context,
 		extensionSettings().webUrl
 	);
+
+	let fastPolling = false;
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider)
+		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider),
+		vscode.commands.registerCommand('bwcontest.toggleFastPolling', () => {
+			// remove return to enable fastPolling toggling
+			return;
+			fastPolling = !fastPolling;
+			useFastPolling(fastPolling);
+		})
 	);
+
+	startTeamStatusPolling(context);
 }
 
-export function deactivate() {}
+export function deactivate() {
+	outputPanelLog.info("BWContest Extension Deactivated");
+	stopTeamStatusPolling();
+}
+

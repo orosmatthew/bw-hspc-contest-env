@@ -4,32 +4,63 @@ import { cloneAndOpenRepo } from './extension';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
 import outputPanelLog from './outputPanelLog';
+import { ContestStateForExtension, ProblemNameForExtension, SubmissionForExtension, SubmissionStateForExtension } from './contestMonitor/contestMonitorSharedTypes';
+import { TeamData } from './sharedTypes';
+import { ContestTeamState, getCachedContestTeamState, submissionsListChanged } from './contestMonitor/contestStateSyncManager';
 
-export type ContestLanguage = 'Java' | 'CSharp' | 'CPP';
-
-export type TeamData = {
-	teamId: number;
-	teamName: string;
-	contestId: number;
-	contestName: string;
-	language: ContestLanguage;
-};
-
-export type WebviewMessageType = { msg: 'onLogin'; data: TeamData } | { msg: 'onLogout' };
+export type WebviewMessageType =
+	{ msg: 'onLogin'; data: TeamData } |
+	{ msg: 'onLogout' } |
+	{ msg: 'teamStatusUpdated'; data: SidebarTeamStatus | null };
 
 export type MessageType =
 	| { msg: 'onTestAndSubmit' }
-	| { msg: 'onStartup' }
+	| { msg: 'onUIMount' }
 	| { msg: 'onClone'; data: { contestId: number; teamId: number } }
 	| { msg: 'onLogin'; data: { teamName: string; password: string } }
 	| { msg: 'onLogout' };
 
+export type SidebarTeamStatus = {
+	contestState: ContestStateForExtension;
+	correctProblems: SidebarProblemWithSubmissions[];
+	processingProblems: SidebarProblemWithSubmissions[];
+	incorrectProblems: SidebarProblemWithSubmissions[];
+	notStartedProblems: SidebarProblemWithSubmissions[];
+}
+
+export type SidebarProblemWithSubmissions = {
+	problem: ProblemNameForExtension;
+	overallState: SubmissionStateForExtension | null;
+	submissions: SubmissionForExtension[];
+	modified: boolean;
+}
+
 export class SidebarProvider implements vscode.WebviewViewProvider {
+	private webview: vscode.Webview | null = null;
+
 	constructor(
 		private readonly extensionUri: vscode.Uri,
 		private readonly context: vscode.ExtensionContext,
 		private readonly webUrl: string
-	) {}
+	) { 
+		outputPanelLog.info("Constructing SidebarProvider");
+
+		const currentSubmissionsList = getCachedContestTeamState();
+		outputPanelLog.info("When SidebarProvider constructed, cached submission list is: " + JSON.stringify(currentSubmissionsList));
+		this.updateTeamStatus(currentSubmissionsList);
+
+		submissionsListChanged.add(submissionsChangedEventArgs => {
+			outputPanelLog.trace("Sidebar submission list updating from submissionsListChanged event");
+
+			if (!submissionsChangedEventArgs) {
+				return;
+			}
+
+			this.updateTeamStatus(
+				submissionsChangedEventArgs.contestTeamState, 
+				submissionsChangedEventArgs.changedProblemIds
+			)});
+	}
 
 	private async handleLogin(
 		teamName: string,
@@ -70,9 +101,13 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
 		this.context.globalState.update('token', sessionToken);
 		this.context.globalState.update('teamData', data2.data);
-		outputPanelLog.error('Login succeeded');
+		outputPanelLog.info('Login succeeded');
 
 		webviewPostMessage({ msg: 'onLogin', data: data2.data });
+
+		const currentSubmissionsList = getCachedContestTeamState();
+		outputPanelLog.info("After login, cached submission list is: " + JSON.stringify(currentSubmissionsList));
+		this.updateTeamStatus(currentSubmissionsList);
 	}
 
 	private async handleLogout(webviewPostMessage: (m: WebviewMessageType) => void) {
@@ -120,8 +155,46 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		this.context.globalState.update('teamData', undefined);
 	}
 
+	public updateTeamStatus(contestTeamState : ContestTeamState | null, changedProblemIds = new Set<number>) {
+		if (contestTeamState == null) {
+			outputPanelLog.trace("Not updating sidebar submission list because provided state is null");
+			return;
+		}
+
+		if (this.webview == null) {
+			outputPanelLog.trace("Not updating sidebar submission list because webview is null");
+			return;
+		}
+
+		const contestState = contestTeamState.contestState;
+		const problemsWithSubmissions = contestState.problems.map<SidebarProblemWithSubmissions>(p => ({
+			problem: p,
+			overallState: calculateOverallState(contestTeamState.submissionsList.get(p.id) ?? []),
+			submissions: contestTeamState.submissionsList.get(p.id) ?? [],
+			modified: changedProblemIds.has(p.id)
+		}));
+
+		const teamStatus: SidebarTeamStatus = {
+			contestState,
+			correctProblems: problemsWithSubmissions.filter(p => p.overallState === 'Correct'),
+			processingProblems: problemsWithSubmissions.filter(p => p.overallState === 'Processing'),
+			incorrectProblems: problemsWithSubmissions.filter(p => p.overallState === 'Incorrect'),
+			notStartedProblems: problemsWithSubmissions.filter(p => p.overallState === null),
+		}
+
+		const message: WebviewMessageType = {
+			msg: 'teamStatusUpdated',
+			data: teamStatus
+		};
+
+		outputPanelLog.trace("Posting teamStatusUpdated to webview with message: " + JSON.stringify(message));
+		this.webview.postMessage(message);
+	}
+
 	public resolveWebviewView(webviewView: vscode.WebviewView) {
+		outputPanelLog.trace("SidebarProvider resolveWebviewView");
 		const webview = webviewView.webview;
+		this.webview = webview;
 		webview.options = {
 			enableScripts: true,
 			localResourceRoots: [this.extensionUri]
@@ -140,7 +213,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 					}
 					break;
 				}
-				case 'onStartup': {
+				case 'onUIMount': {
+					outputPanelLog.trace("SidebarProvider onUIMount");
 					const token = this.context.globalState.get<string>('token');
 					const teamData = this.context.globalState.get<TeamData>('teamData');
 					if (token !== undefined && teamData !== undefined) {
@@ -148,6 +222,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 							msg: 'onLogin',
 							data: teamData
 						});
+
+						const currentSubmissionsList = getCachedContestTeamState();
+						outputPanelLog.trace("onUIMount, currentSubmissionsList is " + JSON.stringify(currentSubmissionsList));
+						this.updateTeamStatus(currentSubmissionsList);
 					}
 					break;
 				}
@@ -206,5 +284,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			</body>
             <script nonce="${nonce}" src="${scriptUri}"></script>
 			</html>`;
+	}
+}
+function calculateOverallState(submissions: SubmissionForExtension[]): SubmissionStateForExtension | null {
+	if (submissions.find(s => s.state === 'Correct')) {
+		return 'Correct';
+	}
+	else if (submissions.find(s => s.state === 'Processing')) {
+		return 'Processing';
+	}
+	else if (submissions.find(s => s.state === 'Incorrect')) {
+		return 'Incorrect';
+	}
+	else {
+		return null;
 	}
 }

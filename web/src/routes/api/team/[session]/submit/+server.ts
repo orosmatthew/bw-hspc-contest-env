@@ -3,6 +3,8 @@ import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { SubmissionState } from '@prisma/client';
+import type { SubmissionForExtension } from '$lib/contestMonitor/contestMonitorSharedTypes';
+import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
 
 const submitPostData = z.object({
 	commitHash: z.string(),
@@ -47,7 +49,7 @@ export const POST = (async ({ params, request }) => {
 		return json({ success: false, message: 'Already submitted correct submission' });
 	}
 
-	await db.submission.create({
+	const submission = await db.submission.create({
 		data: {
 			state: SubmissionState.Queued,
 			commitHash: data.data.commitHash,
@@ -57,5 +59,15 @@ export const POST = (async ({ params, request }) => {
 		}
 	});
 
-	return json({ success: true });
+	const submissionForExtension: SubmissionForExtension = {
+		id: submission.id,
+		contestId: submission.contestId,
+		teamId: submission.teamId,
+		problemId: submission.problemId,
+		createdAt: submission.createdAt,
+		state: convertSubmissionStateForExtension(submission.state),
+		message: submission.message
+	};
+
+	return json({ success: true, submission: submissionForExtension });
 }) satisfies RequestHandler;
