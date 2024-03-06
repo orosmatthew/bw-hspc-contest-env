@@ -1,6 +1,12 @@
 import { join } from 'path';
 import { exec, spawn } from 'child_process';
-import { timeoutSeconds, type IRunner, type IRunnerParams, type IRunnerReturn, type RunResult } from './types';
+import {
+	timeoutSeconds,
+	type IRunner,
+	type IRunnerParams,
+	type IRunnerReturn,
+	type RunResult
+} from './types';
 import kill = require('tree-kill');
 import * as os from 'os';
 import * as fs from 'fs-extra';
@@ -68,12 +74,12 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
 			outputBuffer += data.toString();
-            params.outputCallback?.(data.toString());
+			params.outputCallback?.(data.toString());
 		});
 		child.stderr.setEncoding('utf8');
 		child.stderr.on('data', (data) => {
 			outputBuffer += data.toString();
-            params.outputCallback?.(data.toString());
+			params.outputCallback?.(data.toString());
 		});
 
 		const runStartTime = performance.now();

@@ -1,7 +1,13 @@
 import { join } from 'path';
 import { exec, spawn } from 'child_process';
 import * as util from 'util';
-import { timeoutSeconds, type IRunner, type IRunnerParams, type IRunnerReturn, type RunResult } from './types';
+import {
+	timeoutSeconds,
+	type IRunner,
+	type IRunnerParams,
+	type IRunnerReturn,
+	type RunResult
+} from './types';
 import kill = require('tree-kill');
 
 const execPromise = util.promisify(exec);

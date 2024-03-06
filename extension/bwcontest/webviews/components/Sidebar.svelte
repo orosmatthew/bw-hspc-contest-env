@@ -2,7 +2,11 @@
 	import { onMount } from 'svelte';
 	import SidebarProblemStatus from './SidebarProblemStatus.svelte';
 	import type { TeamData } from '../../src/sharedTypes';
-	import type { WebviewMessageType, MessageType, SidebarTeamStatus } from '../../src/SidebarProvider';
+	import type {
+		WebviewMessageType,
+		MessageType,
+		SidebarTeamStatus
+	} from '../../src/SidebarProvider';
 
 	let teamname: string;
 	let password: string;
@@ -122,7 +126,10 @@
 					</div>
 					{#if teamStatus.processingProblems.length > 0}
 						{#each teamStatus.processingProblems as inProgressProblem (JSON.stringify(inProgressProblem))}
-							<SidebarProblemStatus problem={inProgressProblem} contestState={teamStatus.contestState} />
+							<SidebarProblemStatus
+								problem={inProgressProblem}
+								contestState={teamStatus.contestState}
+							/>
 						{/each}
 					{:else}
 						<div class="problemSectionExplanation">No pending submissions</div>
@@ -131,11 +138,16 @@
 				<div class="problemResultsSection">
 					<div>
 						<span class="problemResultsSectionHeader correct">Correct </span>
-						<span class="problemResultsSectionCount">{teamStatus.correctProblems.length} of {totalProblems}</span>
+						<span class="problemResultsSectionCount"
+							>{teamStatus.correctProblems.length} of {totalProblems}</span
+						>
 					</div>
 					{#if teamStatus.correctProblems.length > 0}
 						{#each teamStatus.correctProblems as correctProblem (JSON.stringify(correctProblem))}
-							<SidebarProblemStatus problem={correctProblem} contestState={teamStatus.contestState} />
+							<SidebarProblemStatus
+								problem={correctProblem}
+								contestState={teamStatus.contestState}
+							/>
 						{/each}
 					{:else}
 						<div class="problemSectionExplanation">Solved problems appear here</div>
@@ -144,26 +156,34 @@
 				<div class="problemResultsSection">
 					<div>
 						<span class="problemResultsSectionHeader incorrect">Incorrect </span>
-						<span class="problemResultsSectionCount">{teamStatus.incorrectProblems.length} of {totalProblems}</span>
+						<span class="problemResultsSectionCount"
+							>{teamStatus.incorrectProblems.length} of {totalProblems}</span
+						>
 					</div>
 					{#if teamStatus.incorrectProblems.length > 0}
 						{#each teamStatus.incorrectProblems as incorrectProblem (JSON.stringify(incorrectProblem))}
-							<SidebarProblemStatus problem={incorrectProblem} contestState={teamStatus.contestState} />
+							<SidebarProblemStatus
+								problem={incorrectProblem}
+								contestState={teamStatus.contestState}
+							/>
 						{/each}
 					{:else}
-						<div class="problemSectionExplanation">
-							Attempted problems appear here until solved
-						</div>
+						<div class="problemSectionExplanation">Attempted problems appear here until solved</div>
 					{/if}
 				</div>
 				{#if teamStatus.notStartedProblems.length > 0}
 					<div class="problemResultsSection">
 						<div>
 							<span class="problemResultsSectionHeader notAttempted">Not Attempted </span>
-							<span class="problemResultsSectionCount">{teamStatus.notStartedProblems.length} of {totalProblems}</span>
+							<span class="problemResultsSectionCount"
+								>{teamStatus.notStartedProblems.length} of {totalProblems}</span
+							>
 						</div>
 						{#each teamStatus.notStartedProblems as notStartedProblem (JSON.stringify(notStartedProblem))}
-							<SidebarProblemStatus problem={notStartedProblem} contestState={teamStatus.contestState} />
+							<SidebarProblemStatus
+								problem={notStartedProblem}
+								contestState={teamStatus.contestState}
+							/>
 						{/each}
 					</div>
 				{/if}

@@ -1,32 +1,48 @@
 <script lang="ts" context="module">
-	export const watSubmissionsImageUrl = 
-		new URL('../../media/SubmissionIcons/TeamPanel/none.png', import.meta.url).href;
+	export const watSubmissionsImageUrl = new URL(
+		'../../media/SubmissionIcons/TeamPanel/none.png',
+		import.meta.url
+	).href;
 
-	export const correctSubmissionImageUrl = 
-		new URL('../../media/SubmissionIcons/TeamPanel/correct.png', import.meta.url).href;
+	export const correctSubmissionImageUrl = new URL(
+		'../../media/SubmissionIcons/TeamPanel/correct.png',
+		import.meta.url
+	).href;
 
-	export const incorrectSubmissionImageUrl = 
-		new URL('../../media/SubmissionIcons/TeamPanel/incorrect.png', import.meta.url).href;
+	export const incorrectSubmissionImageUrl = new URL(
+		'../../media/SubmissionIcons/TeamPanel/incorrect.png',
+		import.meta.url
+	).href;
 
-	export const pendingSubmissionImageUrl = 
-		new URL('../../media/SubmissionIcons/TeamPanel/unknown.png', import.meta.url).href;
+	export const pendingSubmissionImageUrl = new URL(
+		'../../media/SubmissionIcons/TeamPanel/unknown.png',
+		import.meta.url
+	).href;
 
-	export const noSubmissionsImageUrl = 
-		new URL('../../media/SubmissionIcons/TeamPanel/none.png', import.meta.url).href;
+	export const noSubmissionsImageUrl = new URL(
+		'../../media/SubmissionIcons/TeamPanel/none.png',
+		import.meta.url
+	).href;
 </script>
 
 <script lang="ts">
 	import type { SidebarProblemWithSubmissions } from '../../src/SidebarProvider';
-	import type { ContestStateForExtension, SubmissionForExtension, SubmissionStateForExtension } from '../../src/contestMonitor/contestMonitorSharedTypes';
+	import type {
+		ContestStateForExtension,
+		SubmissionForExtension,
+		SubmissionStateForExtension
+	} from '../../src/contestMonitor/contestMonitorSharedTypes';
 
 	export let contestState: ContestStateForExtension;
 	export let problem: SidebarProblemWithSubmissions;
 
 	const sortedSubmissions = problem.submissions
-		? problem.submissions.sort((s1, s2) => Date.parse(s1.createdAt.toString()) - Date.parse(s2.createdAt.toString()))
+		? problem.submissions.sort(
+				(s1, s2) => Date.parse(s1.createdAt.toString()) - Date.parse(s2.createdAt.toString())
+			)
 		: [];
 
-	const highlightClasses = `${(problem.modified ? "highlight" : "")} ${problem.overallState?.toLowerCase()}`;
+	const highlightClasses = `${problem.modified ? 'highlight' : ''} ${problem.overallState?.toLowerCase()}`;
 
 	function getStatusImageUrl(overallState: SubmissionStateForExtension | null): string {
 		switch (overallState) {
@@ -62,8 +78,8 @@
 	}
 </script>
 
-<div class={"problemStatusDiv " + highlightClasses}>
-	<div class={"problemHeaderDiv"}>
+<div class={'problemStatusDiv ' + highlightClasses}>
+	<div class={'problemHeaderDiv'}>
 		<img
 			class="overallStatusImage"
 			src={getStatusImageUrl(problem.overallState)}
@@ -76,28 +92,38 @@
 				<span class="problemHeaderName">{problem.problem.friendlyName}</span>
 				<span class="problemHeaderSubmitCount">
 					{problem.submissions.length}
-					{pluralize(problem.submissions.length, 'attempt', 'attempts')}</span>
+					{pluralize(problem.submissions.length, 'attempt', 'attempts')}</span
+				>
 				{#if problem.submissions.filter((s) => s.state === 'Processing').length > 0}
-					<span>({problem.submissions.filter((s) => s.state === 'Processing').length} pending...)</span>
+					<span
+						>({problem.submissions.filter((s) => s.state === 'Processing').length} pending...)</span
+					>
 				{/if}
-				{#if problem.overallState === "Correct"}
-					<span class="individualSubmissionAttemptTime"> @ {getContestOffsetDisplay(problem.submissions.filter(s => s.state === "Correct")[0])}</span>
+				{#if problem.overallState === 'Correct'}
+					<span class="individualSubmissionAttemptTime">
+						@ {getContestOffsetDisplay(
+							problem.submissions.filter((s) => s.state === 'Correct')[0]
+						)}</span
+					>
 				{/if}
 			{/if}
 		</div>
 	</div>
-	{#if problem.overallState !== "Correct"}
+	{#if problem.overallState !== 'Correct'}
 		{#each sortedSubmissions as submission, i}
 			<div class="individualSubmissionDiv">
 				<span class="individualSubmissionAttemptNumber">Submit #{i + 1}: </span>
 				<img
 					class="individualSubmissionStatusImage"
 					src={getStatusImageUrl(submission.state)}
-					alt={submission.state}/>
+					alt={submission.state}
+				/>
 				<span class="individualSubmissionResult {submission.state.toLowerCase()}">
 					{submission.state}
 				</span>
-				<span class="individualSubmissionAttemptTime"> @ {getContestOffsetDisplay(submission)}</span>
+				<span class="individualSubmissionAttemptTime">
+					@ {getContestOffsetDisplay(submission)}</span
+				>
 			</div>
 			{#if submission.message}
 				<div class="individualSubmissionMessageWrapper">
@@ -127,7 +153,7 @@
 
 	.problemHeaderSubmitCount {
 		margin-left: 4px;
-	    font-style: italic;
+		font-style: italic;
 	}
 
 	.problemHeader {

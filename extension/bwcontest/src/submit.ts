@@ -12,7 +12,9 @@ export async function submitProblem(
 	contestId: number,
 	teamId: number,
 	problemId: number
-): Promise<{ success: true; submission: SubmissionForExtension } | { success: false; message: string }> {
+): Promise<
+	{ success: true; submission: SubmissionForExtension } | { success: false; message: string }
+> {
 	outputPanelLog.info(`Submitting problem id #{${problemId}}...`);
 
 	let hash: string;
@@ -30,9 +32,8 @@ export async function submitProblem(
 			author: { name: `Team ${teamId}` },
 			message: `Submit problem ${problemId}`
 		});
-	}
-	catch (error) {
-		outputPanelLog.error("Fail to make commit for submission: " + JSON.stringify(error));
+	} catch (error) {
+		outputPanelLog.error('Fail to make commit for submission: ' + JSON.stringify(error));
 		throw error;
 	}
 

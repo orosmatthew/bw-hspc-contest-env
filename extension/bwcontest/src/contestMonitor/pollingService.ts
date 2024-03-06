@@ -25,9 +25,8 @@ export async function startTeamStatusPolling() {
 	if (currentlyPolling) {
 		outputPanelLog.trace("Tried to start team status polling, but it's already running.");
 		return;
-	}
-	else if (!extensionContext.globalState.get('token')) {
-		outputPanelLog.info("Tried to start team status polling, but team is not logged in.");
+	} else if (!extensionContext.globalState.get('token')) {
+		outputPanelLog.info('Tried to start team status polling, but team is not logged in.');
 		return;
 	}
 
@@ -38,14 +37,15 @@ export async function startTeamStatusPolling() {
 
 async function startPollingWorker(cancellationToken: SimpleCancellationToken) {
 	const pollingLoopNum = ++debugPollingLoopNum;
-	outputPanelLog.trace(`Starting polling loop #${pollingLoopNum}, checking contest/team status every ${pollingIntervalSeconds} seconds`);
+	outputPanelLog.trace(
+		`Starting polling loop #${pollingLoopNum}, checking contest/team status every ${pollingIntervalSeconds} seconds`
+	);
 
 	while (!cancellationToken.isCancelled) {
 		try {
 			await pollContestStatus(extensionContext);
-		}
-		catch (error) {
-			outputPanelLog.error("Polling contest status failed: " + (error ?? "<unknown error>"));
+		} catch (error) {
+			outputPanelLog.error('Polling contest status failed: ' + (error ?? '<unknown error>'));
 		}
 
 		await sleep(pollingIntervalSeconds * 1000);
@@ -55,12 +55,16 @@ async function startPollingWorker(cancellationToken: SimpleCancellationToken) {
 }
 
 export function stopTeamStatusPolling() {
-	outputPanelLog.trace("Stopping team status polling");
+	outputPanelLog.trace('Stopping team status polling');
 	currentPollingCancellationToken?.cancel();
-    currentlyPolling = false;
+	currentlyPolling = false;
 }
 
 export function useFastPolling(enabled: boolean): void {
-	pollingIntervalSeconds = enabled ? developerFastPollingIntervalSeconds : defaultPollingIntervalSeconds;
-	outputPanelLog.info(`Changed polling interval to ${pollingIntervalSeconds} seconds. Takes effect after current delay.`);
+	pollingIntervalSeconds = enabled
+		? developerFastPollingIntervalSeconds
+		: defaultPollingIntervalSeconds;
+	outputPanelLog.info(
+		`Changed polling interval to ${pollingIntervalSeconds} seconds. Takes effect after current delay.`
+	);
 }

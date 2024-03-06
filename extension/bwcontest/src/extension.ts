@@ -6,7 +6,11 @@ import git from 'isomorphic-git';
 import path = require('path');
 import http from 'isomorphic-git/http/node';
 import outputPanelLog from './outputPanelLog';
-import { startTeamStatusPollingOnActivation, stopTeamStatusPolling, useFastPolling } from './contestMonitor/pollingService';
+import {
+	startTeamStatusPollingOnActivation,
+	stopTeamStatusPolling,
+	useFastPolling
+} from './contestMonitor/pollingService';
 
 export interface BWContestSettings {
 	repoBaseUrl: string;
@@ -83,13 +87,14 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 	outputPanelLog.info(`Running 'git clone' to directory: ${dir}`);
 	try {
 		await git.clone({ fs, http, dir, url: repoUrl });
-	}
-	catch (error) {
-		outputPanelLog.error("Failed to 'git clone'. The git server might be incorrectly configured. Error: " + error);
+	} catch (error) {
+		outputPanelLog.error(
+			"Failed to 'git clone'. The git server might be incorrectly configured. Error: " + error
+		);
 		throw error;
 	}
 
-	outputPanelLog.info("Closing workspaces...");
+	outputPanelLog.info('Closing workspaces...');
 	closeAllWorkspaces();
 
 	const addedFolder = vscode.workspace.updateWorkspaceFolders(
@@ -107,7 +112,7 @@ export async function cloneAndOpenRepo(contestId: number, teamId: number) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-	outputPanelLog.info("BWContest Extension Activated");
+	outputPanelLog.info('BWContest Extension Activated');
 
 	const sidebarProvider = new SidebarProvider(
 		context.extensionUri,
@@ -122,7 +127,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider),
 		vscode.commands.registerCommand('bwcontest.toggleFastPolling', () => {
 			if (!extensionSettings().debugFastPolling) {
-				outputPanelLog.trace("Tried to toggle fast polling, but not allowed.");
+				outputPanelLog.trace('Tried to toggle fast polling, but not allowed.');
 				return;
 			}
 
@@ -135,7 +140,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-	outputPanelLog.info("BWContest Extension Deactivated");
+	outputPanelLog.info('BWContest Extension Deactivated');
 	stopTeamStatusPolling();
 }
-

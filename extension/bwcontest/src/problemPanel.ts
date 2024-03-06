@@ -56,7 +56,7 @@ export class BWPanel {
 	}
 
 	public static show(context: vscode.ExtensionContext, webUrl: string) {
-		outputPanelLog.info("Showing BWPanel");
+		outputPanelLog.info('Showing BWPanel');
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
@@ -129,15 +129,21 @@ export class BWPanel {
 		}
 
 		try {
-			const submissionResult = await submitProblem(sessionToken, teamData.contestId, teamData.teamId, problemId);
+			const submissionResult = await submitProblem(
+				sessionToken,
+				teamData.contestId,
+				teamData.teamId,
+				problemId
+			);
 			if (submissionResult.success === true) {
 				recordInitialSubmission(submissionResult.submission);
 				vscode.window.showInformationMessage(`Submitted '${problem.name}'!`);
 			} else {
-				vscode.window.showErrorMessage(`Error submitting '${problem.name}': ${submissionResult.message}`);
+				vscode.window.showErrorMessage(
+					`Error submitting '${problem.name}': ${submissionResult.message}`
+				);
 			}
-		}
-		catch (error) {
+		} catch (error) {
 			vscode.window.showErrorMessage(`Web error submitting '${problem.name}'`);
 			outputPanelLog.error(`Web error submitting '${problem.name}': ${error}`);
 		}
@@ -195,7 +201,7 @@ export class BWPanel {
 				res.runResult.then(() => {
 					this.runningProgram = undefined;
 					this.webviewPostMessage({ msg: 'onRunningDone' });
-				})
+				});
 			} else {
 				this.runningProgram = undefined;
 				this.webviewPostMessage({
@@ -206,7 +212,7 @@ export class BWPanel {
 			}
 		} else if (teamData.language === 'CSharp') {
 			const res = await runCSharp({
-				input, 
+				input,
 				srcDir: join(
 					repoDir,
 					'BWContest',
@@ -218,13 +224,13 @@ export class BWPanel {
 					outputBuffer.push(data);
 					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
 				}
-			})
+			});
 			if (res.success === true) {
 				killFunc = res.killFunc;
 				res.runResult.then(() => {
 					this.runningProgram = undefined;
 					this.webviewPostMessage({ msg: 'onRunningDone' });
-				})
+				});
 			} else {
 				this.runningProgram = undefined;
 				this.webviewPostMessage({
@@ -238,18 +244,23 @@ export class BWPanel {
 				input,
 				cppPlatform: process.platform === 'win32' ? 'VisualStudio' : 'GCC',
 				problemName: problem.pascalName,
-				srcDir: join(repoDir, 'BWContest', teamData.contestId.toString(), teamData.teamId.toString()),
+				srcDir: join(
+					repoDir,
+					'BWContest',
+					teamData.contestId.toString(),
+					teamData.teamId.toString()
+				),
 				outputCallback: (data) => {
 					outputBuffer.push(data);
 					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
 				}
-			})
+			});
 			if (res.success === true) {
 				killFunc = res.killFunc;
 				res.runResult.then(() => {
 					this.runningProgram = undefined;
 					this.webviewPostMessage({ msg: 'onRunningDone' });
-				})
+				});
 			} else {
 				this.runningProgram = undefined;
 				this.webviewPostMessage({
