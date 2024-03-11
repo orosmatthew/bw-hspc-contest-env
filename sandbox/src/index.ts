@@ -1,7 +1,6 @@
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import fs from 'fs-extra';
 import urlJoin from 'url-join';
-import { z } from 'zod';
 import os, { EOL } from 'os';
 import { join } from 'path';
 import { simpleGit, SimpleGit } from 'simple-git';
@@ -9,6 +8,7 @@ import { runJava } from '@submissionRunner/java.cjs';
 import { runCSharp } from '@submissionRunner/csharp.cjs';
 import { runCpp } from '@submissionRunner/cpp.cjs';
 import { RunResult, RunResultZod } from '@submissionRunner/types.cjs';
+import { z } from 'zod';
 
 const submissionPostData = z
 	.object({
@@ -186,10 +186,14 @@ function validateEnv(): boolean {
 	return process.env.ADMIN_URL !== undefined && process.env.REPO_URL !== undefined;
 }
 
-dotenv.config();
-
 if (!validateEnv()) {
-	console.log("process.env.ADMIN_URL is " + process.env.ADMIN_URL + " and process.env.REPO_URL is " + process.env.REPO_URL);
+	console.log(process.env);
+	console.log(
+		'process.env.ADMIN_URL is ' +
+			process.env.ADMIN_URL +
+			' and process.env.REPO_URL is ' +
+			process.env.REPO_URL
+	);
 	throw Error('Invalid environment');
 }
 
@@ -240,9 +244,9 @@ function printSubmissionHeader(submissionData: SubmissionGetData) {
 	console.log(`--- Submission ${submission.id} ---`);
 	console.log(
 		`- INFO: Contest ${submission.contestId} '${submission.contestName}', ` +
-		`Team ${submission.teamId} '${submission.teamName}', ` +
-		`Problem ${submission.problem.id} '${submission.problem.pascalName}', ` +
-		`SHA '${submission.commitHash}'`
+			`Team ${submission.teamId} '${submission.teamName}', ` +
+			`Problem ${submission.problem.id} '${submission.problem.pascalName}', ` +
+			`SHA '${submission.commitHash}'`
 	);
 }
 
@@ -273,10 +277,11 @@ async function run() {
 						const numMinutes = iterationsSinceProcessedSubmission / 6;
 						console.log(
 							`${numMinutes} minute${numMinutes > 1 ? 's' : ''} since ` +
-							`${anySubmissionsProcessed
-								? `last submission processed`
-								: `sandbox startup with no submissions`
-							}`
+								`${
+									anySubmissionsProcessed
+										? `last submission processed`
+										: `sandbox startup with no submissions`
+								}`
 						);
 					}
 				}

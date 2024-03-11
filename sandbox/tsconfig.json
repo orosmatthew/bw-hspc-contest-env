@@ -6,12 +6,8 @@
 		"esModuleInterop": true,
 		"strict": true,
 		"paths": {
-			"@submissionRunner/*": [
-				"../shared/submissionRunner/*"
-			]
+			"@submissionRunner/*": ["../shared/submissionRunner/*"]
 		}
 	},
-	"references": [
-		{ "path": "../shared/submissionRunner" }
-	]
+	"references": [{ "path": "../shared/submissionRunner" }]
 }

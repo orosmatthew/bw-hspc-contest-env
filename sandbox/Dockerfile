@@ -46,4 +46,5 @@ COPY ./shared/submissionRunner/ .
 
 WORKDIR /app/sandbox
 RUN npm run build
-RUN npm run start
+RUN chmod +x ./docker/entry.sh
+CMD ["./docker/entry.sh"]
