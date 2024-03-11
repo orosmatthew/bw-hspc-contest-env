@@ -5,7 +5,11 @@ import { z } from 'zod';
 import type { RequestHandler } from './$types';
 import * as Diff from 'diff';
 
-export const GET = (async () => {
+export const GET = (async ({ request }) => {
+	const secret = request.headers.get('secret');
+	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET!) {
+		throw error(401, 'Unauthorized');
+	}
 	const submissions = await db.submission.findMany({
 		where: { state: SubmissionState.Queued },
 		orderBy: { createdAt: 'asc' },
@@ -56,6 +60,10 @@ const submissionPostData = z
 	.strict();
 
 export const POST = (async ({ request }) => {
+	const secret = request.headers.get('secret');
+	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET!) {
+		throw error(401, 'Unauthorized');
+	}
 	const requestJson = await request.json();
 	const data = submissionPostData.safeParse(requestJson);
 	if (!data.success) {
