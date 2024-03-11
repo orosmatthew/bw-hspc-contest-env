@@ -6,6 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "esbuild src/index.ts --bundle --outfile=build/sandbox.cjs --format=cjs --platform=node",
+		"check": "tsc -noEmit",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"start": "node ./build/sandbox.cjs"
