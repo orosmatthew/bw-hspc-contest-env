@@ -5,35 +5,15 @@ import { z } from 'zod';
 import os, { EOL } from 'os';
 import { join } from 'path';
 import { simpleGit, SimpleGit } from 'simple-git';
-import { runJava } from './run/java.js';
-import { runCSharp } from './run/csharp.js';
-import { runCpp } from './run/cpp.js';
-
-export const timeoutSeconds = 30;
-
-const RunResultKind = z.enum([
-	'CompileFailed',
-	'TimeLimitExceeded',
-	'Completed',
-	'SandboxError',
-	'RunError'
-]);
-export type RunResultKind = z.infer<typeof RunResultKind>;
-
-const RunResult = z
-	.object({
-		kind: RunResultKind,
-		output: z.string().optional(),
-		exitCode: z.number().optional(),
-		runtimeMilliseconds: z.number().optional(),
-		resultKindReason: z.string().optional()
-	})
-	.strict();
+import { runJava } from '@submissionRunner/java.cjs';
+import { runCSharp } from '@submissionRunner/csharp.cjs';
+import { runCpp } from '@submissionRunner/cpp.cjs';
+import { RunResult, RunResultZod } from '@submissionRunner/types.cjs';
 
 const submissionPostData = z
 	.object({
 		submissionId: z.number(),
-		result: RunResult
+		result: RunResultZod
 	})
 	.strict();
 
@@ -59,7 +39,6 @@ const submissionGetData = z
 	})
 	.strict();
 
-export type RunResult = z.infer<typeof RunResult>;
 type SubmissionGetData = z.infer<typeof submissionGetData>;
 type SubmissionPostData = z.infer<typeof submissionPostData>;
 
@@ -78,10 +57,12 @@ async function fetchQueuedSubmission(): Promise<SubmissionGetData | undefined> {
 		return undefined;
 	}
 
-	const data = submissionGetData.parse(await res.json());
+	const json = await res.json();
+	const data = submissionGetData.parse(json);
 	if (!data.success) {
 		return undefined;
 	}
+
 	return data;
 }
 
@@ -208,6 +189,7 @@ function validateEnv(): boolean {
 dotenv.config();
 
 if (!validateEnv()) {
+	console.log("process.env.ADMIN_URL is " + process.env.ADMIN_URL + " and process.env.REPO_URL is " + process.env.REPO_URL);
 	throw Error('Invalid environment');
 }
 
@@ -258,9 +240,9 @@ function printSubmissionHeader(submissionData: SubmissionGetData) {
 	console.log(`--- Submission ${submission.id} ---`);
 	console.log(
 		`- INFO: Contest ${submission.contestId} '${submission.contestName}', ` +
-			`Team ${submission.teamId} '${submission.teamName}', ` +
-			`Problem ${submission.problem.id} '${submission.problem.pascalName}', ` +
-			`SHA '${submission.commitHash}'`
+		`Team ${submission.teamId} '${submission.teamName}', ` +
+		`Problem ${submission.problem.id} '${submission.problem.pascalName}', ` +
+		`SHA '${submission.commitHash}'`
 	);
 }
 
@@ -287,15 +269,16 @@ async function run() {
 				break;
 			case SubmissionProcessingResult.NoSubmissions:
 				if (iterationsSinceProcessedSubmission > 0 && iterationsSinceProcessedSubmission % 6 == 0) {
-					const numMinutes = iterationsSinceProcessedSubmission / 6;
-					console.log(
-						`${numMinutes} minute${numMinutes > 1 ? 's' : ''} since ` +
-							`${
-								anySubmissionsProcessed
-									? `last submission processed`
-									: `sandbox startup with no submissions`
+					{
+						const numMinutes = iterationsSinceProcessedSubmission / 6;
+						console.log(
+							`${numMinutes} minute${numMinutes > 1 ? 's' : ''} since ` +
+							`${anySubmissionsProcessed
+								? `last submission processed`
+								: `sandbox startup with no submissions`
 							}`
-					);
+						);
+					}
 				}
 
 				await new Promise((resolve) => setTimeout(resolve, 10000));

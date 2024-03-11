@@ -1,0 +1,6 @@
+sandbox/node_modules
+sandbox/build
+sandbox/.env
+shared/submissionRunner/node_modules
+shared/submissionRunner/build
+shared/submissionRunner/.env

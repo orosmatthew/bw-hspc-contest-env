@@ -1,6 +1,9 @@
 FROM ubuntu:22.04
 
-WORKDIR /app
+# Setup
+
+RUN mkdir sandbox
+WORKDIR /app/sandbox
 
 RUN apt-get update
 
@@ -20,10 +23,27 @@ ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
 RUN git config --global user.name "Admin"
 RUN git config --global user.email noemail@example.com
 
-WORKDIR /app
+# Prep Sandbox
 
-COPY package*.json ./
+WORKDIR /app/sandbox
+
+COPY ./sandbox/package*.json ./
 RUN npm install
-COPY . .
+COPY ./sandbox/ .
+
+# Prep SubmissionRunner
+
+WORKDIR /app
+RUN mkdir shared
+RUN mkdir shared/submissionRunner
+WORKDIR /app/shared/submissionRunner
+
+COPY ./shared/submissionRunner/package*.json .
+RUN npm install
+COPY ./shared/submissionRunner/ .
+
+# Build/Run
+
+WORKDIR /app/sandbox
 RUN npm run build
-CMD ["node", "build"]
+RUN npm run start

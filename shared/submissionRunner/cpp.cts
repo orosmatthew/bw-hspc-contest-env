@@ -1,31 +1,49 @@
 import { join } from 'path';
 import { exec, spawn } from 'child_process';
-import * as util from 'util';
-import {
-	timeoutSeconds,
-	type IRunner,
-	type IRunnerParams,
-	type IRunnerReturn,
-	type RunResult
-} from './types';
-import kill = require('tree-kill');
+import util from 'util';
+import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.cjs';
+import { timeoutSeconds } from './settings.cjs';
+import kill from 'tree-kill';
+import os from 'os';
+import fs from 'fs-extra';
 
 const execPromise = util.promisify(exec);
 
-interface IRunnerParamsJava extends IRunnerParams {
+export type CppPlatform = 'VisualStudio' | 'GCC';
+
+interface IRunnerParamsCpp extends IRunnerParams {
 	srcDir: string;
-	mainFile: string;
-	mainClass: string;
+	problemName: string;
 	input: string;
+	cppPlatform: CppPlatform;
 	outputCallback?: (data: string) => void;
 }
 
-export const runJava: IRunner<IRunnerParamsJava> = async function (
-	params: IRunnerParamsJava
-): IRunnerReturn {
-	console.log(`- BUILD: ${params.mainFile}`);
-	const compileCommand = `javac -cp ${join(params.srcDir, 'src')} ${params.mainFile} -d ${join(params.srcDir, 'build')}`;
+export const runCpp: IRunner<IRunnerParamsCpp> = async function (
+	params: IRunnerParamsCpp
+): Promise<IRunnerReturn> {
+	const tmpDir = os.tmpdir();
+	const buildDir = join(tmpDir, 'bwcontest-cpp');
+	if (fs.existsSync(buildDir)) {
+		fs.removeSync(buildDir);
+	}
+	fs.mkdirSync(buildDir);
 
+	console.log(`- BUILD: ${params.problemName}`);
+
+	const configureCommand = `cmake -S ${params.srcDir} -B ${buildDir}`;
+	try {
+		await execPromise(configureCommand);
+	} catch (e) {
+		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
+		console.log('Build errors: ' + buildErrorText);
+		return {
+			success: false,
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText }
+		};
+	}
+
+	const compileCommand = `cmake --build ${buildDir} --target ${params.problemName}`;
 	try {
 		await execPromise(compileCommand);
 	} catch (e) {
@@ -37,21 +55,24 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 		};
 	}
 
-	console.log(`- RUN: ${params.mainClass}`);
-	const runCommand = `java -cp "${join(params.srcDir, 'build')}" ${params.mainClass}`;
+	console.log(`- RUN: ${params.problemName}`);
 
+	let runCommand = '';
+	if (params.cppPlatform === 'VisualStudio') {
+		runCommand = `${join(buildDir, 'Debug', `${params.problemName}.exe`)}`;
+	} else {
+		runCommand = `${join(buildDir, params.problemName)}`;
+	}
 	try {
 		let outputBuffer = '';
 		const child = spawn(runCommand, { shell: true });
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
 			outputBuffer += data.toString();
-			params.outputCallback?.(data.toString());
 		});
 		child.stderr.setEncoding('utf8');
 		child.stderr.on('data', (data) => {
 			outputBuffer += data.toString();
-			params.outputCallback?.(data.toString());
 		});
 
 		const runStartTime = performance.now();
