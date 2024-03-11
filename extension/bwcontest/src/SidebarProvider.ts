@@ -327,7 +327,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     const vscode = acquireVsCodeApi();
                 </script>
 			</head>
-            <body>
+            <body style="background-color: var(--vscode-sideBar-background)">
 			</body>
             <script nonce="${nonce}" src="${scriptUri}"></script>
 			</html>`;
