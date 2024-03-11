@@ -4,7 +4,10 @@
 		"sourceMap": true,
 		"outDir": "./build",
 		"esModuleInterop": true,
-		"strict": true
+		"strict": true,
+		"paths": {
+			"@submissionRunner/*": ["../shared/submissionRunner/*"]
+		}
 	},
-	"include": ["./src/**/*"]
+	"references": [{ "path": "../shared/submissionRunner" }]
 }

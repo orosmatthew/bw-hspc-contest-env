@@ -1,7 +1,9 @@
 version: '3'
 services:
   sandbox:
-    build: .
+    build:
+      context: ../
+      dockerfile: ./sandbox/Dockerfile
     environment:
       - ADMIN_URL=${ADMIN_URL}
       - REPO_URL=${REPO_URL}

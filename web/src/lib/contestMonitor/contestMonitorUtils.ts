@@ -1,5 +1,5 @@
 import type { SubmissionState } from '@prisma/client';
-import type { SubmissionStateForExtension } from './contestMonitorSharedTypes';
+import type { SubmissionStateForExtension } from '@extensionWeb/contestMonitorTypes.cjs';
 
 export function convertSubmissionStateForExtension(
 	state: SubmissionState

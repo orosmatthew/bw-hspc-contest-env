@@ -1,76 +1,18 @@
-import { join } from 'path';
-import { exec, spawn } from 'child_process';
-import {
-	timeoutSeconds,
-	type IRunner,
-	type IRunnerParams,
-	type IRunnerReturn,
-	type RunResult
-} from './types';
-import kill = require('tree-kill');
-import * as os from 'os';
-import * as fs from 'fs-extra';
-import * as util from 'util';
+import { spawn } from 'child_process';
+import kill from 'tree-kill';
+import type { IRunner, IRunnerReturn, RunResult } from './types.cjs';
+import { timeoutSeconds } from './settings.cjs';
 
-const execPromise = util.promisify(exec);
-
-export type CppPlatform = 'VisualStudio' | 'GCC';
-
-interface IRunnerParamsCpp extends IRunnerParams {
+export const runCSharp: IRunner = async function (params: {
 	srcDir: string;
-	problemName: string;
 	input: string;
-	cppPlatform: CppPlatform;
 	outputCallback?: (data: string) => void;
-}
+}): Promise<IRunnerReturn> {
+	console.log(`- RUN: ${params.srcDir}`);
+	const child = spawn('dotnet run', { shell: true, cwd: params.srcDir });
 
-export const runCpp: IRunner<IRunnerParamsCpp> = async function (
-	params: IRunnerParamsCpp
-): IRunnerReturn {
-	const tmpDir = os.tmpdir();
-	const buildDir = join(tmpDir, 'bwcontest-cpp');
-	if (fs.existsSync(buildDir)) {
-		fs.removeSync(buildDir);
-	}
-	fs.mkdirSync(buildDir);
-
-	console.log(`- BUILD: ${params.problemName}`);
-
-	const configureCommand = `cmake -S ${params.srcDir} -B ${buildDir}`;
-	try {
-		await execPromise(configureCommand);
-	} catch (e) {
-		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
-		console.log('Build errors: ' + buildErrorText);
-		return {
-			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText }
-		};
-	}
-
-	const compileCommand = `cmake --build ${buildDir} --target ${params.problemName}`;
-	try {
-		await execPromise(compileCommand);
-	} catch (e) {
-		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
-		console.log('Build errors: ' + buildErrorText);
-		return {
-			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText }
-		};
-	}
-
-	console.log(`- RUN: ${params.problemName}`);
-
-	let runCommand = '';
-	if (params.cppPlatform === 'VisualStudio') {
-		runCommand = `${join(buildDir, 'Debug', `${params.problemName}.exe`)}`;
-	} else {
-		runCommand = `${join(buildDir, params.problemName)}`;
-	}
 	try {
 		let outputBuffer = '';
-		const child = spawn(runCommand, { shell: true });
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
 			outputBuffer += data.toString();
@@ -128,7 +70,9 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 					child.stdin.destroy();
 					child.stdout.destroy();
 					child.stderr.destroy();
-					child.kill('SIGKILL');
+					if (child.pid !== undefined) {
+						kill(child.pid);
+					}
 				}, timeoutSeconds * 1000);
 			}),
 			killFunc() {

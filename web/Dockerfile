@@ -1,6 +1,9 @@
 FROM ubuntu:22.04
 
-WORKDIR /app
+# Setup
+
+RUN mkdir web
+WORKDIR /app/web
 
 RUN apt-get update
 RUN apt-get install curl -y 
@@ -11,9 +14,26 @@ RUN apt-get install nodejs git -y
 RUN git config --global user.name "Admin"
 RUN git config --global user.email noemail@example.com
 
-COPY package*.json ./
+# Prep Web
+
+COPY ./web/package*.json ./
 RUN npm install
-COPY . .
+COPY ./web/ .
+
+# Prep extensionWeb
+
+WORKDIR /app
+RUN mkdir shared
+RUN mkdir shared/extensionWeb
+WORKDIR /app/shared/extensionWeb
+
+COPY ./shared/extensionWeb/package*.json .
+RUN npm install
+COPY ./shared/extensionWeb/ .
+
+# Env/Build/Run
+
+WORKDIR /app/web
 
 ENV PORT=3000
 EXPOSE 3000

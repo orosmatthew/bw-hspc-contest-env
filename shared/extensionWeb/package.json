@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}

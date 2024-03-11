@@ -10,7 +10,9 @@ services:
       - POSTGRES_DB=bwcontest
     restart: unless-stopped
   web:
-    build: .
+    build:
+      context: ../
+      dockerfile: ./web/Dockerfile
     ports:
       - 3000:3000
       - 7006:7006
