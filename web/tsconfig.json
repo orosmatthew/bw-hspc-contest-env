@@ -11,7 +11,7 @@
 		"strict": true
 	},
 	"references": [
-		{ "path": "../shared/submissionRunner" }
+		{ "path": "../shared/extensionWeb" }
 	],
 
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

@@ -8,7 +8,7 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		alias: {
-			"@submissionRunner/*": "../shared/submissionRunner/*"
+			"@extensionWeb/*": "../shared/extensionWeb/*"
 		}
 	},
 	vitePlugin: {

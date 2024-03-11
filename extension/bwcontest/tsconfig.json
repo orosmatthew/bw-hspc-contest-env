@@ -12,11 +12,13 @@
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
 		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
 		"paths": {
-			"@submissionRunner/*": ["../../shared/submissionRunner/*"]
+			"@submissionRunner/*": ["../../shared/submissionRunner/*"],
+			"@extensionWeb/*": ["../../shared/extensionWeb/*"]
 		},
 	},
 	"exclude": ["webviews"],
 	"references": [
-		{ "path": "../../shared/submissionRunner" }
+		{ "path": "../../shared/submissionRunner" },
+		{ "path": "../../shared/extensionWeb" }
 	]
 }

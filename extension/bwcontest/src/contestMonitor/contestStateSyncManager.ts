@@ -7,7 +7,7 @@ import {
 	ProblemNameForExtension,
 	FullStateForExtension,
 	SubmissionForExtension
-} from './contestMonitorSharedTypes';
+} from '@extensionWeb/contestMonitorTypes.cjs';
 import { LiteEvent } from '../utilities/LiteEvent';
 
 export type ContestTeamState = {

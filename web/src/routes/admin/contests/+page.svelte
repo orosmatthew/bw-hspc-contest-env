@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { timeoutSeconds } from '@submissionRunner/settings.cjs';
 
 	export let data: PageData;
 </script>
@@ -9,9 +8,6 @@
 	<title>Contests</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-1">
-	<i class="bi bi-flag"></i> Timeout seconds is {timeoutSeconds}
-</h1>
 <h1 style="text-align:center" class="mb-1"><i class="bi bi-flag"></i> Contests</h1>
 
 <div class="d-flex flex-row justify-content-end">
