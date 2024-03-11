@@ -8,7 +8,7 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		alias: {
-			"@extensionWeb/*": "../shared/extensionWeb/*"
+			'@extensionWeb/*': '../shared/extensionWeb/*'
 		}
 	},
 	vitePlugin: {
