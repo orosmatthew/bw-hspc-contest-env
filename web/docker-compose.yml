@@ -14,12 +14,12 @@ services:
       context: ../
       dockerfile: ./web/Dockerfile
     ports:
-      - 3000:3000
-      - 7006:7006
+      - ${WEB_PORT}:${WEB_PORT}
+      - ${GIT_PORT}:${GIT_PORT}
     environment:
-      - DATABASE_URL=postgresql://bwcontest:password@db:5432/bwcontest
-      - GIT_PORT=7006
-      - ORIGIN=http://127.0.0.1:3000
+      - DATABASE_URL=${DATABASE_URL}
+      - GIT_PORT=${GIT_PORT}
+      - ORIGIN=${ORIGIN}:${WEB_PORT}
     volumes:
       - ./repo:/app/repo
     depends_on:
