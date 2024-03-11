@@ -5,6 +5,6 @@ services:
       context: ../
       dockerfile: ./sandbox/Dockerfile
     environment:
-      - ADMIN_URL=http://127.0.0.1:3000
-      - REPO_URL=http://127.0.0.1:7006
+      - ADMIN_URL=${ADMIN_URL}
+      - REPO_URL=${REPO_URL}
     network_mode: 'host'
