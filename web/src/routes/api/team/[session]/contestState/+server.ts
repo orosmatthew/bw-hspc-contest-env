@@ -5,7 +5,7 @@ import type {
 	ContestStateForExtension,
 	FullStateForExtension,
 	SubmissionForExtension
-} from '@extensionWeb/contestMonitorTypes.cjs';
+} from 'contest-monitor-types/contestMonitorTypes';
 import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
 
 export const GET = (async ({ params }) => {

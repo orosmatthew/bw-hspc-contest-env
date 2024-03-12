@@ -6,10 +6,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter(),
-		alias: {
-			'@extensionWeb/*': '../shared/extensionWeb/*'
-		}
+		adapter: adapter()
 	},
 	vitePlugin: {
 		inspector: true

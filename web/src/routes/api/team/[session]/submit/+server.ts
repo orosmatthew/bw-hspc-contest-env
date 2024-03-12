@@ -3,7 +3,7 @@ import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
 import { SubmissionState } from '@prisma/client';
-import type { SubmissionForExtension } from '@extensionWeb/contestMonitorTypes.cjs';
+import type { SubmissionForExtension } from 'contest-monitor-types/contestMonitorTypes';
 import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
 
 const submitPostData = z.object({
