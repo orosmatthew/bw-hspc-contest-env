@@ -14,12 +14,13 @@ services:
       context: ../
       dockerfile: ./web/Dockerfile
     ports:
-      - ${WEB_PORT}:${WEB_PORT}
-      - ${GIT_PORT}:${GIT_PORT}
+      - 3000:3000
+      - 7006:7006
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - GIT_PORT=${GIT_PORT}
-      - ORIGIN=${ORIGIN}:${WEB_PORT}
+      - GIT_PORT=7006
+      - ORIGIN=${ORIGIN}
+      - WEB_SANDBOX_SECRET=${WEB_SANDBOX_SECRET}
     volumes:
       - ./repo:/app/repo
     depends_on:

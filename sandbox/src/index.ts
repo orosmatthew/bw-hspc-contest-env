@@ -49,7 +49,10 @@ enum SubmissionProcessingResult {
 }
 
 async function fetchQueuedSubmission(): Promise<SubmissionGetData | undefined> {
-	const res = await fetch(submissionApiUrl, { method: 'GET' });
+	const res = await fetch(submissionApiUrl, {
+		method: 'GET',
+		headers: { secret: process.env.WEB_SANDBOX_SECRET! }
+	});
 	if (res.status !== 200) {
 		console.error(
 			`Failed to fetch from ${submissionApiUrl} with status: ${res.status} ${res.statusText}`
@@ -142,7 +145,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		};
 		const res = await fetch(urlJoin(adminUrl, 'api/submission'), {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json', secret: process.env.WEB_SANDBOX_SECRET! },
 			body: JSON.stringify(postBodyObject)
 		});
 		if (res.status !== 200) {
@@ -183,7 +186,11 @@ function printRunResult(runResult: RunResult) {
 }
 
 function validateEnv(): boolean {
-	return process.env.ADMIN_URL !== undefined && process.env.REPO_URL !== undefined;
+	return (
+		process.env.ADMIN_URL !== undefined &&
+		process.env.REPO_URL !== undefined &&
+		process.env.WEB_SANDBOX_SECRET !== undefined
+	);
 }
 
 if (!validateEnv()) {

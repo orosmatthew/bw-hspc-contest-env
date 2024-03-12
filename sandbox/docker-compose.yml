@@ -7,4 +7,5 @@ services:
     environment:
       - ADMIN_URL=${ADMIN_URL}
       - REPO_URL=${REPO_URL}
+      - WEB_SANDBOX_SECRET=${WEB_SANDBOX_SECRET}
     network_mode: 'host'
