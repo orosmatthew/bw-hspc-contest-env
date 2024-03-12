@@ -36,6 +36,8 @@ Instruction for Extension assume Windows environment
 
 ### Sandbox
 
+Instruction for Sandbox assume Unix environment
+
  - After Clone
    - `cd shared`
      - `npm ci` - Install shared dependencies
@@ -58,6 +60,8 @@ Instruction for Extension assume Windows environment
      - `docker compose up --build` - Build and run docker container
 
 ### Shared
+
+Instruction for Shared assumes either Unix or Windows environment
 
  - After Clone
    - `cd shared`
