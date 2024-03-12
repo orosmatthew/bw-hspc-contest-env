@@ -2,12 +2,12 @@ import * as vscode from 'vscode';
 import urlJoin from 'url-join';
 import outputPanelLog from '../outputPanelLog';
 import { extensionSettings } from '../extension';
-import {
+import type {
 	ContestStateForExtension,
 	ProblemNameForExtension,
 	FullStateForExtension,
 	SubmissionForExtension
-} from '@extensionWeb/contestMonitorTypes.cjs';
+} from 'contest-monitor-types/contestMonitorTypes';
 import { LiteEvent } from '../utilities/LiteEvent';
 
 export type ContestTeamState = {

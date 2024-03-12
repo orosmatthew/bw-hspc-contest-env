@@ -1,4 +1,5 @@
 {
+  "name": "submission-runner",
   "scripts": {
     "build": "tsc"
   },

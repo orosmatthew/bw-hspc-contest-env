@@ -4,12 +4,12 @@ import { cloneAndOpenRepo } from './extension';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
 import outputPanelLog from './outputPanelLog';
-import {
+import type {
 	ContestStateForExtension,
 	ProblemNameForExtension,
 	SubmissionForExtension,
 	SubmissionStateForExtension
-} from './contestMonitor/contestMonitorSharedTypes';
+} from 'contest-monitor-types/contestMonitorTypes';
 import { TeamData } from './sharedTypes';
 import {
 	ContestTeamState,
