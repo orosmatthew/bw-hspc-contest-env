@@ -30,36 +30,6 @@ node --version
 # You should get back 20.x.x
 ```
 
-You will need a database to work with so you need to install Postgres.
-
-```bash
-sudo apt install postgresql
-```
-
-Then start and enable it
-
-```bash
-sudo service postgresql start
-sudo service postgresql enable
-```
-
-We will now create a database and user to work with
-
-```bash
-sudo -u postgres psql
-```
-
-This will open the postgres terminal, run these commands
-
-```postgres
-CREATE ROLE bwcontest WITH LOGIN PASSWORD 'pass123';
-CREATE DATABASE bwcontest;
-ALTER DATABASE bwcontest OWNER TO bwcontest;
-GRANT ALL PRIVILEGES ON DATABASE bwcontest TO bwcontest;
-```
-
-Then type `\q` to exit. Feel free to change the role name, database name, and password to whatever you want. Just make sure to remember them. This is only for local development so it doesn't need to be very secure.
-
 Now we can clone the repo. Remember, all development must be in WSL so we will clone the repo in WSL. So inside of WSL, I like to create a folder called `dev` inside my home folder, but feel free to clone it anywhere else inside of WSL. Ensure git is installed in WSL with `sudo apt install git -y`
 
 ```bash
@@ -76,10 +46,12 @@ Make sure you have the WSL extension installed. You can then connect WSL by open
 npm install
 ```
 
+You will need a database to work with. There is a provided `docker-compose.yml` file to spin up a Postgres database for development. Navigate to the `web/docker/dev-postgress` directory and run `docker compose up -d`. This will spin up the database. You can stop it by running `docker compose down` in the same directory. To check running docker containers you can run `docker ps`.
+
 Now you need to fill out an environment file for local development. Create a `.env` file in `web/.env`. Add this information or changed with the relevant details related to how you set up your database.
 
 ```env
-DATABASE_URL=postgresql://bwcontest:pass123@127.0.0.1:5432/bwcontest
+DATABASE_URL=postgresql://bwcontest:pass123@127.0.0.1:5433/bwcontest
 ```
 
 You now need to push the schema generated via the Prisma ORM to set up the tables in the database. This can be done by running...
