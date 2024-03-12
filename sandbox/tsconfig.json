@@ -5,9 +5,6 @@
 		"outDir": "./build",
 		"esModuleInterop": true,
 		"strict": true,
-		"paths": {
-			"@submissionRunner/*": ["../shared/submissionRunner/*"]
-		}
 	},
-	"references": [{ "path": "../shared/submissionRunner" }]
+	"include": ["src/**/*.ts"]
 }

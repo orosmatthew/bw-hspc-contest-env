@@ -32,6 +32,7 @@
 		"fs-extra": "^11.2.0",
 		"rollup": "^4.12.1",
 		"simple-git": "^3.22.0",
+		"submission-runner": "file:../shared/submission-runner",
 		"tree-kill": "^1.2.2",
 		"url-join": "^5.0.0",
 		"zod": "^3.22.4"

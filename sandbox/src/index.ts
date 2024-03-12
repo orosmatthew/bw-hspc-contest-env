@@ -4,10 +4,10 @@ import urlJoin from 'url-join';
 import os, { EOL } from 'os';
 import { join } from 'path';
 import { simpleGit, SimpleGit } from 'simple-git';
-import { runJava } from '@submissionRunner/java.cjs';
-import { runCSharp } from '@submissionRunner/csharp.cjs';
-import { runCpp } from '@submissionRunner/cpp.cjs';
-import { RunResult, RunResultZod } from '@submissionRunner/types.cjs';
+import { runJava } from 'submission-runner/java.cjs';
+import { runCSharp } from 'submission-runner/csharp.cjs';
+import { runCpp } from 'submission-runner/cpp.cjs';
+import { RunResult, RunResultZod } from 'submission-runner/types.cjs';
 import { z } from 'zod';
 
 const submissionPostData = z
