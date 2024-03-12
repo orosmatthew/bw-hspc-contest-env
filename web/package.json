@@ -41,7 +41,7 @@
 		"bcrypt": "^5.1.1",
 		"bootstrap": "^5.3.3",
 		"bootstrap-icons": "^1.11.3",
-		"contest-monitor-types": "file:../shared/contest-monitor-types",
+		"bwcontest-shared": "file:../shared",
 		"diff": "^5.2.0",
 		"diff2html": "^3.4.47",
 		"eslint-plugin-svelte": "^2.35.1",
