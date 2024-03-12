@@ -46,7 +46,7 @@ Make sure you have the WSL extension installed. You can then connect WSL by open
 npm install
 ```
 
-You will need a database to work with. There is a provided `docker-compose.yml` file to spin up a Postgres database for development. Navigate to the `web/docker/dev-postgress` directory and run `docker compose up -d`. This will spin up the database. You can stop it by running `docker compose down` in the same directory. To check running docker containers you can run `docker ps`.
+You will need a database to work with. There is a provided `docker-compose.yml` file to spin up a Postgres database for development. Navigate to the `web/docker/dev-postgres` directory and run `docker compose up -d`. This will spin up the database. You can stop it by running `docker compose down` in the same directory. To check running docker containers you can run `docker ps`.
 
 Now you need to fill out an environment file for local development. Create a `.env` file in `web/.env`. Add this information or changed with the relevant details related to how you set up your database.
 
