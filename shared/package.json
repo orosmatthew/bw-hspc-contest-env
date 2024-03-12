@@ -2,6 +2,7 @@
 	"name": "bwcontest-shared",
 	"scripts": {
 		"build": "esbuild submission-runner/*.cts --bundle --outdir=build/submission-runner --format=cjs --platform=node --sourcemap",
+		"watch": "esbuild submission-runner/*.cts --bundle --outdir=build/submission-runner --format=cjs --platform=node --sourcemap --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"check": "tsc -noEmit"
