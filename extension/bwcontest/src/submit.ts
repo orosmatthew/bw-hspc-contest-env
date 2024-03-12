@@ -5,7 +5,7 @@ import path = require('path');
 import http from 'isomorphic-git/http/node';
 import urlJoin from 'url-join';
 import outputPanelLog from './outputPanelLog';
-import type { SubmissionForExtension } from 'contest-monitor-types/contestMonitorTypes';
+import type { SubmissionForExtension } from 'bwcontest-shared/types/contestMonitorTypes';
 
 export async function submitProblem(
 	sessionToken: string,

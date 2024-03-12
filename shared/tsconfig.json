@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"target": "es2016",
+		"module": "commonjs",
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"outDir": "./build",
+		"esModuleInterop": true,
+		"strict": true
+	},
+	"include": ["**/*.cts", "**/*.ts"]
+}

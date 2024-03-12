@@ -9,7 +9,7 @@ import type {
 	ProblemNameForExtension,
 	SubmissionForExtension,
 	SubmissionStateForExtension
-} from 'contest-monitor-types/contestMonitorTypes';
+} from 'bwcontest-shared/types/contestMonitorTypes';
 import { TeamData } from './sharedTypes';
 import {
 	ContestTeamState,

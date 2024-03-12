@@ -29,8 +29,9 @@ export interface IRunnerParams {
 }
 
 export type IRunnerReturn =
-	{ success: true; killFunc: () => void; runResult: Promise<RunResult> } |
-	{ success: false; runResult: RunResult };
+	| { success: true; killFunc: () => void; runResult: Promise<RunResult> }
+	| { success: false; runResult: RunResult };
 
-export type IRunner<T extends IRunnerParams = IRunnerParams> = 
-	(params: T) => Promise<IRunnerReturn>;
+export type IRunner<T extends IRunnerParams = IRunnerParams> = (
+	params: T
+) => Promise<IRunnerReturn>;

@@ -7,7 +7,7 @@ import type {
 	ProblemNameForExtension,
 	FullStateForExtension,
 	SubmissionForExtension
-} from 'contest-monitor-types/contestMonitorTypes';
+} from 'bwcontest-shared/types/contestMonitorTypes';
 import { LiteEvent } from '../utilities/LiteEvent';
 
 export type ContestTeamState = {

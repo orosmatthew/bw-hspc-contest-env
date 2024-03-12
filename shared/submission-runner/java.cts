@@ -3,8 +3,7 @@ import { exec, spawn } from 'child_process';
 import * as util from 'util';
 import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.cjs';
 import { timeoutSeconds } from './settings.cjs';
-
-import kill = require('tree-kill');
+import kill from 'tree-kill';
 
 const execPromise = util.promisify(exec);
 

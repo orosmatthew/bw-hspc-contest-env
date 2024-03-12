@@ -2,9 +2,6 @@ FROM ubuntu:22.04
 
 # Setup
 
-RUN mkdir sandbox
-WORKDIR /app/sandbox
-
 RUN apt-get update
 
 RUN apt-get install curl -y
@@ -23,24 +20,23 @@ ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
 RUN git config --global user.name "Admin"
 RUN git config --global user.email noemail@example.com
 
-# Prep Sandbox
-
-WORKDIR /app/sandbox
-
-COPY ./sandbox/package*.json ./
-RUN npm install
-COPY ./sandbox/ .
-
-# Prep SubmissionRunner
+# Prep Shared
 
 WORKDIR /app
 RUN mkdir shared
-RUN mkdir shared/submissionRunner
-WORKDIR /app/shared/submissionRunner
+WORKDIR /app/shared
+COPY ./shared/package*.json ./
+RUN npm ci
+COPY ./shared .
 
-COPY ./shared/submissionRunner/package*.json .
-RUN npm install
-COPY ./shared/submissionRunner/ .
+# Prep Sandbox
+
+RUN mkdir sandbox
+WORKDIR /app/sandbox
+COPY ./sandbox/package*.json ./
+RUN npm ci
+COPY ./sandbox/ .
+
 
 # Build/Run
 
