@@ -31,16 +31,12 @@ COPY ./sandbox/package*.json ./
 RUN npm install
 COPY ./sandbox/ .
 
-# Prep SubmissionRunner
+# Prep Shared
 
 WORKDIR /app
 RUN mkdir shared
-RUN mkdir shared/submissionRunner
-WORKDIR /app/shared/submissionRunner
-
-COPY ./shared/submissionRunner/package*.json .
-RUN npm install
-COPY ./shared/submissionRunner/ .
+WORKDIR /app/shared
+COPY ./shared .
 
 # Build/Run
 

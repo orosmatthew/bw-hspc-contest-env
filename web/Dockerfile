@@ -20,16 +20,12 @@ COPY ./web/package*.json ./
 RUN npm install
 COPY ./web/ .
 
-# Prep extensionWeb
+# Prep Shared
 
 WORKDIR /app
 RUN mkdir shared
-RUN mkdir shared/extensionWeb
-WORKDIR /app/shared/extensionWeb
-
-COPY ./shared/extensionWeb/package*.json .
-RUN npm install
-COPY ./shared/extensionWeb/ .
+WORKDIR /app/shared
+COPY ./shared/ .
 
 # Env/Build/Run
 
