@@ -33,26 +33,32 @@ export async function refreshRepoState(): Promise<void> {
 	outputPanelLog.trace(`Refreshing repoState`);
 
 	if (!repoManagerExtensionContext) {
+		outputPanelLog.trace(`  -> repoState is 'No Team' because something is misconfigured`);
 		return setRepoState('No Team');
 	}
 
 	const teamData = repoManagerExtensionContext.globalState.get<TeamData>('teamData');
 	if (teamData === undefined) {
+		outputPanelLog.trace(`  -> repoState is 'No Team' because no globalState for teamData`);
 		return setRepoState('No Team');
 	}
 
 	const repoPaths = getRepoPaths(teamData.contestId, teamData.teamId);
 	if (!repoPaths.success) {
+		outputPanelLog.trace(`  -> repoState is 'No Team' can't calculate repo paths`);
 		return setRepoState('No Team');
 	}
 
 	const { clonedRepoPath } = repoPaths;
 
+	outputPanelLog.trace(`  -> inspecting local repoPath ${clonedRepoPath}`);
 	if (!fs.existsSync(clonedRepoPath)) {
+		outputPanelLog.trace(`  -> repoState is 'No Repo', the local repo path doesn't exist at all`);
 		return setRepoState('No Repo');
 	}
 
 	if (!(await directoryHasGitRepo(clonedRepoPath))) {
+		outputPanelLog.trace(`  -> repoState is 'No Repo', the local repo path exists but does not have a git repo`);
 		return setRepoState('No Repo');
 	}
 
@@ -61,10 +67,15 @@ export async function refreshRepoState(): Promise<void> {
 			(f) => f.uri.path === clonedRepoPath
 		)[0];
 		if (existingOpenFolderForRepo) {
+			outputPanelLog.trace(`  -> repoState is 'Repo Open', we found the repo path in VSCode's workspaceFolders`);
 			return setRepoState('Repo Open');
 		}
 	}
 
+	const workspaceFoldersLogText = vscode.workspace.workspaceFolders
+		? vscode.workspace.workspaceFolders.map(f => f.uri).join(', ')
+		: '(no workspaceFolders)';
+	outputPanelLog.trace(`  -> repoState is 'Repo Exists, Not Open', did not find repoPath (${clonedRepoPath}) in VSCode's workspaceFolders (${workspaceFoldersLogText})`);
 	return setRepoState('Repo Exists, Not Open');
 }
 
@@ -154,7 +165,7 @@ async function cloneRepoWorker(contestId: number, teamId: number): Promise<boole
 			recursive: false,
 			encoding: 'utf8'
 		});
-		
+
 		outputPanelLog.trace(` Removing ${existingItemsInDir.length} items`);
 		for (const existingItemInDir of existingItemsInDir) {
 			const fullPath = path.join(clonedRepoPath, existingItemInDir)
