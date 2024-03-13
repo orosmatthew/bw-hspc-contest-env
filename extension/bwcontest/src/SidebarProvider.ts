@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
-import { cloneAndOpenRepo } from './extension';
+import { RepoState, clearCachedRepoState, cloneOpenRepo, cloneRepo, openRepo, getCachedRepoState, refreshRepoState, repoStateChanged } from './teamRepoManager';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
 import outputPanelLog from './outputPanelLog';
@@ -22,12 +22,15 @@ import { startTeamStatusPolling, stopTeamStatusPolling } from './contestMonitor/
 export type WebviewMessageType =
 	| { msg: 'onLogin'; data: TeamData }
 	| { msg: 'onLogout' }
-	| { msg: 'teamStatusUpdated'; data: SidebarTeamStatus | null };
+	| { msg: 'teamStatusUpdated'; data: SidebarTeamStatus | null }
+	| { msg: 'repoStateUpdated'; data: RepoState };
 
 export type MessageType =
 	| { msg: 'onTestAndSubmit' }
 	| { msg: 'onUIMount' }
-	| { msg: 'onClone'; data: { contestId: number; teamId: number } }
+	| { msg: 'onCloneOpenRepo'; data: { contestId: number; teamId: number } }
+	| { msg: 'onCloneRepo'; data: { contestId: number; teamId: number } }
+	| { msg: 'onOpenRepo'; data: { contestId: number; teamId: number } }
 	| { msg: 'onLogin'; data: { teamName: string; password: string } }
 	| { msg: 'onLogout' };
 
@@ -74,6 +77,20 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 				submissionsChangedEventArgs.contestTeamState,
 				submissionsChangedEventArgs.changedProblemIds
 			);
+		});
+
+		const currentRepoState = getCachedRepoState();
+		outputPanelLog.info('When SidebarProvider constructed, cached repo state is: ' + currentRepoState);
+		this.updateRepoStatus(currentRepoState);
+
+		repoStateChanged.add(repoChangedEventArgs => {
+			outputPanelLog.trace('Repo status updating from event');
+
+			if (!repoChangedEventArgs) {
+				return;
+			}
+
+			this.updateRepoStatus(repoChangedEventArgs.state);
 		});
 	}
 
@@ -129,6 +146,13 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			'After login, cached submission list is: ' + JSON.stringify(currentSubmissionsList)
 		);
 		this.updateTeamStatus(currentSubmissionsList);
+
+		const currentRepoState = getCachedRepoState();
+		outputPanelLog.info(
+			'After login, cached repo state is: ' + currentRepoState
+		);
+		this.updateRepoStatus(currentRepoState);
+		refreshRepoState();
 	}
 
 	private async handleLogout(webviewPostMessage: (m: WebviewMessageType) => void) {
@@ -189,6 +213,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		stopTeamStatusPolling();
 		clearCachedContestTeamState();
 
+		clearCachedRepoState();
+
 		this.context.globalState.update('token', undefined);
 		this.context.globalState.update('teamData', undefined);
 	}
@@ -236,6 +262,24 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		this.webview.postMessage(message);
 	}
 
+	public updateRepoStatus(state: RepoState) {
+		if (this.webview == null) {
+			outputPanelLog.trace('Not updating sidebar repo state because webview is null');
+			return;
+		}
+
+		const message: WebviewMessageType = {
+			msg: 'repoStateUpdated',
+			data: state
+		};
+
+		outputPanelLog.trace(
+			'Posting repoStateUpdated to webview with message: ' + JSON.stringify(message)
+		);
+
+		this.webview.postMessage(message);
+	}
+
 	public resolveWebviewView(webviewView: vscode.WebviewView) {
 		outputPanelLog.trace('SidebarProvider resolveWebviewView');
 		const webview = webviewView.webview;
@@ -273,11 +317,25 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 							'onUIMount, currentSubmissionsList is ' + JSON.stringify(currentSubmissionsList)
 						);
 						this.updateTeamStatus(currentSubmissionsList);
+
+						const currentRepoState = getCachedRepoState();
+						outputPanelLog.trace(
+							'onUIMount, currentRepoState is ' + currentRepoState
+						);
+						this.updateRepoStatus(currentRepoState);
 					}
 					break;
 				}
-				case 'onClone': {
-					cloneAndOpenRepo(m.data.contestId, m.data.teamId);
+				case 'onCloneOpenRepo': {
+					cloneOpenRepo(m.data.contestId, m.data.teamId);
+					break;					
+				}
+				case 'onCloneRepo': {
+					cloneRepo(m.data.contestId, m.data.teamId);
+					break;
+				}
+				case 'onOpenRepo': {
+					openRepo(m.data.contestId, m.data.teamId);
 					break;
 				}
 				case 'onLogin': {
