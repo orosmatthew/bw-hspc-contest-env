@@ -58,7 +58,9 @@ export async function refreshRepoState(): Promise<void> {
 	}
 
 	if (!(await directoryHasGitRepo(clonedRepoPath))) {
-		outputPanelLog.trace(`  -> repoState is 'No Repo', the local repo path exists but does not have a git repo`);
+		outputPanelLog.trace(
+			`  -> repoState is 'No Repo', the local repo path exists but does not have a git repo`
+		);
 		return setRepoState('No Repo');
 	}
 
@@ -67,15 +69,19 @@ export async function refreshRepoState(): Promise<void> {
 			(f) => f.uri.path === clonedRepoPath
 		)[0];
 		if (existingOpenFolderForRepo) {
-			outputPanelLog.trace(`  -> repoState is 'Repo Open', we found the repo path in VSCode's workspaceFolders`);
+			outputPanelLog.trace(
+				`  -> repoState is 'Repo Open', we found the repo path in VSCode's workspaceFolders`
+			);
 			return setRepoState('Repo Open');
 		}
 	}
 
 	const workspaceFoldersLogText = vscode.workspace.workspaceFolders
-		? vscode.workspace.workspaceFolders.map(f => f.uri).join(', ')
+		? vscode.workspace.workspaceFolders.map((f) => f.uri).join(', ')
 		: '(no workspaceFolders)';
-	outputPanelLog.trace(`  -> repoState is 'Repo Exists, Not Open', did not find repoPath (${clonedRepoPath}) in VSCode's workspaceFolders (${workspaceFoldersLogText})`);
+	outputPanelLog.trace(
+		`  -> repoState is 'Repo Exists, Not Open', did not find repoPath (${clonedRepoPath}) in VSCode's workspaceFolders (${workspaceFoldersLogText})`
+	);
 	return setRepoState('Repo Exists, Not Open');
 }
 
@@ -168,7 +174,7 @@ async function cloneRepoWorker(contestId: number, teamId: number): Promise<boole
 
 		outputPanelLog.trace(` Removing ${existingItemsInDir.length} items`);
 		for (const existingItemInDir of existingItemsInDir) {
-			const fullPath = path.join(clonedRepoPath, existingItemInDir)
+			const fullPath = path.join(clonedRepoPath, existingItemInDir);
 			outputPanelLog.trace(`  Removing ${fullPath}`);
 			fs.rmSync(fullPath, { recursive: true, force: true });
 		}
@@ -185,11 +191,11 @@ async function cloneRepoWorker(contestId: number, teamId: number): Promise<boole
 			encoding: 'utf8'
 		});
 
-		outputPanelLog.trace(`Local Directory should now be empty, there are ${itemsInDirAfterDelete.length} item(s): ${itemsInDirAfterDelete.join(', ')}`);
+		outputPanelLog.trace(
+			`Local Directory should now be empty, there are ${itemsInDirAfterDelete.length} item(s): ${itemsInDirAfterDelete.join(', ')}`
+		);
 		if (itemsInDirAfterDelete.length > 0) {
-			vscode.window.showErrorMessage(
-				`BWContest: Failed to delete contents of Local Directory`
-			);
+			vscode.window.showErrorMessage(`BWContest: Failed to delete contents of Local Directory`);
 			return false;
 		}
 	} catch (error) {
