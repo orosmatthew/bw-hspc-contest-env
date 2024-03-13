@@ -154,8 +154,32 @@ async function cloneRepoWorker(contestId: number, teamId: number): Promise<boole
 			recursive: false,
 			encoding: 'utf8'
 		});
+		
+		outputPanelLog.trace(` Removing ${existingItemsInDir.length} items`);
 		for (const existingItemInDir of existingItemsInDir) {
-			fs.removeSync(existingItemInDir);
+			const fullPath = path.join(clonedRepoPath, existingItemInDir)
+			outputPanelLog.trace(`  Removing ${fullPath}`);
+			fs.rmSync(fullPath, { recursive: true, force: true });
+		}
+	} catch (error) {
+		vscode.window.showErrorMessage(
+			`BWContest: Failed to delete contents of Local Directory '${clonedRepoPath}': ${error}`
+		);
+		return false;
+	}
+
+	try {
+		const itemsInDirAfterDelete = fs.readdirSync(clonedRepoPath, {
+			recursive: false,
+			encoding: 'utf8'
+		});
+
+		outputPanelLog.trace(`Local Directory should now be empty, there are ${itemsInDirAfterDelete.length} item(s): ${itemsInDirAfterDelete.join(', ')}`);
+		if (itemsInDirAfterDelete.length > 0) {
+			vscode.window.showErrorMessage(
+				`BWContest: Failed to delete contents of Local Directory`
+			);
+			return false;
 		}
 	} catch (error) {
 		vscode.window.showErrorMessage(
