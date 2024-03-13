@@ -48,7 +48,7 @@ async function addProblemsCSharp(opts: OptsAddProblems) {
 async function addProblemsCPP(opts: OptsAddProblems) {
 	let cmakeLists = templateCppCMakeLists;
 	opts.contest.problems.forEach((problem) => {
-		cmakeLists += `add_executable(${problem.pascalName} ${problem.pascalName}/${problem.pascalName}.cpp)`;
+		cmakeLists += `add_executable(${problem.pascalName} ${problem.pascalName}/${problem.pascalName}.cpp)\n`;
 	});
 	opts.fs.writeFileSync(join(opts.dir, 'CMakeLists.txt'), cmakeLists);
 
