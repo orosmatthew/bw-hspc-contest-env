@@ -89,11 +89,11 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "npm run build",
 		"check": "tsc -noEmit",
 		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
-		"compile": "rollup -c && npm run esbuild-base -- --minify",
+		"build": "rollup -c && npm run esbuild-base -- --minify",
 		"format": "prettier --plugin prettier-plugin-svelte --write .",
 		"watch": "concurrently \"rollup -c -w\" \"npm run esbuild-base -- --sourcemap --watch\"",
 		"lint": "prettier --plugin prettier-plugin-svelte --check . && eslint ."
