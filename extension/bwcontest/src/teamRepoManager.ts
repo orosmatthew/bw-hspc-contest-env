@@ -8,6 +8,7 @@ import outputPanelLog from './outputPanelLog';
 import { BWContestSettings } from './extension';
 import { LiteEvent } from './utilities/LiteEvent';
 import { TeamData } from './sharedTypes';
+import * as os from 'os';
 
 let latestRepoState: RepoState = 'No Team';
 
@@ -65,9 +66,17 @@ export async function refreshRepoState(): Promise<void> {
 	}
 
 	if (vscode.workspace.workspaceFolders) {
-		const existingOpenFolderForRepo = vscode.workspace.workspaceFolders.filter(
-			(f) => f.uri.path === clonedRepoPath
-		)[0];
+		const existingOpenFolderForRepo = vscode.workspace.workspaceFolders.filter((f) => {
+			console.log(f.uri.path);
+			console.log(clonedRepoPath);
+			console.log(path.normalize(f.uri.path.slice(1)));
+			console.log(path.normalize(clonedRepoPath));
+			const p =
+				os.platform() === 'win32'
+					? path.normalize(f.uri.path.slice(1))
+					: path.normalize(f.uri.path);
+			return p === path.normalize(clonedRepoPath);
+		})[0];
 		if (existingOpenFolderForRepo) {
 			outputPanelLog.trace(
 				`  -> repoState is 'Repo Open', we found the repo path in VSCode's workspaceFolders`
@@ -246,9 +255,13 @@ function openRepoWorker(contestId: number, teamId: number): boolean {
 	}
 
 	if (vscode.workspace.workspaceFolders) {
-		const existingOpenFolderForRepo = vscode.workspace.workspaceFolders.filter(
-			(f) => f.uri.path === clonedRepoPath
-		)[0];
+		const existingOpenFolderForRepo = vscode.workspace.workspaceFolders.filter((f) => {
+			const p =
+				os.platform() === 'win32'
+					? path.normalize(f.uri.path.slice(1))
+					: path.normalize(f.uri.path);
+			return p === path.normalize(clonedRepoPath);
+		})[0];
 		if (existingOpenFolderForRepo) {
 			vscode.window.showInformationMessage('BWContest: Repo is already opened');
 			return false;
