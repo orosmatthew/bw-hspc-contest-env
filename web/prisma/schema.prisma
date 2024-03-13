@@ -101,4 +101,5 @@ model Contest {
   activeTeams ActiveTeam[]
   submissions Submission[]
   startTime   DateTime?
+  freezeTime  DateTime?
 }

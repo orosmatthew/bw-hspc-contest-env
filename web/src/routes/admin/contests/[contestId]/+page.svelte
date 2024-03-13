@@ -3,11 +3,18 @@
 	import { page } from '$app/stores';
 	import ConfirmModal from '$lib/ConfirmModal.svelte';
 	import FormAlert from '$lib/FormAlert.svelte';
-	import type { PageData } from './$types';
+	import Modal from '$lib/Modal.svelte';
+	import type { Actions, PageData } from './$types';
 
 	export let data: PageData;
+	export let form: Actions;
+
+	$: if (form) {
+		freezeModal.hide();
+	}
 
 	let confirmModal: ConfirmModal;
+	let freezeModal: Modal;
 
 	function enhanceConfirm(form: HTMLFormElement, text: string) {
 		enhance(form, async ({ cancel }) => {
@@ -19,6 +26,12 @@
 			};
 		});
 	}
+
+	let freezeTimeInputLocal: string | undefined;
+	let freezeTimeInput: string | null = null;
+	$: if (freezeTimeInputLocal !== undefined) {
+		freezeTimeInput = new Date(freezeTimeInputLocal).toISOString();
+	}
 </script>
 
 <svelte:head>
@@ -26,6 +39,31 @@
 </svelte:head>
 
 <ConfirmModal bind:this={confirmModal} />
+
+<Modal title="Freeze Time" bind:this={freezeModal}>
+	<form action="?/freeze-time" method="POST" use:enhance>
+		<div class="modal-body">
+			<label class="form-label" for="freezeTimeInput">Freeze At</label>
+			<input
+				bind:value={freezeTimeInputLocal}
+				id="freezeTimeInput"
+				class="form-control"
+				type="datetime-local"
+			/>
+			<input type="hidden" name="freezeTime" value={freezeTimeInput} />
+		</div>
+		<div class="modal-footer">
+			<button
+				type="button"
+				class="btn btn-outline-secondary"
+				on:click={() => {
+					freezeModal.hide();
+				}}>Cancel</button
+			>
+			<button type="submit" class="btn btn-success">Set</button>
+		</div>
+	</form>
+</Modal>
 
 <h1 style="text-align:center" class="mb-4"><i class="bi bi-flag"></i> Contest - {data.name}</h1>
 
@@ -40,6 +78,13 @@
 		<a href="/admin/contests" class="btn btn-outline-primary">All Contests</a>
 	</div>
 	<div class="col-6 text-end">
+		<button
+			type="button"
+			class="btn btn-outline-info"
+			on:click={() => {
+				freezeModal.show();
+			}}>Set Freeze Time</button
+		>
 		{#if data.activeTeams === 0}
 			<form
 				method="POST"

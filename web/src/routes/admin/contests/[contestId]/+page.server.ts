@@ -109,5 +109,31 @@ export const actions = {
 		}
 		await createRepos(contestId);
 		return { success: true };
+	},
+	'freeze-time': async ({ params, request }) => {
+		if (!params.contestId) {
+			return { success: false, message: 'No contest Id specified' };
+		}
+		const contestId = parseInt(params.contestId);
+		if (isNaN(contestId)) {
+			return { success: false, message: 'Invalid contest Id' };
+		}
+		const form = await request.formData();
+		const formFreezeTime = form.get('freezeTime');
+		if (formFreezeTime === null) {
+			return { success: false, message: 'Invalid input' };
+		}
+		const freezeTime = new Date(formFreezeTime.toString());
+		const contest = await db.contest.findUnique({ where: { id: contestId } });
+		if (contest === null) {
+			return { success: false, message: 'Invalid contest' };
+		}
+		try {
+			await db.contest.update({ where: { id: contestId }, data: { freezeTime } });
+		} catch (e) {
+			console.error(`Database error: ${e}`);
+			return { success: false, message: `Database error: ${e}` };
+		}
+		return { success: true };
 	}
 } satisfies Actions;
