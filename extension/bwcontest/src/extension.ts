@@ -6,7 +6,11 @@ import {
 	stopTeamStatusPolling,
 	useFastPolling
 } from './contestMonitor/pollingService';
-import { clearCachedRepoState, refreshRepoState, setRepoManagerExtensionContext } from './teamRepoManager';
+import {
+	clearCachedRepoState,
+	refreshRepoState,
+	setRepoManagerExtensionContext
+} from './teamRepoManager';
 import { BWPanel } from './problemPanel';
 
 export interface BWContestSettings {
@@ -49,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		vscode.commands.registerCommand('bwcontest.refreshState', () => {
 			refreshRepoState();
-		}),
+		})
 	);
 
 	startTeamStatusPollingOnActivation(context);

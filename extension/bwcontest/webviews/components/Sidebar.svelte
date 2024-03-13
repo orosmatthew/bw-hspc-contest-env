@@ -134,17 +134,17 @@
 
 		<h2 class="sidebarSectionHeader">Actions</h2>
 		<div class="sidebarSection">
-			{#if repoState == "No Team"}
+			{#if repoState == 'No Team'}
 				<span>Team not connected, click Refresh at the top of this panel</span>
-			{:else if repoState == "No Repo"}
+			{:else if repoState == 'No Repo'}
 				<div class="buttonContainer">
 					<button on:click={onCloneOpenRepo} class="sidebarButton">Clone and Open Repo</button>
 				</div>
-			{:else if repoState == "Repo Exists, Not Open"}
+			{:else if repoState == 'Repo Exists, Not Open'}
 				<div class="buttonContainer">
 					<button on:click={onOpenRepo} class="sidebarButton">Open Repo</button>
 				</div>
-			{:else if repoState == "Repo Open"}
+			{:else if repoState == 'Repo Open'}
 				<div class="buttonContainer">
 					<button on:click={onTestAndSubmit} class="sidebarButton">Test & Submit</button>
 					<button on:click={onCloneRepo} class="sidebarButton">Reset Repo</button>

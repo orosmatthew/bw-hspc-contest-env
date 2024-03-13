@@ -1,6 +1,15 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
-import { RepoState, clearCachedRepoState, cloneOpenRepo, cloneRepo, openRepo, getCachedRepoState, refreshRepoState, repoStateChanged } from './teamRepoManager';
+import {
+	RepoState,
+	clearCachedRepoState,
+	cloneOpenRepo,
+	cloneRepo,
+	openRepo,
+	getCachedRepoState,
+	refreshRepoState,
+	repoStateChanged
+} from './teamRepoManager';
 import { BWPanel } from './problemPanel';
 import urlJoin from 'url-join';
 import outputPanelLog from './outputPanelLog';
@@ -80,10 +89,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		});
 
 		const currentRepoState = getCachedRepoState();
-		outputPanelLog.info('When SidebarProvider constructed, cached repo state is: ' + currentRepoState);
+		outputPanelLog.info(
+			'When SidebarProvider constructed, cached repo state is: ' + currentRepoState
+		);
 		this.updateRepoStatus(currentRepoState);
 
-		repoStateChanged.add(repoChangedEventArgs => {
+		repoStateChanged.add((repoChangedEventArgs) => {
 			outputPanelLog.trace('Repo status updating from event');
 
 			if (!repoChangedEventArgs) {
@@ -148,9 +159,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		this.updateTeamStatus(currentSubmissionsList);
 
 		const currentRepoState = getCachedRepoState();
-		outputPanelLog.info(
-			'After login, cached repo state is: ' + currentRepoState
-		);
+		outputPanelLog.info('After login, cached repo state is: ' + currentRepoState);
 		this.updateRepoStatus(currentRepoState);
 		refreshRepoState();
 	}
@@ -319,16 +328,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 						this.updateTeamStatus(currentSubmissionsList);
 
 						const currentRepoState = getCachedRepoState();
-						outputPanelLog.trace(
-							'onUIMount, currentRepoState is ' + currentRepoState
-						);
+						outputPanelLog.trace('onUIMount, currentRepoState is ' + currentRepoState);
 						this.updateRepoStatus(currentRepoState);
 					}
 					break;
 				}
 				case 'onCloneOpenRepo': {
 					cloneOpenRepo(m.data.contestId, m.data.teamId);
-					break;					
+					break;
 				}
 				case 'onCloneRepo': {
 					cloneRepo(m.data.contestId, m.data.teamId);
