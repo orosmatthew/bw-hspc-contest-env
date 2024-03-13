@@ -7,6 +7,7 @@
 		MessageType,
 		SidebarTeamStatus
 	} from '../../src/SidebarProvider';
+	import type { RepoState } from '../../src/teamRepoManager';
 
 	let teamname: string;
 	let password: string;
@@ -16,16 +17,36 @@
 	let teamData: TeamData | null = null;
 	let teamStatus: SidebarTeamStatus | null = null;
 
+	let repoState: RepoState | null = null;
+
 	let totalProblems = 0;
 
 	function postMessage(message: MessageType) {
 		vscode.postMessage(message);
 	}
 
-	function onClone() {
+	function onCloneOpenRepo() {
 		if (teamData) {
 			postMessage({
-				msg: 'onClone',
+				msg: 'onCloneOpenRepo',
+				data: { contestId: teamData.contestId, teamId: teamData.teamId }
+			});
+		}
+	}
+
+	function onCloneRepo() {
+		if (teamData) {
+			postMessage({
+				msg: 'onCloneRepo',
+				data: { contestId: teamData.contestId, teamId: teamData.teamId }
+			});
+		}
+	}
+
+	function onOpenRepo() {
+		if (teamData) {
+			postMessage({
+				msg: 'onOpenRepo',
 				data: { contestId: teamData.contestId, teamId: teamData.teamId }
 			});
 		}
@@ -71,6 +92,8 @@
 					teamStatus.incorrectProblems.length +
 					teamStatus.notStartedProblems.length
 				: 0;
+		} else if (m.msg === 'repoStateUpdated') {
+			repoState = m.data;
 		}
 	});
 </script>
@@ -111,10 +134,24 @@
 
 		<h2 class="sidebarSectionHeader">Actions</h2>
 		<div class="sidebarSection">
-			<div class="buttonContainer">
-				<button on:click={onClone} class="sidebarButton">Clone and Open Repo</button>
-				<button on:click={onTestAndSubmit} class="sidebarButton">Test & Submit</button>
-			</div>
+			{#if repoState == 'No Team'}
+				<span>Team not connected, click Refresh at the top of this panel</span>
+			{:else if repoState == 'No Repo'}
+				<div class="buttonContainer">
+					<button on:click={onCloneOpenRepo} class="sidebarButton">Clone and Open Repo</button>
+				</div>
+			{:else if repoState == 'Repo Exists, Not Open'}
+				<div class="buttonContainer">
+					<button on:click={onOpenRepo} class="sidebarButton">Open Repo</button>
+				</div>
+			{:else if repoState == 'Repo Open'}
+				<div class="buttonContainer">
+					<button on:click={onTestAndSubmit} class="sidebarButton">Test & Submit</button>
+					<button on:click={onCloneRepo} class="sidebarButton">Reset Repo</button>
+				</div>
+			{:else}
+				<span>Checking repo state...</span>
+			{/if}
 		</div>
 
 		<h2 class="sidebarSectionHeader">Problem Progress</h2>

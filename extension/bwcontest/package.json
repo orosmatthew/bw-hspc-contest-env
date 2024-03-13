@@ -68,8 +68,25 @@
 			{
 				"command": "bwcontest.toggleFastPolling",
 				"title": "BWContest Developer: Toggle Fast Polling"
+			},
+			{
+				"command": "bwcontest.refreshState",
+				"title": "Refresh"
+			},
+			{
+				"command": "bwcontest.showTestSubmitPage",
+				"title": "BWContest: Show Test/Submit Page"
 			}
-		]
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "bwcontest.refreshState",
+					"group": "navigation",
+					"when": "view == bwcontest-sidebar"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
