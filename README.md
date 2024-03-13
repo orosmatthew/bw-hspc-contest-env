@@ -8,7 +8,7 @@ Each directory contains more detailed instructions for building, development, an
 
 ### Extension
 
-Instruction for Extension assume Windows environment
+Instruction for Extension assume Windows or Unix environment
 
  - After Clone
    - `cd shared`
