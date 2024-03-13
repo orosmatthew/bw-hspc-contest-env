@@ -67,10 +67,6 @@ export async function refreshRepoState(): Promise<void> {
 
 	if (vscode.workspace.workspaceFolders) {
 		const existingOpenFolderForRepo = vscode.workspace.workspaceFolders.filter((f) => {
-			console.log(f.uri.path);
-			console.log(clonedRepoPath);
-			console.log(path.normalize(f.uri.path.slice(1)));
-			console.log(path.normalize(clonedRepoPath));
 			const p =
 				os.platform() === 'win32'
 					? path.normalize(f.uri.path.slice(1))
