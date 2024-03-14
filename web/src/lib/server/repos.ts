@@ -10,6 +10,8 @@ import {
 	templateCppCMakeLists,
 	templateCppGitIgnore,
 	templateCppProblem,
+	templateCppVscodeLaunch,
+	templateCppVscodeTasks,
 	templateJavaProblem
 } from './templates';
 
@@ -51,6 +53,10 @@ async function addProblemsCPP(opts: OptsAddProblems) {
 		cmakeLists += `add_executable(${problem.pascalName} ${problem.pascalName}/${problem.pascalName}.cpp)\n`;
 	});
 	opts.fs.writeFileSync(join(opts.dir, 'CMakeLists.txt'), cmakeLists);
+
+	opts.fs.mkdirSync(join(opts.dir, '.vscode'));
+	opts.fs.writeFileSync(join(opts.dir, '.vscode', 'launch.json'), templateCppVscodeLaunch);
+	opts.fs.writeFileSync(join(opts.dir, '.vscode', 'tasks.json'), templateCppVscodeTasks);
 
 	opts.contest.problems.forEach((problem) => {
 		opts.fs.mkdirSync(join(opts.dir, problem.pascalName));
