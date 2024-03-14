@@ -68,7 +68,7 @@ async function addProblemsCPP(opts: OptsAddProblems) {
 	});
 }
 
-export async function createRepos(contestId: number) {
+export async function createRepos(contestId: number, teamIds: number[]) {
 	const vol = new memfs.Volume();
 	const fs = createFsFromVolume(vol);
 
@@ -81,35 +81,37 @@ export async function createRepos(contestId: number) {
 		return;
 	}
 
-	contest.teams.forEach(async (team) => {
-		fs.mkdirSync(team.id.toString(), { recursive: true });
-		await git.init({ fs: fs, bare: false, defaultBranch: 'master', dir: team.id.toString() });
-		if (team.language === 'Java') {
-			addProblemsJava({ fs, dir: team.id.toString(), contest });
-		} else if (team.language === 'CSharp') {
-			addProblemsCSharp({ fs, dir: team.id.toString(), contest });
-			fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCSharpGitIgnore);
-		} else if (team.language === 'CPP') {
-			addProblemsCPP({ fs, dir: team.id.toString(), contest });
-			fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCppGitIgnore);
-		} else {
-			console.error('Language not supported');
-			return;
-		}
-		await git.add({ fs: fs, dir: team.id.toString(), filepath: '.' });
-		await git.commit({
-			fs: fs,
-			dir: team.id.toString(),
-			message: 'Initial',
-			author: { name: 'Admin' }
+	contest.teams
+		.filter((t) => teamIds.includes(t.id))
+		.forEach(async (team) => {
+			fs.mkdirSync(team.id.toString(), { recursive: true });
+			await git.init({ fs: fs, bare: false, defaultBranch: 'master', dir: team.id.toString() });
+			if (team.language === 'Java') {
+				addProblemsJava({ fs, dir: team.id.toString(), contest });
+			} else if (team.language === 'CSharp') {
+				addProblemsCSharp({ fs, dir: team.id.toString(), contest });
+				fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCSharpGitIgnore);
+			} else if (team.language === 'CPP') {
+				addProblemsCPP({ fs, dir: team.id.toString(), contest });
+				fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCppGitIgnore);
+			} else {
+				console.error('Language not supported');
+				return;
+			}
+			await git.add({ fs: fs, dir: team.id.toString(), filepath: '.' });
+			await git.commit({
+				fs: fs,
+				dir: team.id.toString(),
+				message: 'Initial',
+				author: { name: 'Admin' }
+			});
+			await git.push({
+				fs: fs,
+				http,
+				dir: team.id.toString(),
+				url: `http://127.0.0.1:${
+					process.env.GIT_PORT ?? 7006
+				}/${contest.id.toString()}/${team.id.toString()}`
+			});
 		});
-		await git.push({
-			fs: fs,
-			http,
-			dir: team.id.toString(),
-			url: `http://127.0.0.1:${
-				process.env.GIT_PORT ?? 7006
-			}/${contest.id.toString()}/${team.id.toString()}`
-		});
-	});
 }

@@ -96,7 +96,7 @@ export const actions = {
 		});
 		return { success: true };
 	},
-	repo: async ({ params }) => {
+	repo: async ({ params, request }) => {
 		if (!params.contestId) {
 			return { success: false };
 		}
@@ -104,10 +104,20 @@ export const actions = {
 		if (isNaN(contestId)) {
 			return { success: false };
 		}
-		if (fs.existsSync(join('repo', contestId.toString()))) {
-			fs.removeSync(join('repo', contestId.toString()));
-		}
-		await createRepos(contestId);
+		const form = await request.formData();
+		const formEntries = Array.from(form.entries());
+		const resetTeamIds = formEntries
+			.filter((e) => e[0].startsWith('teamId'))
+			.map((e) => {
+				return parseInt(e[1].toString());
+			});
+		resetTeamIds.forEach((teamId) => {
+			const repoPath = join('repo', contestId.toString(), `${teamId.toString()}.git`);
+			if (fs.existsSync(repoPath) === true) {
+				fs.removeSync(repoPath);
+			}
+		});
+		await createRepos(contestId, resetTeamIds);
 		return { success: true };
 	},
 	'freeze-time': async ({ params, request }) => {

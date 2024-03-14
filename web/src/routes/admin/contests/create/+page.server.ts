@@ -45,7 +45,10 @@ export const actions = {
 			include: { teams: true, problems: true }
 		});
 
-		await createRepos(createdContest.id);
+		await createRepos(
+			createdContest.id,
+			teams.map((t) => t.id)
+		);
 
 		return { success: true };
 	}

@@ -153,7 +153,10 @@ export const actions = {
 						await db.activeTeam.create({ data: { teamId: team.id, contestId: contest.id } });
 					});
 
-					await createRepos(contest.id);
+					await createRepos(
+						contest.id,
+						fullContest.teams.map((t) => t.id)
+					);
 				}
 			}
 		} catch (err) {
