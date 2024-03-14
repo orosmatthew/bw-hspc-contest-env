@@ -22,7 +22,7 @@ services:
       - ORIGIN=${ORIGIN}
       - WEB_SANDBOX_SECRET=${WEB_SANDBOX_SECRET}
     volumes:
-      - ./repo:/app/repo
+      - ./repo:/app/web/repo
     depends_on:
       - db
     restart: unless-stopped
