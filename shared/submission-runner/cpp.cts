@@ -69,10 +69,12 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
 			outputBuffer += data.toString();
+			params.outputCallback?.(data.toString());
 		});
 		child.stderr.setEncoding('utf8');
 		child.stderr.on('data', (data) => {
 			outputBuffer += data.toString();
+			params.outputCallback?.(data.toString());
 		});
 
 		const runStartTime = performance.now();
