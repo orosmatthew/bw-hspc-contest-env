@@ -31,7 +31,7 @@
 		ContestStateForExtension,
 		SubmissionForExtension,
 		SubmissionStateForExtension
-	} from '../../src/contestMonitor/contestMonitorSharedTypes';
+	} from 'bwcontest-shared/types/contestMonitorTypes';
 
 	export let contestState: ContestStateForExtension;
 	export let problem: SidebarProblemWithSubmissions;
