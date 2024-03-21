@@ -24,7 +24,7 @@
 	});
 
 	beforeNavigate((nav) => {
-		if ($selectedContest !== null) {
+		if ($selectedContest !== null && nav.to?.url.pathname.startsWith('/admin')) {
 			nav.to?.url.searchParams.set('c', $selectedContest.toString());
 		}
 	});
