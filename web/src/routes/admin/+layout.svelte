@@ -23,9 +23,9 @@
 		}
 	});
 
-	beforeNavigate((nav) => {
-		if ($selectedContest !== null && nav.to?.url.pathname.startsWith('/admin')) {
-			nav.to?.url.searchParams.set('c', $selectedContest.toString());
+	beforeNavigate(({ to }) => {
+		if ($selectedContest !== null && to !== null && to.url.pathname.startsWith('/admin')) {
+			to.url.searchParams.set('c', $selectedContest.toString());
 		}
 	});
 

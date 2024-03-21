@@ -2,9 +2,10 @@ import { db } from '$lib/server/prisma';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ url }) => {
-	const selectedContestIdStr = url.searchParams.get('c');
-	const selectedContestId = selectedContestIdStr === null ? null : parseInt(selectedContestIdStr);
+export const load = (async ({ cookies }) => {
+	const selectedContestIdStr = cookies.get('selectedContest');
+	const selectedContestId =
+		selectedContestIdStr === undefined ? null : parseInt(selectedContestIdStr);
 	const timestamp = new Date();
 
 	if (selectedContestId !== null) {
