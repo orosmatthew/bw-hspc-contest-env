@@ -19,7 +19,7 @@
 			url.searchParams.delete('c');
 		}
 		if (browser) {
-			goto(url, { replaceState: false, noScroll: true, keepFocus: true, invalidateAll: false });
+			goto(url, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: true });
 		}
 	});
 
