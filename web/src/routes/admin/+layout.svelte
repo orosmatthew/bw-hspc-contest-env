@@ -1,9 +1,45 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { theme } from '../stores';
+	import { page } from '$app/stores';
+	import { selectedContest } from './stores';
+	import type { LayoutData } from './$types';
+	import { browser } from '$app/environment';
+
+	export let data: LayoutData;
+
+	$selectedContest = data.selectedContestId;
+
+	selectedContest.subscribe((id) => {
+		const url = $page.url;
+		if (typeof id === 'number') {
+			url.searchParams.delete('c');
+			url.searchParams.append('c', id.toString());
+		} else {
+			url.searchParams.delete('c');
+		}
+		if (browser) {
+			goto(url, { replaceState: false, noScroll: true, keepFocus: true, invalidateAll: false });
+		}
+	});
+
+	beforeNavigate((nav) => {
+		if ($selectedContest !== null) {
+			nav.to?.url.searchParams.set('c', $selectedContest.toString());
+		}
+	});
+
+	let selectContestValue: string;
+	function onSelectContest() {
+		if (selectContestValue === 'null') {
+			$selectedContest = null;
+		} else {
+			$selectedContest = parseInt(selectContestValue);
+		}
+	}
 </script>
 
-<nav class="main-nav mt-2 mb-3 navbar navbar-expand-lg bg-body-secondary shadow-sm">
+<nav class="main-nav mt-2 mb-3 navbar navbar-expand-xl bg-body-secondary shadow-sm">
 	<div class="container-fluid">
 		<button
 			class="navbar-toggler"
@@ -46,7 +82,21 @@
 			</ul>
 		</div>
 	</div>
+
 	<div class="nav-sticky-right">
+		<select
+			class="form-control form-select w-auto"
+			bind:value={selectContestValue}
+			on:change={onSelectContest}
+		>
+			{#if $selectedContest === null}
+				<option value={null} selected>Select Contest</option>
+			{/if}
+			{#each data.contests as contest}
+				<option value={contest.id} selected={$selectedContest === contest.id}>{contest.name}</option
+				>
+			{/each}
+		</select>
 		<button
 			on:click={() => {
 				$theme = $theme === 'light' ? 'dark' : 'light';
@@ -77,6 +127,8 @@
 	}
 	.nav-sticky-right {
 		position: absolute;
+		display: flex;
+		column-gap: 5px;
 		right: 10px;
 		top: 8px;
 	}

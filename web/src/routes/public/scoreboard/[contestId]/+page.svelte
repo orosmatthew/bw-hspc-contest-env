@@ -30,6 +30,9 @@
 </div>
 
 <div class="text-end mb-1">
+	{#if data.frozen}
+		FROZEN
+	{/if}
 	{#if updating}
 		<div class="spinner-border spinner-border-sm text-secondary" />
 	{/if}
