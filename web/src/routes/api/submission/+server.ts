@@ -39,26 +39,6 @@ export const GET = (async ({ request }) => {
 	}
 }) satisfies RequestHandler;
 
-const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'SandboxError']);
-export type RunResultKind = z.infer<typeof RunResultKind>;
-
-const RunResult = z
-	.object({
-		kind: RunResultKind,
-		output: z.string().optional(),
-		exitCode: z.number().optional(),
-		runtimeMilliseconds: z.number().optional(),
-		resultKindReason: z.string().optional()
-	})
-	.strict();
-
-const submissionPostData = z
-	.object({
-		submissionId: z.number(),
-		result: RunResult
-	})
-	.strict();
-
 export const POST = (async ({ request }) => {
 	const secret = request.headers.get('secret');
 	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET!) {
@@ -92,6 +72,15 @@ export const POST = (async ({ request }) => {
 		return json({ success: false });
 	}
 
+	if (data.data.result.sourceFiles && data.data.result.sourceFiles.length > 0) {
+		for (const sourceFile of data.data.result.sourceFiles) {
+			await db.submissionSourceFile.create({
+				data: { pathFromProblemRoot: sourceFile.pathFromProblemRoot, content: sourceFile.content,
+				submissionId: submission.id }
+			});
+		}
+	}
+
 	switch (data.data.result.kind) {
 		case 'Completed':
 			if (data.data.result.output!.trimEnd() === submission.problem.realOutput.trimEnd()) {
@@ -102,7 +91,9 @@ export const POST = (async ({ request }) => {
 						gradedAt: new Date(),
 						actualOutput: data.data.result.output,
 						stateReason: null,
-						stateReasonDetails: null
+						stateReasonDetails: null,
+						exitCode: data.data.result.exitCode,
+						runtimeMilliseconds: data.data.result.runtimeMilliseconds
 					}
 				});
 				return json({ success: true });
@@ -120,7 +111,9 @@ export const POST = (async ({ request }) => {
 						diff: diff,
 						actualOutput: data.data.result.output,
 						stateReason: null,
-						stateReasonDetails: null
+						stateReasonDetails: null,
+						exitCode: data.data.result.exitCode,
+						runtimeMilliseconds: data.data.result.runtimeMilliseconds
 					}
 				});
 				return json({ success: true });
@@ -148,7 +141,9 @@ export const POST = (async ({ request }) => {
 					gradedAt: new Date(),
 					actualOutput: data.data.result.output,
 					stateReason: SubmissionStateReason.TimeLimitExceeded,
-					stateReasonDetails: data.data.result.resultKindReason
+					stateReasonDetails: data.data.result.resultKindReason,
+					exitCode: data.data.result.exitCode,
+					runtimeMilliseconds: data.data.result.runtimeMilliseconds
 				}
 			});
 			return json({ success: true });
@@ -165,3 +160,38 @@ export const POST = (async ({ request }) => {
 			return json({ success: true });
 	}
 }) satisfies RequestHandler;
+
+// Copy/paste these zod definitions from the shared project because referencing 
+// the shared one results in "RollupError: Expected '{', got 'type'"
+
+const RunResultKind = z.enum([
+	'CompileFailed',
+	'TimeLimitExceeded',
+	'Completed',
+	'RunError'
+]);
+
+const SourceFileWithTextZod = z
+	.object({
+		pathFromProblemRoot: z.string(),
+		content: z.string(),
+	})
+	.strict();
+
+const RunResultZod = z
+	.object({
+		kind: RunResultKind,
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		runtimeMilliseconds: z.number().optional(),
+		resultKindReason: z.string().optional(),
+		sourceFiles: z.array(SourceFileWithTextZod).optional()
+	})
+	.strict();
+
+const submissionPostData = z
+	.object({
+		submissionId: z.number(),
+		result: RunResultZod
+	})
+	.strict();
