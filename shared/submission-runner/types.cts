@@ -4,7 +4,6 @@ const RunResultKind = z.enum([
 	'CompileFailed',
 	'TimeLimitExceeded',
 	'Completed',
-	'SandboxError',
 	'RunError'
 ]);
 

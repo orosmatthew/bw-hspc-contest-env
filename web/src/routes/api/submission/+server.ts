@@ -148,7 +148,7 @@ export const POST = (async ({ request }) => {
 			});
 			return json({ success: true });
 
-		case 'SandboxError':
+		case 'RunError':
 			// TODO: Raise to admins somehow. For now, just mark stateReason so it *could* be observed
 			await db.submission.update({
 				where: { id: data.data.submissionId },
