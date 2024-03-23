@@ -1,13 +1,14 @@
 import { spawn } from 'child_process';
 import kill from 'tree-kill';
-import type { IRunner, IRunnerReturn, RunResult } from './types.cjs';
+import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.cjs';
 import { timeoutSeconds } from './settings.cjs';
+import { getSourceFilesWithText } from './sourceScraper.cjs';
 
-export const runCSharp: IRunner = async function (params: {
-	srcDir: string;
-	input: string;
-	outputCallback?: (data: string) => void;
-}): Promise<IRunnerReturn> {
+export const runCSharp: IRunner = async function (
+	params: IRunnerParams
+): Promise<IRunnerReturn> {
+	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cs');
+
 	console.log(`- RUN: ${params.srcDir}`);
 	const child = spawn('dotnet run', { shell: true, cwd: params.srcDir });
 
@@ -46,14 +47,16 @@ export const runCSharp: IRunner = async function (params: {
 							kind: 'Completed',
 							output: outputBuffer,
 							exitCode: child.exitCode!,
-							runtimeMilliseconds
+							runtimeMilliseconds,
+							sourceFiles
 						});
 					} else {
 						console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
 						resolve({
 							kind: 'TimeLimitExceeded',
 							output: outputBuffer,
-							resultKindReason: `Timeout after ${timeoutSeconds} seconds`
+							resultKindReason: `Timeout after ${timeoutSeconds} seconds`,
+							sourceFiles
 						});
 					}
 				});
@@ -85,6 +88,6 @@ export const runCSharp: IRunner = async function (params: {
 			}
 		};
 	} catch (error) {
-		return { success: false, runResult: { kind: 'RunError' } };
+		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
 	}
 };
