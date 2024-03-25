@@ -40,6 +40,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Contest - {data.name}</title>
+</svelte:head>
+
+<ConfirmModal bind:this={confirmModal} />
+
 <Modal title="Reset Repos" bind:this={repoModal}>
 	<form action="?/repo" method="POST" use:enhance>
 		<div class="modal-body">
