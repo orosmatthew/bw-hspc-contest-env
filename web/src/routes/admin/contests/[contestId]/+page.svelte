@@ -10,12 +10,10 @@
 	export let form: Actions;
 
 	$: if (form) {
-		freezeModal.hide();
 		repoModal.hide();
 	}
 
 	let confirmModal: ConfirmModal;
-	let freezeModal: Modal;
 	let repoModal: Modal;
 
 	function enhanceConfirm(form: HTMLFormElement, text: string) {
@@ -27,12 +25,6 @@
 				await update();
 			};
 		});
-	}
-
-	let freezeTimeInputLocal: string | undefined;
-	let freezeTimeInput: string | null = null;
-	$: if (freezeTimeInputLocal !== undefined) {
-		freezeTimeInput = new Date(freezeTimeInputLocal).toISOString();
 	}
 
 	function repoSelectNone() {
@@ -47,37 +39,6 @@
 		});
 	}
 </script>
-
-<svelte:head>
-	<title>Contest - {data.name}</title>
-</svelte:head>
-
-<ConfirmModal bind:this={confirmModal} />
-
-<Modal title="Freeze Time" bind:this={freezeModal}>
-	<form action="?/freeze-time" method="POST" use:enhance>
-		<div class="modal-body">
-			<label class="form-label" for="freezeTimeInput">Freeze At</label>
-			<input
-				bind:value={freezeTimeInputLocal}
-				id="freezeTimeInput"
-				class="form-control"
-				type="datetime-local"
-			/>
-			<input type="hidden" name="freezeTime" value={freezeTimeInput} />
-		</div>
-		<div class="modal-footer">
-			<button
-				type="button"
-				class="btn btn-outline-secondary"
-				on:click={() => {
-					freezeModal.hide();
-				}}>Cancel</button
-			>
-			<button type="submit" class="btn btn-success">Set</button>
-		</div>
-	</form>
-</Modal>
 
 <Modal title="Reset Repos" bind:this={repoModal}>
 	<form action="?/repo" method="POST" use:enhance>
@@ -129,13 +90,15 @@
 		<a href="/admin/contests" class="btn btn-outline-primary">All Contests</a>
 	</div>
 	<div class="col-6 text-end">
-		<button
-			type="button"
-			class="btn btn-outline-info"
-			on:click={() => {
-				freezeModal.show();
-			}}>Set Freeze Time</button
-		>
+		{#if !data.frozen}
+			<form class="d-inline" action="?/freeze" method="POST" use:enhance>
+				<button type="submit" class="btn btn-info">Freeze</button>
+			</form>
+		{:else}
+			<form class="d-inline" action="?/unfreeze" method="POST" use:enhance>
+				<button type="submit" class="btn btn-info">Unfreeze</button>
+			</form>
+		{/if}
 		<button
 			type="button"
 			class="btn btn-outline-warning"
