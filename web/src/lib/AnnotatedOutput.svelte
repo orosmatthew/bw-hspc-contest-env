@@ -86,7 +86,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td>
+			<td class="caseNumColumn">
 				<b>Case #</b>
 			</td>
 			<td>
@@ -107,7 +107,7 @@
 		{#if analysisResults}
 			{#each analysisResults.testCaseResults as testCaseResult, i}
 				<tr>
-					<td class="caselabelcell {i < numSampleCases ? 'sample' : ''}">
+					<td class="caseNumColumn caseLabelCell {i < numSampleCases ? 'sample' : ''}">
 						{#if i < numSampleCases}
 							<span>(</span> <span class="inputCaseNumberLabel">#{testCaseResult.caseNum}</span>
 							<span>)</span>
@@ -210,14 +210,14 @@
 		border-right: none;
 	}
 
-	td.caselabelcell {
+	td.caseLabelCell {
 		width: 100px;
 		vertical-align: top;
 		text-align: center;
 		color: var(--inputCaseNum-color);
 	}
 
-	td.caselabelcell.sample {
+	td.caseLabelCell.sample {
 		color: var(--inputCaseNum-color);
 	}
 
@@ -236,6 +236,11 @@
 		vertical-align: top;
 		max-width: 700px;
 		overflow-x: auto;
+	}
+
+	.caseNumColumn {
+		padding-left: 6px;
+		padding-right: 6px;
 	}
 
 	pre {
