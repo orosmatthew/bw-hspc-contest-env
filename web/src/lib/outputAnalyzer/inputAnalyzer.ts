@@ -70,7 +70,7 @@ function parseInputCases(
 	}
 
 	if (!correctCaseCount) {
-		errorMessage += `Incorrect case count. First input line says ${numCases} cases but we parsed ${result.length}}. `;
+		errorMessage += `Incorrect case count. First input line says ${numCases} cases but we parsed ${result.length}. `;
 	}
 
 	return { success: false, caseStartIndexes: result, errorMessage };
