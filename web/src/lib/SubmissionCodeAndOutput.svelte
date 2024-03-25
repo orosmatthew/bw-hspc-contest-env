@@ -53,7 +53,7 @@
 								rows={codeRows}
 								cols={codeCols}
 								class="code mb-3 form-control"
-								style="margin-left: 20px; margin-top: 10px"
+								style="margin-top: 10px"
 								disabled>{sourceFile.content}</textarea
 							>
 						</div>
