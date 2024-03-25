@@ -1,4 +1,4 @@
-import { type Contest, type Submission } from '@prisma/client';
+import type { Contest, Submission } from '@prisma/client';
 
 export function stretchTextarea(textarea: HTMLTextAreaElement) {
 	textarea.style.height = textarea.scrollHeight + 'px';

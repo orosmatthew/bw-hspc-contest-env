@@ -1,7 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { db } from '$lib/server/prisma';
-import { SubmissionState, SubmissionStateReason } from '@prisma/client';
 
 export const load = (async ({ params }) => {
 	const submissionId = parseInt(params.submissionId);
@@ -81,8 +80,8 @@ export const actions = {
 		await db.submission.update({
 			where: { id: submissionId },
 			data: {
-				state: correctBool ? SubmissionState.Correct : SubmissionState.Incorrect,
-				stateReason: correctBool ? SubmissionStateReason.IncorrectOverriddenAsCorrect : null,
+				state: correctBool ? 'Correct' : 'Incorrect',
+				stateReason: correctBool ? 'IncorrectOverriddenAsCorrect' : null,
 				message: message ? message.toString() : '',
 				gradedAt: gradedTime
 			}

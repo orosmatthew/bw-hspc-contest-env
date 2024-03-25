@@ -1,12 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import TestCaseResults from '$lib/TestCaseResults.svelte';
-	import {
-		type Contest,
-		type Problem,
-		type Submission,
-		type Team
-	} from '@prisma/client';
+	import type { Contest, Problem, Submission, Team } from '@prisma/client';
 	import {
 		minutesBetweenTimestamps,
 		minutesFromContestStart,
@@ -17,8 +12,7 @@
 	export let includesAllAttempts = false;
 	export let sortDirection: 'newest first' | 'oldest first';
 
-	const allQueued: boolean =
-		submissions.find((s) => s.state != 'Queued') === undefined;
+	const allQueued: boolean = submissions.find((s) => s.state != 'Queued') === undefined;
 
 	const showOutputColumns = !allQueued;
 

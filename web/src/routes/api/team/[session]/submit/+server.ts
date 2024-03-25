@@ -2,7 +2,6 @@ import { db } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
-import { SubmissionState } from '@prisma/client';
 import type { SubmissionForExtension } from 'bwcontest-shared/types/contestMonitorTypes';
 import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
 
@@ -51,7 +50,7 @@ export const POST = (async ({ params, request }) => {
 
 	const submission = await db.submission.create({
 		data: {
-			state: SubmissionState.Queued,
+			state: 'Queued',
 			commitHash: data.data.commitHash,
 			teamId: activeTeam.teamId,
 			problemId: data.data.problemId,

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type Problem } from '@prisma/client';
+	import type { Problem } from '@prisma/client';
 	import { parseProblemInput } from '$lib/outputAnalyzer/inputAnalyzer';
 
 	import { theme } from '../routes/stores';

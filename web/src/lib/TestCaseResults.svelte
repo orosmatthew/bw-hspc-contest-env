@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type Problem, type Submission } from '@prisma/client';
+	import type { Problem, Submission } from '@prisma/client';
 	import {
 		CaseResult,
 		type TestCaseResult,

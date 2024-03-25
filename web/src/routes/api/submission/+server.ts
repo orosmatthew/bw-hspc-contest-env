@@ -1,5 +1,4 @@
 import { db } from '$lib/server/prisma';
-import { SubmissionState, SubmissionStateReason } from '@prisma/client';
 import { error, json } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
@@ -12,7 +11,7 @@ export const GET = (async ({ request }) => {
 		throw error(401, 'Unauthorized');
 	}
 	const submissions = await db.submission.findMany({
-		where: { state: SubmissionState.Queued },
+		where: { state: 'Queued' },
 		orderBy: { createdAt: 'asc' },
 		include: { problem: true, contest: true, team: true },
 		take: 1
@@ -66,7 +65,7 @@ export const POST = (async ({ request }) => {
 		return json({ success: false });
 	}
 
-	if (submission.state !== SubmissionState.Queued) {
+	if (submission.state !== 'Queued') {
 		console.log(
 			'Error: POST to Submission API for already judged submissionId: ' + data.data.submissionId
 		);
@@ -96,7 +95,7 @@ export const POST = (async ({ request }) => {
 				await db.submission.update({
 					where: { id: data.data.submissionId },
 					data: {
-						state: SubmissionState.Correct,
+						state: 'Correct',
 						gradedAt: new Date(),
 						actualOutput: data.data.result.output,
 						stateReason: null,
@@ -117,7 +116,7 @@ export const POST = (async ({ request }) => {
 				await db.submission.update({
 					where: { id: data.data.submissionId },
 					data: {
-						state: SubmissionState.InReview,
+						state: 'InReview',
 						diff: diff,
 						actualOutput: data.data.result.output,
 						stateReason: null,
@@ -135,9 +134,9 @@ export const POST = (async ({ request }) => {
 			await db.submission.update({
 				where: { id: data.data.submissionId },
 				data: {
-					state: SubmissionState.Incorrect,
+					state: 'Incorrect',
 					gradedAt: new Date(),
-					stateReason: SubmissionStateReason.BuildError,
+					stateReason: 'BuildError',
 					stateReasonDetails: data.data.result.resultKindReason,
 					message: 'Compilation Failed'
 				}
@@ -148,10 +147,10 @@ export const POST = (async ({ request }) => {
 			await db.submission.update({
 				where: { id: data.data.submissionId },
 				data: {
-					state: SubmissionState.Incorrect,
+					state: 'Incorrect',
 					gradedAt: new Date(),
 					actualOutput: data.data.result.output,
-					stateReason: SubmissionStateReason.TimeLimitExceeded,
+					stateReason: 'TimeLimitExceeded',
 					stateReasonDetails: data.data.result.resultKindReason,
 					testCaseResults,
 					exitCode: data.data.result.exitCode,
@@ -165,7 +164,7 @@ export const POST = (async ({ request }) => {
 			await db.submission.update({
 				where: { id: data.data.submissionId },
 				data: {
-					stateReason: SubmissionStateReason.SandboxError,
+					stateReason: 'SandboxError',
 					stateReasonDetails: data.data.result.resultKindReason
 				}
 			});

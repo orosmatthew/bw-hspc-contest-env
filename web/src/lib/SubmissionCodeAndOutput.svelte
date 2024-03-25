@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type Problem, type SubmissionSourceFile } from '@prisma/client';
+	import type { Problem, SubmissionSourceFile } from '@prisma/client';
 	import Tabs from './TabBar/TabBar.svelte';
 	import Tab from './TabBar/TabEntry.svelte';
 	import DiffView from './DiffView.svelte';

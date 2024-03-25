@@ -1,5 +1,5 @@
 import { db } from '$lib/server/prisma';
-import { Language, SubmissionState } from '@prisma/client';
+import type { Language, SubmissionState } from '@prisma/client';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { genPassword } from '../../teams/util';
@@ -85,7 +85,7 @@ export const actions = {
 							create: {
 								name: team.TeamName,
 								password: genPassword(),
-								language: inferTeamLanguage(parsedContest, team) ?? Language.Java
+								language: inferTeamLanguage(parsedContest, team) ?? 'Java'
 							}
 						}))
 					},
@@ -217,11 +217,11 @@ export const actions = {
 function convertSubmissionState(submission: SubmissionImportData): SubmissionState {
 	switch (submission.State) {
 		case 'Correct':
-			return SubmissionState.Correct;
+			return 'Correct';
 		case 'Incorrect':
-			return SubmissionState.Incorrect;
+			return 'Incorrect';
 		default:
-			return SubmissionState.InReview;
+			return 'InReview';
 	}
 }
 
@@ -238,11 +238,11 @@ function inferTeamLanguage(
 
 	switch (submissionWithCode.Language) {
 		case 'Java':
-			return Language.Java;
+			return 'Java';
 		case 'C#':
-			return Language.CSharp;
+			return 'CSharp';
 		case 'C++':
-			return Language.CPP;
+			return 'CPP';
 		default:
 			throw new Error('Unrecognized language: ' + submissionWithCode.Language);
 	}
