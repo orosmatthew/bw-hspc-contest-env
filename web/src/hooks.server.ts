@@ -46,6 +46,10 @@ export const handle = (async ({ event, resolve }) => {
 			logout(event.cookies);
 			redirect(302, '/login');
 		}
+		const contestParam = event.url.searchParams.get('c');
+		if (contestParam !== null) {
+			event.cookies.set('selectedContest', contestParam, { path: '/admin' });
+		}
 	}
 	const res = await resolve(event, {
 		transformPageChunk: ({ html }) => html.replace('%theme%', event.locals.theme)

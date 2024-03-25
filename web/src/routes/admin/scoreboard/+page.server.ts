@@ -1,15 +1,24 @@
 import { db } from '$lib/server/prisma';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load = (async () => {
+export const load = (async ({ cookies }) => {
+	const selectedContestIdStr = cookies.get('selectedContest');
+	const selectedContestId =
+		selectedContestIdStr === undefined ? null : parseInt(selectedContestIdStr);
 	const timestamp = new Date();
-	const contests = await db.contest.findMany({
-		include: { problems: true, teams: { include: { submissions: true } } }
-	});
-	const data = {
-		timestamp: timestamp,
-		contests: contests.map((contest) => {
-			return {
+
+	if (selectedContestId !== null) {
+		const contest = await db.contest.findUnique({
+			where: { id: selectedContestId },
+			include: { problems: true, teams: { include: { submissions: true } } }
+		});
+		if (contest === null) {
+			throw redirect(302, '/admin/scoreboard');
+		}
+		const data = {
+			timestamp: timestamp,
+			contest: {
 				id: contest.id,
 				name: contest.name,
 				problems: contest.problems.map((problem) => {
@@ -103,8 +112,13 @@ export const load = (async () => {
 							}
 						}
 					})
-			};
-		})
-	};
-	return data;
+			}
+		};
+		return data;
+	} else {
+		return {
+			timestamp: timestamp,
+			contest: null
+		};
+	}
 }) satisfies PageServerLoad;

@@ -25,8 +25,6 @@
 	<title>Admin Scoreboards</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-1"><i class="bi bi-trophy"></i> Admin Scoreboards</h1>
-
 <div class="text-end">
 	{#if updating}
 		<div class="spinner-border spinner-border-sm text-secondary" />
@@ -34,8 +32,8 @@
 	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
 </div>
 
-{#each data.contests as contest}
-	<h2 style="text-align:center">{contest.name}</h2>
+{#if data.contest !== null}
+	<h2 style="text-align:center">{data.contest.name}</h2>
 	<div class="mb-3 row">
 		<div class="text-end" />
 	</div>
@@ -47,19 +45,19 @@
 				<th>Team Name</th>
 				<th>Solves</th>
 				<th>Time</th>
-				{#each contest.problems as problem}
+				{#each data.contest.problems as problem}
 					<th>{problem.friendlyName}</th>
 				{/each}
 			</tr>
 		</thead>
 		<tbody>
-			{#each contest.teams as team, i}
+			{#each data.contest.teams as team, i}
 				<tr>
 					<td style="text-align:center; font-size:24px;"><strong>{i + 1}</strong></td>
 					<td style="font-size:18px">{team.name}</td>
 					<td style="font-size:18px">{team.solves}</td>
 					<td style="font-size:18px">{team.time.toFixed(0)}</td>
-					{#each contest.problems as problem}
+					{#each data.contest.problems as problem}
 						<td>
 							<div class="row">
 								<div class="col-3">
@@ -108,4 +106,6 @@
 			{/each}
 		</tbody>
 	</table>
-{/each}
+{:else}
+	<h2 class="text-center">Scoreboard - Select Contest</h2>
+{/if}

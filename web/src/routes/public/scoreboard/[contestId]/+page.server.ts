@@ -32,6 +32,7 @@ export const load = (async ({ params }) => {
 	}
 	const data = {
 		timestamp: timestamp,
+		frozen: contest.freezeTime !== null ? contest.freezeTime < new Date() : false,
 		selected: {
 			name: contest.name,
 			problems: contest.problems.map((problem) => {
