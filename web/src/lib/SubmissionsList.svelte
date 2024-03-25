@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import TestCaseResults from '$lib/TestCaseResults.svelte';
 	import {
-		SubmissionState,
 		type Contest,
 		type Problem,
 		type Submission,
@@ -19,7 +18,7 @@
 	export let sortDirection: 'newest first' | 'oldest first';
 
 	const allQueued: boolean =
-		submissions.find((s) => s.state != SubmissionState.Queued) === undefined;
+		submissions.find((s) => s.state != 'Queued') === undefined;
 
 	const showOutputColumns = !allQueued;
 
