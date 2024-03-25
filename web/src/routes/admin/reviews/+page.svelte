@@ -28,33 +28,37 @@
 	<title>Reviews</title>
 </svelte:head>
 
-<div class="mb-3 text-end">
-	{#if updating}
-		<div class="spinner-border spinner-border-sm text-secondary" />
+{#if data.reviewList != null}
+	<div class="mb-3 text-end">
+		{#if updating}
+			<div class="spinner-border spinner-border-sm text-secondary" />
+		{/if}
+		<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
+	</div>
+
+	<h1 style="text-align:center" class="mb-1">
+		<i class="bi bi-eye"></i> Pending Reviews ({data.reviewList.length})
+	</h1>
+
+	{#if data.reviewList.length === 0}
+		<ul class="list-group">
+			<div class="alert alert-success">No Submission to Review!</div>
+		</ul>
+	{:else}
+		<SubmissionsList submissions={data.reviewList} sortDirection={'oldest first'}></SubmissionsList>
 	{/if}
-	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
-</div>
 
-<h1 style="text-align:center" class="mb-1">
-	<i class="bi bi-eye"></i> Pending Reviews ({data.reviewList.length})
-</h1>
+	<h1 style="text-align:center" class="mb-1">
+		<i class="bi bi-eye"></i> Queued Submissions ({data.queueList.length})
+	</h1>
 
-{#if data.reviewList.length === 0}
-	<ul class="list-group">
-		<div class="alert alert-success">No Submission to Review!</div>
-	</ul>
+	{#if data.queueList.length === 0}
+		<ul class="list-group">
+			<div class="alert alert-success">No Queued Submissions!</div>
+		</ul>
+	{:else}
+		<SubmissionsList submissions={data.queueList} sortDirection={'oldest first'}></SubmissionsList>
+	{/if}
 {:else}
-	<SubmissionsList submissions={data.reviewList} sortDirection={'oldest first'}></SubmissionsList>
-{/if}
-
-<h1 style="text-align:center" class="mb-1">
-	<i class="bi bi-eye"></i> Queued Submissions ({data.queueList.length})
-</h1>
-
-{#if data.queueList.length === 0}
-	<ul class="list-group">
-		<div class="alert alert-success">No Queued Submissions!</div>
-	</ul>
-{:else}
-	<SubmissionsList submissions={data.queueList} sortDirection={'oldest first'}></SubmissionsList>
+	<h2 class="text-center">Select Contest</h2>
 {/if}
