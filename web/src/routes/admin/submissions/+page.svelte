@@ -5,6 +5,9 @@
 	import SubmissionsList from '$lib/SubmissionsList.svelte';
 
 	export let data: PageData;
+	const sortedSubmissions = data.submissions.toSorted(
+		(s1, s2) => s2.createdAt.getTime() - s1.createdAt.getTime()
+	);
 
 	let updateInterval: ReturnType<typeof setInterval> | undefined;
 	let updating = false;
@@ -37,4 +40,4 @@
 
 <h1 style="text-align:center" class="mb-4"><i class="bi bi-envelope-paper"></i> Submissions</h1>
 
-<SubmissionsList submissions={data.submissions} includesAllAttempts={true}></SubmissionsList>
+<SubmissionsList submissions={sortedSubmissions} includesAllAttempts={true}></SubmissionsList>
