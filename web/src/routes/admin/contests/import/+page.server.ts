@@ -4,6 +4,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { genPassword } from '../../teams/util';
 import { createRepos } from '$lib/server/repos';
+import { analyzeSubmissionOutput } from '$lib/outputAnalyzer/outputAnalyzer';
 
 export const load = (async () => {}) satisfies PageServerLoad;
 
@@ -21,6 +22,7 @@ export type ProblemImportData = {
 	SampleOutput: string;
 	RealInput: string;
 	RealOutput: string;
+	InputSpec?: string;
 };
 
 export type TeamImportData = {
@@ -125,13 +127,46 @@ export const actions = {
 											connect: {
 												name: submission.TeamName
 											}
-										}
+										},
+										sourceFiles: submission.Code ? {
+											create: {
+												pathFromProblemRoot: "importedCode.txt",
+												content: submission.Code
+											}
+										} : { }
 									})
 								)
 							: []
 					}
 				}
 			});
+
+			const contestWithProblems = await db.contest.findUnique({where: { id: contest.id }, include: {problems: true} });
+			for (const problem of contestWithProblems?.problems ?? []) {
+				const importedInputSpec = parsedContest.Problems.find(p => p.ShortName == problem.pascalName)?.InputSpec;
+				if (importedInputSpec) {
+					await db.problem.update({
+						where: { id: problem.id },
+						data: { inputSpec: importedInputSpec }
+					});
+				}
+			}
+
+			if (includeSubmissions) {
+				const insertedSubmissions = await db.submission.findMany({where: { contestId: contest.id }, include: { problem: true }});
+				for (const insertedSubmission of insertedSubmissions) {
+					if (!insertedSubmission.actualOutput) {
+						continue;
+					}
+
+					const testCaseResultString = analyzeSubmissionOutput(insertedSubmission.problem, insertedSubmission.actualOutput)
+						.databaseString;
+					await db.submission.update({
+						where: { id: insertedSubmission.id },
+						data: { testCaseResults: testCaseResultString }
+					});
+				}
+			}
 
 			if (createReposAndKeepContestRunning) {
 				const fullContest = await db.contest.findUnique({

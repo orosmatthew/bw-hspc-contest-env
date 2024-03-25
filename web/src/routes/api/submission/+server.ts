@@ -4,6 +4,7 @@ import { error, json } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
 import * as Diff from 'diff';
+import { analyzeSubmissionOutput } from '$lib/outputAnalyzer/outputAnalyzer';
 
 export const GET = (async ({ request }) => {
 	const secret = request.headers.get('secret');
@@ -81,6 +82,10 @@ export const POST = (async ({ request }) => {
 		}
 	}
 
+	const testCaseResults = data.data.result.output === undefined 
+		? null 
+		: analyzeSubmissionOutput(submission.problem, data.data.result.output).databaseString;
+
 	switch (data.data.result.kind) {
 		case 'Completed':
 			if (data.data.result.output!.trimEnd() === submission.problem.realOutput.trimEnd()) {
@@ -92,6 +97,7 @@ export const POST = (async ({ request }) => {
 						actualOutput: data.data.result.output,
 						stateReason: null,
 						stateReasonDetails: null,
+						testCaseResults,
 						exitCode: data.data.result.exitCode,
 						runtimeMilliseconds: data.data.result.runtimeMilliseconds
 					}
@@ -112,6 +118,7 @@ export const POST = (async ({ request }) => {
 						actualOutput: data.data.result.output,
 						stateReason: null,
 						stateReasonDetails: null,
+						testCaseResults,
 						exitCode: data.data.result.exitCode,
 						runtimeMilliseconds: data.data.result.runtimeMilliseconds
 					}
@@ -142,6 +149,7 @@ export const POST = (async ({ request }) => {
 					actualOutput: data.data.result.output,
 					stateReason: SubmissionStateReason.TimeLimitExceeded,
 					stateReasonDetails: data.data.result.resultKindReason,
+					testCaseResults,
 					exitCode: data.data.result.exitCode,
 					runtimeMilliseconds: data.data.result.runtimeMilliseconds
 				}

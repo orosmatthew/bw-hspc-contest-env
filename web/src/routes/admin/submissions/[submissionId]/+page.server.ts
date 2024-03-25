@@ -1,36 +1,55 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { db } from '$lib/server/prisma';
+import { SubmissionState, SubmissionStateReason } from '@prisma/client';
 
 export const load = (async ({ params }) => {
 	const submissionId = parseInt(params.submissionId);
 	if (isNaN(submissionId)) {
-		error(400, 'Invalid submission');
+		return error(400, 'Invalid submission');
 	}
-	const submission = await db.submission.findUnique({ where: { id: submissionId } });
+	const submission = await db.submission.findUnique({ where: { id: submissionId }, 
+		include: { sourceFiles: true, problem: true, contest: true } });
 	if (!submission) {
-		redirect(302, '/admin/submissions');
+		return redirect(302, '/admin/submissions');
 	}
 	const team = await db.team.findUnique({ where: { id: submission.teamId } });
 	if (!team) {
-		error(500, 'Invalid team');
+		return error(500, 'Invalid team');
 	}
 	const problem = await db.problem.findUnique({ where: { id: submission.problemId } });
 	if (!problem) {
-		error(500, 'Invalid problem');
+		return error(500, 'Invalid problem');
 	}
+
+	const submissionHistory = await db.submission.findMany({
+        where: {
+            contestId: submission.contestId,
+            problemId: submission.problemId,
+            teamId: submission.teamId
+        },
+        orderBy: {
+            createdAt: 'asc'
+        }
+    });
+
 	return {
 		id: submission.id,
 		state: submission.state,
 		stateReason: submission.stateReason,
 		stateReasonDetails: submission.stateReasonDetails,
 		teamName: team.name,
+		expectedOutput: problem.realOutput,
 		problemName: problem.friendlyName,
 		submitTime: submission.createdAt,
 		gradedTime: submission.gradedAt,
 		message: submission.message,
 		diff: submission.diff,
-		output: submission.actualOutput
+		output: submission.actualOutput,
+		sourceFiles: submission.sourceFiles,
+		submission: submission,
+		contest: submission.contest,
+		submissionHistory
 	};
 }) satisfies PageServerLoad;
 
@@ -38,10 +57,34 @@ export const actions = {
 	delete: async ({ params }) => {
 		const submissionId = parseInt(params.submissionId);
 		try {
-			await db.submission.delete({ where: { id: submissionId } });
-		} catch {
-			return { success: false };
+			await db.submission.delete({ where: { id: submissionId }, include: { sourceFiles: true } });
+		} catch (error) {
+			return { success: false, error: error?.toString() ?? "" };
 		}
 		redirect(302, '/admin/submissions');
+	},
+	submitGrade: async ({ request, params }) => {
+		const submissionId = parseInt(params.submissionId);
+		if (isNaN(submissionId)) {
+			return { success: false };
+		}
+		const data = await request.formData();
+		const correct = data.get('correct');
+		const message = data.get('message');
+		if (!correct) {
+			return { success: false };
+		}
+		const correctBool = correct.toString().toLowerCase() === 'true';
+		const gradedTime = new Date();
+		await db.submission.update({
+			where: { id: submissionId },
+			data: {
+				state: correctBool ? SubmissionState.Correct : SubmissionState.Incorrect,
+				stateReason : correctBool ? SubmissionStateReason.IncorrectOverriddenAsCorrect : null,
+				message: message ? message.toString() : '',
+				gradedAt: gradedTime
+			}
+		});
+		return { success: true };
 	}
 } satisfies Actions;

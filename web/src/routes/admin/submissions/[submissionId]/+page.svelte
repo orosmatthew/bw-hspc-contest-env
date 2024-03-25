@@ -1,48 +1,65 @@
 <script lang="ts">
 	import type { Actions, PageData } from './$types';
-	import { onMount } from 'svelte';
-	import { Diff2HtmlUI } from 'diff2html/lib/ui/js/diff2html-ui-base';
-	import 'diff2html/bundles/css/diff2html.min.css';
 	import { enhance } from '$app/forms';
-	import { stretchTextarea } from '$lib/util';
+	import {
+		minutesFromContestStart,
+		stretchTextarea,
+		submissionTimestampHoverText
+	} from '$lib/util';
 	import ConfirmModal from '$lib/ConfirmModal.svelte';
-	import { theme } from '../../../stores';
+	import SubmissionCodeAndOutput from '$lib/SubmissionCodeAndOutput.svelte';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import TestCaseResults from '$lib/TestCaseResults.svelte';
+	import { theme } from '../../../../routes/stores';
 
 	export let data: PageData;
 	export let form: Actions;
 
-	onMount(() => {
-		if (data.diff) {
-			const diffElement = document.getElementById('diff');
-			if (diffElement) {
-				const diff2htmlUi = new Diff2HtmlUI(diffElement, data.diff, {
-					drawFileList: false,
-					matching: 'lines',
-					diffStyle: 'char',
-					outputFormat: 'side-by-side',
-					highlight: false,
-					fileContentToggle: false
-				});
-				diff2htmlUi.draw();
-			}
-		}
-	});
-
 	let confirmModal: ConfirmModal;
+	let gradingMessage: HTMLTextAreaElement;
+
+	$: if (form && form.success) {
+		goto('/admin/reviews');
+	}
+
+	let correct: boolean | null = null;
+
+	function incorrectClicked() {
+		correct = correct != false ? false : null;
+	}
+
+	function correctClicked() {
+		correct = correct != true ? true : null;
+	}
+
+	function enhanceConfirmGrading(form: HTMLFormElement) {
+		enhance(form, async ({ cancel }) => {
+			const confirmText = correct === true
+				? `Grading as CORRECT. Are you sure?`
+				: `Grading as INCORRECT with message '${gradingMessage.value}'. Are you sure?`
+			if ((await confirmModal.prompt(confirmText)) !== true) {
+				cancel();
+			}
+			return async ({ update }) => {
+				await update();
+			};
+		});
+	}
 </script>
 
 <svelte:head>
-	<title>Submission - {data.teamName} - {data.problemName}</title>
+	<title>Submission: {data.teamName} - {data.problemName}</title>
 </svelte:head>
 
 <ConfirmModal bind:this={confirmModal} />
 
 <h1 style="text-align:center" class="mb-4">
-	<i class="bi bi-envelope-paper"></i> Submission - {data.teamName} - {data.problemName}
+	<i class="bi bi-envelope-paper"></i> Submission: '{data.teamName}' + '{data.problemName}'
 </h1>
 
 {#if form && !form.success}
-	<div class="alert alert-danger">Error</div>
+	<div class="alert alert-danger">Error: {form.error}</div>
 {/if}
 
 <div class="row">
@@ -54,7 +71,7 @@
 			method="POST"
 			action="?/delete"
 			use:enhance={async ({ cancel }) => {
-				if ((await confirmModal.prompt('Are you sure?')) !== true) {
+				if ((await confirmModal.prompt('Are you SURE you want to delete the selected submission?')) !== true) {
 					cancel();
 				}
 				return async ({ update }) => {
@@ -62,90 +79,215 @@
 				};
 			}}
 		>
-			<button type="submit" class="btn btn-danger">Delete</button>
+			<button type="submit" class="btn btn-danger">Delete Attempt #{data.submissionHistory.map(s => s.id).indexOf(data.submission.id) + 1}</button>
 		</form>
 	</div>
 </div>
 
 <div class="table-responsive">
-	<table class="table table-bordered">
+	<table class="table table-bordered" data-bs-theme={$theme}>
 		<thead>
 			<tr>
-				<th>Team</th>
-				<th>Problem</th>
+				<th></th>
 				<th>Status</th>
-				<th>Submit Time</th>
-				<th>Graded Time</th>
+				<th>Test Case Summary</th>
+				<th>Runtime</th>
+				<th>Submitted</th>
+				<th>Grading</th>
 				<th>Message</th>
 			</tr>
 		</thead>
 		<tbody>
-			<tr>
-				<td>
-					{#if data.teamName}
-						{data.teamName}
-					{/if}
-				</td>
-				<td>
-					{#if data.problemName}
-						{data.problemName}
-					{/if}
-				</td>
-				<td>
-					{#if data.state === 'Queued'}
-						<span class="badge bg-secondary">Queued</span>
-					{:else if data.state === 'InReview'}
-						<span class="badge bg-warning">In Review</span>
-					{:else if data.state === 'Correct'}
-						<span class="badge bg-success">Correct</span>
-					{:else if data.state === 'Incorrect'}
-						<span class="badge bg-danger">Incorrect</span>
-					{/if}
+			{#each data.submissionHistory as submission, i}
+				<tr
+					on:click={() => goto(`/admin/submissions/${submission.id.toString()}`)}
+					class="{submission.id == data.id
+						? 'specifiedSubmission'
+						: 'otherSubmission'} {submission.state === 'InReview' ? 'inReview' : ''}"
+				>
+					<td
+						><span>#{i + 1}</span
+						></td
+					>
+					<td>
+						{#if submission.state === 'Queued'}
+							<span class="badge bg-secondary">Queued</span>
+						{:else if submission.state === 'InReview'}
+							<span class="badge bg-warning">In Review</span>
+						{:else if submission.state === 'Correct'}
+							<span class="badge bg-success">Correct</span>
+						{:else if submission.state === 'Incorrect'}
+							<span class="badge bg-danger">Incorrect</span>
+						{/if}
 
-					{#if data.stateReason === 'BuildError'}
-						<span class="badge bg-danger opacity-50">Build Error</span>
-					{:else if data.stateReason === 'TimeLimitExceeded'}
-						<span class="badge bg-danger opacity-50">Time Limit Exceeded</span>
-					{:else if data.stateReason === 'IncorrectOverriddenAsCorrect'}
-						<span class="badge bg-success opacity-50">Manually Graded</span>
-					{/if}
-				</td>
-				<td>{data.submitTime.toLocaleDateString() + ' ' + data.submitTime.toLocaleTimeString()}</td>
-				<td>
-					{#if data.gradedTime}
-						{data.gradedTime.toLocaleDateString() + ' ' + data.gradedTime.toLocaleTimeString()}
-					{/if}
-				</td>
-				<td>{data.message ? data.message : ''}</td>
-			</tr>
+						{#if submission.stateReason === 'BuildError'}
+							<span class="badge bg-danger opacity-50">Build Error</span>
+						{:else if submission.stateReason === 'TimeLimitExceeded'}
+							<span class="badge bg-danger opacity-50">Time Limit Exceeded</span>
+						{:else if submission.stateReason === 'IncorrectOverriddenAsCorrect'}
+							<span class="badge bg-success opacity-50">Manually Graded</span>
+						{/if}
+					</td>
+					<td>
+						<TestCaseResults submission={submission} problem={data.submission.problem}
+							previousSubmission={i > 0 ? data.submissionHistory[i - 1] : null}
+						/>
+					</td>
+					<td>
+						{submission.runtimeMilliseconds ? `${submission.runtimeMilliseconds} ms` : ''}
+					</td>
+					<td>
+						<span title={submissionTimestampHoverText(data.contest, submission)}>
+							{Math.ceil(minutesFromContestStart(data.contest, submission.createdAt))} min
+						</span>
+					</td>
+					<td>
+						{#if submission.gradedAt}
+							+{Math.ceil(minutesFromContestStart(data.contest, submission.gradedAt)) -
+								Math.ceil(minutesFromContestStart(data.contest, submission.createdAt))} min
+						{/if}
+					</td>
+					<td
+						>{#if submission.message}
+							{submission.message}
+						{:else}
+							<i>{'<no message>'}</i>
+						{/if}
+					</td></tr
+				>
+			{/each}
 		</tbody>
 	</table>
 </div>
 
 {#if data.state == 'InReview'}
-	<div class="row">
-		<div class="text-center">
-			<a href={'/admin/diff/' + data.id} class="btn btn-warning">Review Submission</a>
-		</div>
+	<div class="gradingArea mb-3 col-md-auto {correct == null ? "" : (correct ? "pendingCorrect" : "pendingIncorrect")}" data-bs-theme={$theme}>
+		<h3>Grade Attempt #{data.submissionHistory.map(s => s.id).indexOf(data.submission.id) + 1}</h3>
+		<form method="POST" action="?/submitGrade" use:enhanceConfirmGrading>
+			<h5>Message</h5>
+			<textarea bind:this={gradingMessage} name="message" class="mb-3 form-control" />
+
+			<div class="row justify-content-end">
+				<div class="text-end">
+					<input name="correct" type="hidden" value={correct} />
+					<div class="btn-group" role="group">
+						<input
+							on:click={incorrectClicked}
+							type="radio"
+							class="btn-check"
+							name="btnradio"
+							id="btn_incorrect"
+							autocomplete="off"
+							checked={correct === false}
+						/>
+						<label class="btn btn-outline-danger" for="btn_incorrect">Incorrect</label>
+						<input
+							on:click={correctClicked}
+							type="radio"
+							class="btn-check"
+							name="btnradio"
+							id="btn_correct"
+							autocomplete="off"
+							checked={correct === true}
+						/>
+						<label class="btn btn-outline-success" for="btn_correct">Correct</label>
+					</div>
+					<button
+						id="submit_btn"
+						type="submit"
+						class="btn btn-primary"
+						disabled={correct === null}>Submit</button
+					>
+				</div>
+			</div>
+		</form>
 	</div>
-{:else if data.state == 'Incorrect' && data.stateReason == 'BuildError'}
-	<h3 style="text-align:center">Build Output</h3>
-	<textarea use:stretchTextarea class="code mb-3 form-control" disabled
-		>{data.stateReasonDetails}</textarea
-	>
-{:else if data.state == 'Incorrect' && data.stateReason == 'TimeLimitExceeded'}
-	<h3 style="text-align:center">Details</h3>
-	<textarea use:stretchTextarea class="code mb-3 form-control" disabled
-		>{data.stateReasonDetails}</textarea
-	>
-{:else}
-	<h3 style="text-align:center">Output</h3>
-	<textarea use:stretchTextarea class="code mb-3 form-control" disabled>{data.output}</textarea>
-	<h3 style="text-align:center">Diff</h3>
-	<div
-		id="diff"
-		class="dark-diff"
-		class:d2h-dark-color-scheme={$theme === 'dark'}
-		class:d2h-light-color-scheme={$theme === 'light'}
-	/>
 {/if}
+
+{#if data.state == 'Incorrect' && (data.stateReason == 'BuildError' || data.stateReason == 'TimeLimitExceeded' || data.stateReason == 'SandboxError')}
+	<h3 style="text-align:center">{data.stateReason}</h3>
+	<textarea use:stretchTextarea class="code mb-3 form-control" disabled
+		>{data.stateReasonDetails}</textarea
+	>
+{/if}
+
+<hr />
+<h3 style="text-align: center">Attempt #{data.submissionHistory.map(s => s.id).indexOf(data.submission.id) + 1} Details</h3>
+
+{#key data.id}
+	<SubmissionCodeAndOutput
+		problem={data.submission.problem}
+		output={data.output}
+		expectedOutput={data.expectedOutput}
+		diff={data.diff}
+		sourceFiles={data.sourceFiles}
+	/>
+{/key}
+
+<style>
+	:root {
+		--specifiedSubmission-border-color: #0012c5;
+		--specifiedSubmission-background-color: #e5ebff;
+		
+		--specifiedSubmissionInReview-border-color: orange;
+		--specifiedSubmissionInReview-background-color: #fff7e6;
+
+		--specifiedSubmissionInReviewPendingCorrect-background-color: #f1fff3;
+		--specifiedSubmissionInReviewPendingCorrect-border-color: green;
+
+		--specifiedSubmissionInReviewPendingIncorrect-background-color: #ffefef;
+		--specifiedSubmissionInReviewPendingIncorrect-border-color: red;
+	}
+
+	[data-bs-theme='dark'] {
+		--specifiedSubmission-border-color: #3e3eb9;
+		--specifiedSubmission-background-color: #050531;
+
+		--specifiedSubmissionInReview-border-color: #e1a800;
+		--specifiedSubmissionInReview-background-color: #292200;
+
+		--specifiedSubmissionInReviewPendingCorrect-background-color: #001a04;
+		--specifiedSubmissionInReviewPendingCorrect-border-color: #00a200;
+
+		--specifiedSubmissionInReviewPendingIncorrect-background-color: #270000;
+		--specifiedSubmissionInReviewPendingIncorrect-border-color: #a90000;
+	}
+
+	tr.specifiedSubmission {
+		border: 3px solid var(--specifiedSubmission-border-color);
+	}
+
+	tr.specifiedSubmission.inReview {
+		border: 3px solid var(--specifiedSubmissionInReview-border-color);
+	}
+
+	tr.specifiedSubmission td {
+		background-color: var(--specifiedSubmission-background-color);
+	}
+
+	tr.specifiedSubmission.inReview td {
+		background-color: var(--specifiedSubmissionInReview-background-color);
+	}
+
+	tr.otherSubmission {
+		opacity: 0.65;
+	}
+
+	.gradingArea {
+		border: 3px solid var(--specifiedSubmissionInReview-border-color);
+		padding: 4px 10px 10px 10px;
+		margin-left:100px;
+		margin-right:100px;
+		background-color: var(--specifiedSubmissionInReview-background-color);
+	}
+
+	.gradingArea.pendingCorrect {
+		background-color: var(--specifiedSubmissionInReviewPendingCorrect-background-color);
+		border-color: var(--specifiedSubmissionInReviewPendingCorrect-border-color);
+	}
+
+	.gradingArea.pendingIncorrect {
+		background-color: var(--specifiedSubmissionInReviewPendingIncorrect-background-color);
+		border-color: var(--specifiedSubmissionInReviewPendingIncorrect-border-color);
+	}
+</style>

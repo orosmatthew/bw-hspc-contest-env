@@ -10,6 +10,7 @@ export const load = (async () => {
 		timestamp: timestamp,
 		contests: contests.map((contest) => {
 			return {
+				id: contest.id,
 				name: contest.name,
 				problems: contest.problems.map((problem) => {
 					return { id: problem.id, friendlyName: problem.friendlyName };
@@ -17,6 +18,7 @@ export const load = (async () => {
 				teams: contest.teams
 					.map((team) => {
 						return {
+							id: team.id,
 							name: team.name,
 							solves: team.submissions.filter((submission) => {
 								return submission.contestId === contest.id && submission.state === 'Correct';
