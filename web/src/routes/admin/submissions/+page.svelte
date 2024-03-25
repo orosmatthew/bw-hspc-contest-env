@@ -5,9 +5,6 @@
 	import SubmissionsList from '$lib/SubmissionsList.svelte';
 
 	export let data: PageData;
-	const sortedSubmissions = data.submissions.toSorted(
-		(s1, s2) => s2.createdAt.getTime() - s1.createdAt.getTime()
-	);
 
 	let updateInterval: ReturnType<typeof setInterval> | undefined;
 	let updating = false;
@@ -17,7 +14,7 @@
 			updating = true;
 			await invalidateAll();
 			updating = false;
-		}, 10000);
+		}, 3000);
 	});
 
 	onDestroy(() => {
@@ -40,4 +37,8 @@
 
 <h1 style="text-align:center" class="mb-4"><i class="bi bi-envelope-paper"></i> Submissions</h1>
 
-<SubmissionsList submissions={sortedSubmissions} includesAllAttempts={true}></SubmissionsList>
+<SubmissionsList
+	submissions={data.submissions}
+	includesAllAttempts={true}
+	sortDirection={'newest first'}
+></SubmissionsList>

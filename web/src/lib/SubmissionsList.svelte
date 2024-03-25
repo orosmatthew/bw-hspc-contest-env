@@ -16,6 +16,7 @@
 
 	export let submissions: (Submission & { contest: Contest; team: Team; problem: Problem })[];
 	export let includesAllAttempts = false;
+	export let sortDirection: 'newest first' | 'oldest first';
 
 	const allQueued: boolean =
 		submissions.find((s) => s.state != SubmissionState.Queued) === undefined;
@@ -34,6 +35,12 @@
 	}
 
 	$: {
+		submissions.sort(
+			(s1, s2) =>
+				(s1.createdAt.getTime() - s2.createdAt.getTime()) *
+				(sortDirection == 'oldest first' ? 1 : -1)
+		);
+
 		historyCounts.clear();
 		attemptNumbers.clear();
 
@@ -74,7 +81,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each submissions as submission}
+			{#each submissions as submission (submission.id)}
 				<tr
 					class="submissionRow"
 					on:click={() => goto(`/admin/submissions/${submission.id.toString()}`)}
