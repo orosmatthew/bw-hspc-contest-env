@@ -6,7 +6,7 @@ export function parseProblemInput(
 	| { success: true; caseStartIndexes: number[] }
 	| { success: false; caseStartIndexes: number[]; errorMessage: string } {
 	if (problem.inputSpec) {
-		return parseInputCases(problem.realInput, problem.inputSpec);
+		return parseProblemInputFromText(problem.realInput, problem.inputSpec);
 	}
 
 	return {
@@ -16,7 +16,7 @@ export function parseProblemInput(
 	};
 }
 
-function parseInputCases(
+export function parseProblemInputFromText(
 	inputText: string,
 	spec: string
 ):

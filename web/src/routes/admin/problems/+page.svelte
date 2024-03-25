@@ -26,6 +26,7 @@
 			<tr>
 				<th>Id</th>
 				<th>Name</th>
+				<th>Input Spec</th>
 				<th>Actions</th>
 			</tr>
 		</thead>
@@ -34,7 +35,14 @@
 				<tr>
 					<td>{problem.id}</td>
 					<td>{problem.friendlyName}</td>
-					<td
+					<td>
+						{#if problem.inputSpec != null}
+							{problem.parsedInput.success ? '✅' : '❌'}
+							<span class="inputSpec">{problem.inputSpec}</span>
+						{:else}
+							<span class="inputSpecMissing">none</span>
+						{/if}
+					</td><td
 						><a
 							href={`/admin/problems/${problem.id.toString()}`}
 							class="btn btn-sm btn-outline-secondary">Details</a
@@ -45,3 +53,13 @@
 		</tbody>
 	</table>
 </div>
+
+<style>
+	.inputSpec {
+		font-family: monospace;
+	}
+
+	.inputSpecMissing {
+		font-style: italic;
+	}
+</style>
