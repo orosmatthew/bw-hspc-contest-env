@@ -57,9 +57,13 @@
 
 <ConfirmModal bind:this={confirmModal} />
 
-<h1 style="text-align:center" class="mb-4">
-	<i class="bi bi-envelope-paper"></i> Submission: '{data.teamName}' + '{data.problemName}'
-</h1>
+<h3 style="text-align:center" class="mb-1">
+	<i class="bi bi-envelope-paper"></i> Submission History
+</h3>
+<h4 style="text-align:center" class="mb-4">
+	Team: <span style="font-family: monospace">{data.teamName}</span> | Problem:
+	<span style="font-family: monospace">{data.problemName}</span>
+</h4>
 
 {#if form && !form.success}
 	<div class="alert alert-danger">Error: {form.error}</div>
