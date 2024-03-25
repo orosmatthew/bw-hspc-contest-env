@@ -1,4 +1,4 @@
-import { type Contest, type Submission } from "@prisma/client";
+import { type Contest, type Submission } from '@prisma/client';
 
 export function stretchTextarea(textarea: HTMLTextAreaElement) {
 	textarea.style.height = textarea.scrollHeight + 'px';
@@ -17,8 +17,10 @@ export function minutesBetweenTimestamps(start: Date, end: Date): number {
 }
 
 export function submissionTimestampHoverText(contest: Contest, submission: Submission): string {
-	return `Contest: ${fullTimestampDisplay(contest.startTime!)}\n` +
-		`Submission: ${fullTimestampDisplay(submission.createdAt)}`;
+	return (
+		`Contest: ${fullTimestampDisplay(contest.startTime!)}\n` +
+		`Submission: ${fullTimestampDisplay(submission.createdAt)}`
+	);
 }
 
 export function fullTimestampDisplay(date: Date): string {

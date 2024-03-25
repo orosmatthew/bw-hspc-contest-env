@@ -17,12 +17,10 @@
 	export let submissions: (Submission & { contest: Contest; team: Team; problem: Problem })[];
 	export let includesAllAttempts = false;
 
-	const allInReview: boolean =
-		submissions.find((s) => s.state != SubmissionState.InReview) === undefined;
 	const allQueued: boolean =
 		submissions.find((s) => s.state != SubmissionState.Queued) === undefined;
 
-    const showOutputColumns = !allQueued;
+	const showOutputColumns = !allQueued;
 
 	let historyCounts = new Map<string, number>();
 	let attemptNumbers = new Map<Submission, number>();
@@ -39,21 +37,21 @@
 		historyCounts.clear();
 		attemptNumbers.clear();
 
-        if (includesAllAttempts) {
-            const submissionsInChronologicalOrder = submissions.toSorted((a, b) => {
-                return a.createdAt.valueOf() - b.createdAt.valueOf();
-            });
+		if (includesAllAttempts) {
+			const submissionsInChronologicalOrder = submissions.toSorted((a, b) => {
+				return a.createdAt.valueOf() - b.createdAt.valueOf();
+			});
 
-            for (let submission of submissionsInChronologicalOrder) {
-                let key = getSubmissionHistoryKey(submission);
-                if (!historyCounts.has(key)) {
-                    historyCounts.set(key, 0);
-                }
+			for (let submission of submissionsInChronologicalOrder) {
+				let key = getSubmissionHistoryKey(submission);
+				if (!historyCounts.has(key)) {
+					historyCounts.set(key, 0);
+				}
 
-                historyCounts.set(key, historyCounts.get(key)! + 1);
-                attemptNumbers.set(submission, historyCounts.get(key)!);
-            }
-        }
+				historyCounts.set(key, historyCounts.get(key)! + 1);
+				attemptNumbers.set(submission, historyCounts.get(key)!);
+			}
+		}
 	}
 </script>
 
@@ -77,7 +75,10 @@
 		</thead>
 		<tbody>
 			{#each submissions as submission}
-				<tr class="submissionRow" on:click={() => goto(`/admin/submissions/${submission.id.toString()}`)}>
+				<tr
+					class="submissionRow"
+					on:click={() => goto(`/admin/submissions/${submission.id.toString()}`)}
+				>
 					<td>
 						{#if submission.team.name}
 							{submission.team.name}<br />
@@ -142,7 +143,7 @@
 								<span class="judgmentPending old1">{Math.round(minutesSinceSubmit)} min...</span>
 							{:else if minutesSinceSubmit < 5}
 								<span class="judgmentPending old2">{Math.round(minutesSinceSubmit)} min...</span>
-                            {:else if minutesSinceSubmit < 10}
+							{:else if minutesSinceSubmit < 10}
 								<span class="judgmentPending old3">{Math.round(minutesSinceSubmit)} min...</span>
 							{:else}
 								<span class="judgmentPending old4">{Math.round(minutesSinceSubmit)} min...</span>
@@ -164,19 +165,19 @@
 		font-style: italic;
 	}
 	.judgmentPending.recent {
-        color: #1aba00;
+		color: #1aba00;
 	}
 	.judgmentPending.old1 {
-        color: #aba500;
+		color: #aba500;
 	}
 	.judgmentPending.old2 {
-        color: #e99a00;
+		color: #e99a00;
 	}
 	.judgmentPending.old3 {
-        color: #ee0000;
+		color: #ee0000;
 	}
 	.judgmentPending.old4 {
-        color: #ee0000;
-        font-weight: bold;
+		color: #ee0000;
+		font-weight: bold;
 	}
 </style>

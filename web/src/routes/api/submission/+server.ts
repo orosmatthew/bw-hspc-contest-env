@@ -76,15 +76,19 @@ export const POST = (async ({ request }) => {
 	if (data.data.result.sourceFiles && data.data.result.sourceFiles.length > 0) {
 		for (const sourceFile of data.data.result.sourceFiles) {
 			await db.submissionSourceFile.create({
-				data: { pathFromProblemRoot: sourceFile.pathFromProblemRoot, content: sourceFile.content,
-				submissionId: submission.id }
+				data: {
+					pathFromProblemRoot: sourceFile.pathFromProblemRoot,
+					content: sourceFile.content,
+					submissionId: submission.id
+				}
 			});
 		}
 	}
 
-	const testCaseResults = data.data.result.output === undefined 
-		? null 
-		: analyzeSubmissionOutput(submission.problem, data.data.result.output).databaseString;
+	const testCaseResults =
+		data.data.result.output === undefined
+			? null
+			: analyzeSubmissionOutput(submission.problem, data.data.result.output).databaseString;
 
 	switch (data.data.result.kind) {
 		case 'Completed':
@@ -169,20 +173,15 @@ export const POST = (async ({ request }) => {
 	}
 }) satisfies RequestHandler;
 
-// Copy/paste these zod definitions from the shared project because referencing 
+// Copy/paste these zod definitions from the shared project because referencing
 // the shared one results in "RollupError: Expected '{', got 'type'"
 
-const RunResultKind = z.enum([
-	'CompileFailed',
-	'TimeLimitExceeded',
-	'Completed',
-	'RunError'
-]);
+const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'RunError']);
 
 const SourceFileWithTextZod = z
 	.object({
 		pathFromProblemRoot: z.string(),
-		content: z.string(),
+		content: z.string()
 	})
 	.strict();
 

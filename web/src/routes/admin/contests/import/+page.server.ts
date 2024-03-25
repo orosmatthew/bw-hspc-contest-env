@@ -128,12 +128,14 @@ export const actions = {
 												name: submission.TeamName
 											}
 										},
-										sourceFiles: submission.Code ? {
-											create: {
-												pathFromProblemRoot: "importedCode.txt",
-												content: submission.Code
-											}
-										} : { }
+										sourceFiles: submission.Code
+											? {
+													create: {
+														pathFromProblemRoot: 'importedCode.txt',
+														content: submission.Code
+													}
+												}
+											: {}
 									})
 								)
 							: []
@@ -141,9 +143,14 @@ export const actions = {
 				}
 			});
 
-			const contestWithProblems = await db.contest.findUnique({where: { id: contest.id }, include: {problems: true} });
+			const contestWithProblems = await db.contest.findUnique({
+				where: { id: contest.id },
+				include: { problems: true }
+			});
 			for (const problem of contestWithProblems?.problems ?? []) {
-				const importedInputSpec = parsedContest.Problems.find(p => p.ShortName == problem.pascalName)?.InputSpec;
+				const importedInputSpec = parsedContest.Problems.find(
+					(p) => p.ShortName == problem.pascalName
+				)?.InputSpec;
 				if (importedInputSpec) {
 					await db.problem.update({
 						where: { id: problem.id },
@@ -153,14 +160,19 @@ export const actions = {
 			}
 
 			if (includeSubmissions) {
-				const insertedSubmissions = await db.submission.findMany({where: { contestId: contest.id }, include: { problem: true }});
+				const insertedSubmissions = await db.submission.findMany({
+					where: { contestId: contest.id },
+					include: { problem: true }
+				});
 				for (const insertedSubmission of insertedSubmissions) {
 					if (!insertedSubmission.actualOutput) {
 						continue;
 					}
 
-					const testCaseResultString = analyzeSubmissionOutput(insertedSubmission.problem, insertedSubmission.actualOutput)
-						.databaseString;
+					const testCaseResultString = analyzeSubmissionOutput(
+						insertedSubmission.problem,
+						insertedSubmission.actualOutput
+					).databaseString;
 					await db.submission.update({
 						where: { id: insertedSubmission.id },
 						data: { testCaseResults: testCaseResultString }

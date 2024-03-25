@@ -11,12 +11,12 @@
 	export let expectedOutput: string;
 	export let output: string | null;
 	export let diff: string | null;
-    export let kind: "aligned" | "best-match" | "case-diff";
+	export let kind: 'aligned' | 'best-match' | 'case-diff';
 	export let problem: Problem;
 
-    let localDiff: string | null = null;
+	let localDiff: string | null = null;
 
-    function drawBestMatchDiff() {
+	function drawBestMatchDiff() {
 		localDiff = diff;
 		if (!localDiff && output) {
 			localDiff = Diff.createPatch(
@@ -30,7 +30,7 @@
 					.replace('\r\n', '\n')
 					.split('\n')
 					.map((line) => line.trim())
-					.join('\n'),
+					.join('\n')
 			);
 		}
 
@@ -49,39 +49,36 @@
 	}
 
 	function drawAlignedDiff() {
-        const cleanJudgeOutputLines = expectedOutput
-					.replace('\r\n', '\n')
-					.split('\n')
-					.map((line) => line.trim());
+		const cleanJudgeOutputLines = expectedOutput
+			.replace('\r\n', '\n')
+			.split('\n')
+			.map((line) => line.trim());
 
-        const cleanTeamOutputLines = (output ?? '')
-					.replace('\r\n', '\n')
-					.split('\n')
-					.map((line) => line.trim());
+		const cleanTeamOutputLines = (output ?? '')
+			.replace('\r\n', '\n')
+			.split('\n')
+			.map((line) => line.trim());
 
-        localDiff = "Index: Judge → Team\n";
-        localDiff += "===================================================================\n";
-        localDiff += "--- Judge → Team\n"
-        localDiff += "+++ Judge → Team\n"
-        localDiff += "@@ -1 +1 @@\n";
+		localDiff = 'Index: Judge → Team\n';
+		localDiff += '===================================================================\n';
+		localDiff += '--- Judge → Team\n';
+		localDiff += '+++ Judge → Team\n';
+		localDiff += '@@ -1 +1 @@\n';
 
-        for (let i = 0; i < Math.max(cleanJudgeOutputLines.length, cleanTeamOutputLines.length); i++) {
-            const judgeLine = cleanJudgeOutputLines[i] ?? null;
-            const teamLine = cleanTeamOutputLines[i] ?? null;
-            if (teamLine == null) {
-                localDiff += `-${judgeLine}\n`;
-            }
-            else if (judgeLine == null) {
-                localDiff += `+${teamLine}\n`;
-            }
-            else if (judgeLine == teamLine) {
-                localDiff += ` ${teamLine}\n`;
-            }
-            else {
-                localDiff += `-${judgeLine}\n`;
-                localDiff += `+${teamLine}\n`;
-            }
-        }
+		for (let i = 0; i < Math.max(cleanJudgeOutputLines.length, cleanTeamOutputLines.length); i++) {
+			const judgeLine = cleanJudgeOutputLines[i] ?? null;
+			const teamLine = cleanTeamOutputLines[i] ?? null;
+			if (teamLine == null) {
+				localDiff += `-${judgeLine}\n`;
+			} else if (judgeLine == null) {
+				localDiff += `+${teamLine}\n`;
+			} else if (judgeLine == teamLine) {
+				localDiff += ` ${teamLine}\n`;
+			} else {
+				localDiff += `-${judgeLine}\n`;
+				localDiff += `+${teamLine}\n`;
+			}
+		}
 
 		if (localDiff) {
 			const diff2htmlUi = new Diff2HtmlUI(document.getElementById(`diff_${kind}`)!, localDiff, {
@@ -98,10 +95,10 @@
 	}
 
 	function drawCaseDiff() {
-        localDiff = "Index: Judge → Team\n";
-        localDiff += "===================================================================\n";
-        localDiff += "--- Judge → Team\n"
-        localDiff += "+++ Judge → Team\n"
+		localDiff = 'Index: Judge → Team\n';
+		localDiff += '===================================================================\n';
+		localDiff += '--- Judge → Team\n';
+		localDiff += '+++ Judge → Team\n';
 
 		const analyzedOutput = analyzeSubmissionOutput(problem, output ?? '');
 		let judgeLinesPrinted = 0;
@@ -115,7 +112,11 @@
 			judgeLinesPrinted += judgeCaseLines.length;
 			teamLinesPrinted += teamCaseLines?.length ?? 0;
 
-			for (let caseLineIndex = 0; caseLineIndex < Math.max(judgeCaseLines.length, teamCaseLines.length); caseLineIndex++) {
+			for (
+				let caseLineIndex = 0;
+				caseLineIndex < Math.max(judgeCaseLines.length, teamCaseLines.length);
+				caseLineIndex++
+			) {
 				if (caseLineIndex < judgeCaseLines.length && caseLineIndex < teamCaseLines.length) {
 					if (judgeCaseLines[caseLineIndex] == teamCaseLines[caseLineIndex]) {
 						localDiff += ` ${judgeCaseLines[caseLineIndex]}\n`;
@@ -148,21 +149,26 @@
 	}
 
 	onMount(() => {
-        switch (kind) {
-            case 'aligned':
-                drawAlignedDiff();
-                break;
-            case 'best-match':
-                drawBestMatchDiff();
-                break;
+		switch (kind) {
+			case 'aligned':
+				drawAlignedDiff();
+				break;
+			case 'best-match':
+				drawBestMatchDiff();
+				break;
 			case 'case-diff':
 				drawCaseDiff();
 				break;
-        }
+		}
 	});
 </script>
 
-<div class="mt-3 diffView" id={`diff_${kind}`} class:d2h-dark-color-scheme={$theme === 'dark'} class:d2h-light-color-scheme={$theme === 'light'}/>
+<div
+	class="mt-3 diffView"
+	id={`diff_${kind}`}
+	class:d2h-dark-color-scheme={$theme === 'dark'}
+	class:d2h-light-color-scheme={$theme === 'light'}
+/>
 
 <style>
 	.diffView {

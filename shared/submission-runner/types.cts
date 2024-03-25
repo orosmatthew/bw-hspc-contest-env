@@ -1,16 +1,11 @@
 import { z } from 'zod';
 
-const RunResultKind = z.enum([
-	'CompileFailed',
-	'TimeLimitExceeded',
-	'Completed',
-	'RunError'
-]);
+const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'RunError']);
 
 export const SourceFileWithTextZod = z
 	.object({
 		pathFromProblemRoot: z.string(),
-		content: z.string(),
+		content: z.string()
 	})
 	.strict();
 

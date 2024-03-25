@@ -8,7 +8,12 @@
 	export let title: string | null = null;
 
 	const tabTitleLoaded = getContext(tabTitleLoadedKey);
-	const { selectedTab, tabs } = getContext<{ selectedTab: Writable<number>; tabs: Writable<number[]> }>(tabBarContextKey);
+
+	/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+	const { selectedTab, tabs } = getContext<{
+		selectedTab: Writable<number>;
+		tabs: Writable<number[]>;
+	}>(tabBarContextKey);
 	$tabs = $tabs.some((t) => t == index) ? $tabs : [...$tabs, index];
 
 	$: isSelected = index == $selectedTab;
@@ -16,16 +21,13 @@
 
 {#if !tabTitleLoaded}
 	{#if title}
-		<a href={`#tab-${index}`}
-			on:click={() => ($selectedTab = index)}>
+		<a href={`#tab-${index}`} on:click={() => ($selectedTab = index)}>
 			<div class="individualTab" class:isSelected data-bs-theme={$theme}>
-				{title ?? " "}
+				{title ?? ' '}
 			</div>
 		</a>
 	{:else}
-		<div class="spacerTab" class:isSelected data-bs-theme={$theme}>
-			&nbsp;
-		</div>
+		<div class="spacerTab" class:isSelected data-bs-theme={$theme}>&nbsp;</div>
 	{/if}
 {:else if isSelected}
 	<slot />

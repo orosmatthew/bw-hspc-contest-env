@@ -90,7 +90,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 	const git: SimpleGit = simpleGit({ baseDir: repoDir });
 	await git.clone(teamRepoUrl, '.');
 	await git.checkout(submissionData.submission.commitHash);
-	
+
 	const problemName = submissionData.submission.problem.pascalName;
 	const studentCodeRootForProblem = join(repoDir, problemName);
 
@@ -137,7 +137,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		}
 	} catch (error) {
 		runResult = {
-			kind: 'SandboxError',
+			kind: 'RunError',
 			resultKindReason: `An unexpected error occurred: ${EOL} ${error}`
 		};
 	}
@@ -175,7 +175,7 @@ function printRunResult(runResult: RunResult) {
 	console.log(`- RESULT: ${getRunResultDisplayText()}`);
 
 	function getRunResultDisplayText() {
-		if (runResult.kind == 'SandboxError') {
+		if (runResult.kind == 'RunError') {
 			return 'Sandbox error: ' + runResult.resultKindReason;
 		}
 

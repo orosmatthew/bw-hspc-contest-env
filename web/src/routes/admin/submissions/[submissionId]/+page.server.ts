@@ -8,8 +8,10 @@ export const load = (async ({ params }) => {
 	if (isNaN(submissionId)) {
 		return error(400, 'Invalid submission');
 	}
-	const submission = await db.submission.findUnique({ where: { id: submissionId }, 
-		include: { sourceFiles: true, problem: true, contest: true } });
+	const submission = await db.submission.findUnique({
+		where: { id: submissionId },
+		include: { sourceFiles: true, problem: true, contest: true }
+	});
 	if (!submission) {
 		return redirect(302, '/admin/submissions');
 	}
@@ -23,15 +25,15 @@ export const load = (async ({ params }) => {
 	}
 
 	const submissionHistory = await db.submission.findMany({
-        where: {
-            contestId: submission.contestId,
-            problemId: submission.problemId,
-            teamId: submission.teamId
-        },
-        orderBy: {
-            createdAt: 'asc'
-        }
-    });
+		where: {
+			contestId: submission.contestId,
+			problemId: submission.problemId,
+			teamId: submission.teamId
+		},
+		orderBy: {
+			createdAt: 'asc'
+		}
+	});
 
 	return {
 		id: submission.id,
@@ -59,7 +61,7 @@ export const actions = {
 		try {
 			await db.submission.delete({ where: { id: submissionId }, include: { sourceFiles: true } });
 		} catch (error) {
-			return { success: false, error: error?.toString() ?? "" };
+			return { success: false, error: error?.toString() ?? '' };
 		}
 		redirect(302, '/admin/submissions');
 	},
@@ -80,7 +82,7 @@ export const actions = {
 			where: { id: submissionId },
 			data: {
 				state: correctBool ? SubmissionState.Correct : SubmissionState.Incorrect,
-				stateReason : correctBool ? SubmissionStateReason.IncorrectOverriddenAsCorrect : null,
+				stateReason: correctBool ? SubmissionStateReason.IncorrectOverriddenAsCorrect : null,
 				message: message ? message.toString() : '',
 				gradedAt: gradedTime
 			}

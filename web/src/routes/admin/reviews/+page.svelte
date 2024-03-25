@@ -35,7 +35,9 @@
 	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
 </div>
 
-<h1 style="text-align:center" class="mb-1"><i class="bi bi-eye"></i> Pending Reviews ({data.reviewList.length})</h1>
+<h1 style="text-align:center" class="mb-1">
+	<i class="bi bi-eye"></i> Pending Reviews ({data.reviewList.length})
+</h1>
 
 {#if data.reviewList.length === 0}
 	<ul class="list-group">
@@ -45,7 +47,9 @@
 	<SubmissionsList submissions={data.reviewList}></SubmissionsList>
 {/if}
 
-<h1 style="text-align:center" class="mb-1"><i class="bi bi-eye"></i> Queued Submissions ({data.queueList.length})</h1>
+<h1 style="text-align:center" class="mb-1">
+	<i class="bi bi-eye"></i> Queued Submissions ({data.queueList.length})
+</h1>
 
 {#if data.queueList.length === 0}
 	<ul class="list-group">

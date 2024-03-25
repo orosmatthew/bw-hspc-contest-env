@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	export const tabBarContextKey = {};
-	export const tabTitleLoadedKey = "tabListContainerLoaded";
+	export const tabTitleLoadedKey = 'tabListContainerLoaded';
 </script>
 
 <script lang="ts">
@@ -28,13 +28,13 @@
 </TabContent>
 
 <style>
-    :root {
-        --tablist-background: #f1f1f1;
+	:root {
+		--tablist-background: #f1f1f1;
 	}
 
 	[data-bs-theme='dark'] {
-        --tablist-background: #161616;
-    }
+		--tablist-background: #161616;
+	}
 
 	.tabList {
 		overflow: hidden;

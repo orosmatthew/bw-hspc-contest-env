@@ -178,7 +178,8 @@ export class BWPanel {
 			'BWContest',
 			teamData.contestId.toString(),
 			teamData.teamId.toString(),
-			problem.pascalName);
+			problem.pascalName
+		);
 
 		if (teamData.language === 'Java') {
 			const res = await runJava({

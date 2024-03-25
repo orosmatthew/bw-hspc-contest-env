@@ -9,7 +9,6 @@
 	import ConfirmModal from '$lib/ConfirmModal.svelte';
 	import SubmissionCodeAndOutput from '$lib/SubmissionCodeAndOutput.svelte';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import TestCaseResults from '$lib/TestCaseResults.svelte';
 	import { theme } from '../../../../routes/stores';
 
@@ -35,9 +34,10 @@
 
 	function enhanceConfirmGrading(form: HTMLFormElement) {
 		enhance(form, async ({ cancel }) => {
-			const confirmText = correct === true
-				? `Grading as CORRECT. Are you sure?`
-				: `Grading as INCORRECT with message '${gradingMessage.value}'. Are you sure?`
+			const confirmText =
+				correct === true
+					? `Grading as CORRECT. Are you sure?`
+					: `Grading as INCORRECT with message '${gradingMessage.value}'. Are you sure?`;
 			if ((await confirmModal.prompt(confirmText)) !== true) {
 				cancel();
 			}
@@ -71,7 +71,11 @@
 			method="POST"
 			action="?/delete"
 			use:enhance={async ({ cancel }) => {
-				if ((await confirmModal.prompt('Are you SURE you want to delete the selected submission?')) !== true) {
+				if (
+					(await confirmModal.prompt(
+						'Are you SURE you want to delete the selected submission?'
+					)) !== true
+				) {
 					cancel();
 				}
 				return async ({ update }) => {
@@ -79,7 +83,10 @@
 				};
 			}}
 		>
-			<button type="submit" class="btn btn-danger">Delete Attempt #{data.submissionHistory.map(s => s.id).indexOf(data.submission.id) + 1}</button>
+			<button type="submit" class="btn btn-danger"
+				>Delete Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) +
+					1}</button
+			>
 		</form>
 	</div>
 </div>
@@ -105,10 +112,7 @@
 						? 'specifiedSubmission'
 						: 'otherSubmission'} {submission.state === 'InReview' ? 'inReview' : ''}"
 				>
-					<td
-						><span>#{i + 1}</span
-						></td
-					>
+					<td><span>#{i + 1}</span></td>
 					<td>
 						{#if submission.state === 'Queued'}
 							<span class="badge bg-secondary">Queued</span>
@@ -129,7 +133,9 @@
 						{/if}
 					</td>
 					<td>
-						<TestCaseResults submission={submission} problem={data.submission.problem}
+						<TestCaseResults
+							{submission}
+							problem={data.submission.problem}
 							previousSubmission={i > 0 ? data.submissionHistory[i - 1] : null}
 						/>
 					</td>
@@ -161,8 +167,17 @@
 </div>
 
 {#if data.state == 'InReview'}
-	<div class="gradingArea mb-3 col-md-auto {correct == null ? "" : (correct ? "pendingCorrect" : "pendingIncorrect")}" data-bs-theme={$theme}>
-		<h3>Grade Attempt #{data.submissionHistory.map(s => s.id).indexOf(data.submission.id) + 1}</h3>
+	<div
+		class="gradingArea mb-3 col-md-auto {correct == null
+			? ''
+			: correct
+				? 'pendingCorrect'
+				: 'pendingIncorrect'}"
+		data-bs-theme={$theme}
+	>
+		<h3>
+			Grade Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) + 1}
+		</h3>
 		<form method="POST" action="?/submitGrade" use:enhanceConfirmGrading>
 			<h5>Message</h5>
 			<textarea bind:this={gradingMessage} name="message" class="mb-3 form-control" />
@@ -192,11 +207,8 @@
 						/>
 						<label class="btn btn-outline-success" for="btn_correct">Correct</label>
 					</div>
-					<button
-						id="submit_btn"
-						type="submit"
-						class="btn btn-primary"
-						disabled={correct === null}>Submit</button
+					<button id="submit_btn" type="submit" class="btn btn-primary" disabled={correct === null}
+						>Submit</button
 					>
 				</div>
 			</div>
@@ -212,7 +224,9 @@
 {/if}
 
 <hr />
-<h3 style="text-align: center">Attempt #{data.submissionHistory.map(s => s.id).indexOf(data.submission.id) + 1} Details</h3>
+<h3 style="text-align: center">
+	Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) + 1} Details
+</h3>
 
 {#key data.id}
 	<SubmissionCodeAndOutput
@@ -228,7 +242,7 @@
 	:root {
 		--specifiedSubmission-border-color: #0012c5;
 		--specifiedSubmission-background-color: #e5ebff;
-		
+
 		--specifiedSubmissionInReview-border-color: orange;
 		--specifiedSubmissionInReview-background-color: #fff7e6;
 
@@ -276,8 +290,8 @@
 	.gradingArea {
 		border: 3px solid var(--specifiedSubmissionInReview-border-color);
 		padding: 4px 10px 10px 10px;
-		margin-left:100px;
-		margin-right:100px;
+		margin-left: 100px;
+		margin-right: 100px;
 		background-color: var(--specifiedSubmissionInReview-background-color);
 	}
 

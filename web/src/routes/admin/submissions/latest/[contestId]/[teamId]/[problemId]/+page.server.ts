@@ -8,12 +8,12 @@ export const load = (async ({ params }) => {
 		throw error(400, 'Invalid request');
 	}
 
-    const problemId = parseInt(params.problemId);
+	const problemId = parseInt(params.problemId);
 	if (isNaN(problemId)) {
 		throw error(400, 'Invalid request');
 	}
 
-    const teamId = parseInt(params.teamId);
+	const teamId = parseInt(params.teamId);
 	if (isNaN(teamId)) {
 		throw error(400, 'Invalid request');
 	}
@@ -23,29 +23,29 @@ export const load = (async ({ params }) => {
 		throw error(400, 'Contest not found');
 	}
 
-    const problem = await db.problem.findUnique({ where: { id: problemId } });
+	const problem = await db.problem.findUnique({ where: { id: problemId } });
 	if (!problem) {
 		throw error(400, 'Problem not found');
 	}
 
-    const team = await db.team.findUnique({ where: { id: teamId } });
+	const team = await db.team.findUnique({ where: { id: teamId } });
 	if (!team) {
 		throw error(400, 'Team not found');
 	}
 
-    const submissions = await db.submission.findMany({
-        where: {
-            contestId: contestId,
-            problemId: problemId,
-            teamId: teamId
-        },
-        include: {
-            sourceFiles: true
-        },
-        orderBy: {
-            createdAt: 'asc'
-        }
-    });
+	const submissions = await db.submission.findMany({
+		where: {
+			contestId: contestId,
+			problemId: problemId,
+			teamId: teamId
+		},
+		include: {
+			sourceFiles: true
+		},
+		orderBy: {
+			createdAt: 'asc'
+		}
+	});
 
 	if (submissions.length > 0) {
 		const lastSubmission = submissions[submissions.length - 1];

@@ -23,7 +23,14 @@ interface IRunnerParamsCpp extends IRunnerParams {
 export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 	params: IRunnerParamsCpp
 ): Promise<IRunnerReturn> {
-	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cpp', '.cc', '.c', '.h', '.hpp');
+	const sourceFiles = await getSourceFilesWithText(
+		params.studentCodeRootForProblem,
+		'.cpp',
+		'.cc',
+		'.c',
+		'.h',
+		'.hpp'
+	);
 
 	const tmpDir = os.tmpdir();
 	const buildDir = join(tmpDir, 'bwcontest-cpp');
@@ -42,7 +49,7 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 		console.log('Build errors: ' + buildErrorText);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles },
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
 		};
 	}
 

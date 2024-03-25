@@ -1,7 +1,13 @@
-import type { Problem } from "@prisma/client";
-import { getCleanLines } from "./analyzerUtils";
-import { CaseResult, type AnalyzedOutput, type TestCaseResult, type TestCaseResultPreview, type AnalyzedOutputPreview } from "./analyzerTypes";
-import { caseLabelRegex, splitJudgeOutput, splitTeamOutput } from "./outputSplitter";
+import type { Problem } from '@prisma/client';
+import { getCleanLines } from './analyzerUtils';
+import {
+	CaseResult,
+	type AnalyzedOutput,
+	type TestCaseResult,
+	type TestCaseResultPreview,
+	type AnalyzedOutputPreview
+} from './analyzerTypes';
+import { caseLabelRegex, splitJudgeOutput, splitTeamOutput } from './outputSplitter';
 
 // Team output analysis & test case results are used in two contexts:
 //   1) High Fidelity:
@@ -16,117 +22,130 @@ import { caseLabelRegex, splitJudgeOutput, splitTeamOutput } from "./outputSplit
 //       the case was in the sample input (capitalization)
 
 const caseResultToCompactChar = new Map<CaseResult, string>([
-    [CaseResult.Correct, "C"],
-    [CaseResult.FormattingIssue, "F"],
-    [CaseResult.Incorrect, "I"],
-    [CaseResult.NoOutput, "N"],
-    [CaseResult.Exception, "E"],
-    [CaseResult.RunnerFailure, "X"]
+	[CaseResult.Correct, 'C'],
+	[CaseResult.FormattingIssue, 'F'],
+	[CaseResult.Incorrect, 'I'],
+	[CaseResult.NoOutput, 'N'],
+	[CaseResult.Exception, 'E'],
+	[CaseResult.RunnerFailure, 'X']
 ]);
 
 const compactCharToCaseResult = new Map<string, CaseResult>(
-    [...caseResultToCompactChar.entries()].map(([caseResult, char]) => [char, caseResult]));
+	[...caseResultToCompactChar.entries()].map(([caseResult, char]) => [char, caseResult])
+);
 
 export function analyzeSubmissionOutput(problem: Problem, teamOutput: string): AnalyzedOutput {
-    const sampleCaseCount = parseInt(problem.sampleInput.split('\n')[0]);
-    const totalCaseCount = parseInt(problem.realInput.split('\n')[0]);
+	const sampleCaseCount = parseInt(problem.sampleInput.split('\n')[0]);
+	const totalCaseCount = parseInt(problem.realInput.split('\n')[0]);
 
-    const teamOutputLines = getCleanLines(teamOutput);
-    const judgeOutputLines = getCleanLines(problem.realOutput);
+	const teamOutputLines = getCleanLines(teamOutput);
+	const judgeOutputLines = getCleanLines(problem.realOutput);
 
-    const testCaseResults: TestCaseResult[] = [];
+	const testCaseResults: TestCaseResult[] = [];
 
-    const judgeCaseOutputs = splitJudgeOutput(judgeOutputLines, totalCaseCount);
-    const teamCaseOutputs = splitTeamOutput(teamOutputLines, judgeOutputLines, totalCaseCount);
+	const judgeCaseOutputs = splitJudgeOutput(judgeOutputLines, totalCaseCount);
+	const teamCaseOutputs = splitTeamOutput(teamOutputLines, judgeOutputLines, totalCaseCount);
 
-    for (let i = 0; i < totalCaseCount; i++) {
-        const caseNum = i + 1;
-        const isSampleData = caseNum <= sampleCaseCount;
+	for (let i = 0; i < totalCaseCount; i++) {
+		const caseNum = i + 1;
+		const isSampleData = caseNum <= sampleCaseCount;
 
-        const judgeCaseOutputLines = judgeCaseOutputs[i]!.lines;
-        const teamCaseOutputLines = teamCaseOutputs[i]?.lines ?? null;
+		const judgeCaseOutputLines = judgeCaseOutputs[i]!.lines;
+		const teamCaseOutputLines = teamCaseOutputs[i]?.lines ?? null;
 
-        const caseCompareResult = teamCaseOutputs[i]?.forcedResult
-            ?? compareSingleCaseOutput(judgeCaseOutputLines, teamCaseOutputLines);
+		const caseCompareResult =
+			teamCaseOutputs[i]?.forcedResult ??
+			compareSingleCaseOutput(judgeCaseOutputLines, teamCaseOutputLines);
 
-        testCaseResults.push({ 
-            caseNum,
-            isSampleData,
-            result: caseCompareResult,
-            judgeOutput: judgeCaseOutputLines,
-            teamOutput: teamCaseOutputLines
-        });
-    }
+		testCaseResults.push({
+			caseNum,
+			isSampleData,
+			result: caseCompareResult,
+			judgeOutput: judgeCaseOutputLines,
+			teamOutput: teamCaseOutputLines
+		});
+	}
 
-    const databaseString = testCaseResults.map(r => getDatabaseRepresentation(r)).join("");
+	const databaseString = testCaseResults.map((r) => getDatabaseRepresentation(r)).join('');
 
-    return {
-        testCaseResults,
-        databaseString
-    };
+	return {
+		testCaseResults,
+		databaseString
+	};
 
-    function getDatabaseRepresentation(testCaseResult: TestCaseResult): string {
-        const char = caseResultToCompactChar.get(testCaseResult.result)!;
-        return testCaseResult.isSampleData ? char.toLowerCase() : char;
-    }
+	function getDatabaseRepresentation(testCaseResult: TestCaseResult): string {
+		const char = caseResultToCompactChar.get(testCaseResult.result)!;
+		return testCaseResult.isSampleData ? char.toLowerCase() : char;
+	}
 }
 
-export function rehydrateOutputPreview(databaseString: string): AnalyzedOutputPreview {    
-    const testCaseResultPreviews = databaseString.split('').map<TestCaseResultPreview>((char, i) => {
-        const result = compactCharToCaseResult.get(char.toUpperCase())!;
-        const caseNum = i + 1;
-        const isSampleData = ("a" <= char && char <= 'z');
-        return { caseNum, isSampleData, result };
-    });
+export function rehydrateOutputPreview(databaseString: string): AnalyzedOutputPreview {
+	const testCaseResultPreviews = databaseString.split('').map<TestCaseResultPreview>((char, i) => {
+		const result = compactCharToCaseResult.get(char.toUpperCase())!;
+		const caseNum = i + 1;
+		const isSampleData = 'a' <= char && char <= 'z';
+		return { caseNum, isSampleData, result };
+	});
 
-    return {
-        testCaseResults: testCaseResultPreviews,
-        databaseString
-    };
+	return {
+		testCaseResults: testCaseResultPreviews,
+		databaseString
+	};
 }
 
-function compareSingleCaseOutput(judgeCaseOutputLines: string[], teamCaseOutputLines: string[] | null): CaseResult {
-    if (teamCaseOutputLines == null) {
-        return CaseResult.NoOutput;
-    }
+function compareSingleCaseOutput(
+	judgeCaseOutputLines: string[],
+	teamCaseOutputLines: string[] | null
+): CaseResult {
+	if (teamCaseOutputLines == null) {
+		return CaseResult.NoOutput;
+	}
 
-    if (judgeCaseOutputLines.length == teamCaseOutputLines.length) {
-        let allMatch = true;
-        for (let i = 0; i < judgeCaseOutputLines.length; i++) {
-            if (judgeCaseOutputLines[i] != teamCaseOutputLines[i]) {
-                allMatch = false;
-                break;
-            }
-        }
+	if (judgeCaseOutputLines.length == teamCaseOutputLines.length) {
+		let allMatch = true;
+		for (let i = 0; i < judgeCaseOutputLines.length; i++) {
+			if (judgeCaseOutputLines[i] != teamCaseOutputLines[i]) {
+				allMatch = false;
+				break;
+			}
+		}
 
-        if (allMatch) {
-            return CaseResult.Correct;
-        }
-    }
+		if (allMatch) {
+			return CaseResult.Correct;
+		}
+	}
 
-    const reassembledJudgeOutput = judgeCaseOutputLines.join("\n");
-    const reassembledTeamOutput = teamCaseOutputLines.join("\n");
+	const reassembledJudgeOutput = judgeCaseOutputLines.join('\n');
+	const reassembledTeamOutput = teamCaseOutputLines.join('\n');
 
-    if (reassembledJudgeOutput == reassembledTeamOutput) {
-        return CaseResult.FormattingIssue;
-    }
+	if (reassembledJudgeOutput == reassembledTeamOutput) {
+		return CaseResult.FormattingIssue;
+	}
 
-    const judgeOutputAsSingleLineWithNormalizedSpace = judgeCaseOutputLines.join(' ').replace(/\s+/g, ' ');
-    const teamOutputAsSingleLineWithNormalizedSpace = teamCaseOutputLines.join(' ').replace(/\s+/g, ' ');
+	const judgeOutputAsSingleLineWithNormalizedSpace = judgeCaseOutputLines
+		.join(' ')
+		.replace(/\s+/g, ' ');
+	const teamOutputAsSingleLineWithNormalizedSpace = teamCaseOutputLines
+		.join(' ')
+		.replace(/\s+/g, ' ');
 
-    if (judgeOutputAsSingleLineWithNormalizedSpace == teamOutputAsSingleLineWithNormalizedSpace) {
-        return CaseResult.FormattingIssue;
-    }
+	if (judgeOutputAsSingleLineWithNormalizedSpace == teamOutputAsSingleLineWithNormalizedSpace) {
+		return CaseResult.FormattingIssue;
+	}
 
-    const judgeOutputCaseStr = reassembledJudgeOutput.match(caseLabelRegex)?.[0] ?? "";
-    const reassembledJudgeOutputWithoutLabel = reassembledJudgeOutput.substring(judgeOutputCaseStr.length).trim();
+	const judgeOutputCaseStr = reassembledJudgeOutput.match(caseLabelRegex)?.[0] ?? '';
+	const reassembledJudgeOutputWithoutLabel = reassembledJudgeOutput
+		.substring(judgeOutputCaseStr.length)
+		.trim();
 
-    const teamOutputCaseStr = reassembledTeamOutput.match(caseLabelRegex)?.[0] ?? "";
-    const reassembledTeamOutputWithoutLabel = reassembledTeamOutput.substring(teamOutputCaseStr.length).trim();
+	const teamOutputCaseStr = reassembledTeamOutput.match(caseLabelRegex)?.[0] ?? '';
+	const reassembledTeamOutputWithoutLabel = reassembledTeamOutput
+		.substring(teamOutputCaseStr.length)
+		.trim();
 
-    if (reassembledJudgeOutputWithoutLabel == reassembledTeamOutputWithoutLabel) {
-        return CaseResult.FormattingIssue;
-    }
+	if (reassembledJudgeOutputWithoutLabel == reassembledTeamOutputWithoutLabel) {
+		return CaseResult.FormattingIssue;
+	}
 
-    return CaseResult.Incorrect;
+	return CaseResult.Incorrect;
 }

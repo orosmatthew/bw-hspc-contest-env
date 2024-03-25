@@ -110,7 +110,7 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 						params.outputCallback?.('\n[Manually stopped]');
 					}
 				}
-			},
+			}
 		};
 	} catch (error) {
 		return { success: false, runResult: { kind: 'RunError', sourceFiles } };

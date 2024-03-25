@@ -6,10 +6,7 @@
 		type TestCaseResultPreview
 	} from './outputAnalyzer/analyzerTypes';
 	import { theme } from '../routes/stores';
-	import {
-		analyzeSubmissionOutput,
-		rehydrateOutputPreview
-	} from './outputAnalyzer/outputAnalyzer';
+	import { analyzeSubmissionOutput, rehydrateOutputPreview } from './outputAnalyzer/outputAnalyzer';
 
 	export let problem: Problem;
 	export let submission: Submission;
@@ -77,25 +74,6 @@
 				return 'correctignoringcaselabelling';
 		}
 	}
-
-	function getResultText(caseResult: CaseResult): string {
-		switch (caseResult) {
-			case CaseResult.Correct:
-				return 'Correct';
-			case CaseResult.NoOutput:
-				return 'No Output';
-			case CaseResult.Exception:
-				return 'Exception';
-			case CaseResult.RunnerFailure:
-				return 'Build Failure';
-			case CaseResult.Incorrect:
-				return 'Incorrect';
-			case CaseResult.FormattingIssue:
-				return 'Formatting Error';
-			default:
-				return '???';
-		}
-	}
 </script>
 
 <table class="resultstable" data-bs-theme={$theme}>
@@ -116,7 +94,8 @@
 					{#each { length: Math.min(cellsPerRow, currentSubmitResults.testCases.length - rowNum * cellsPerRow) } as _, colNum}
 						{@const currentCaseIndex = rowNum * cellsPerRow + colNum}
 						{@const currentCaseResult = currentSubmitResults.testCases[currentCaseIndex]}
-						<td class="testcaseresult {resultKindClassName(currentCaseResult.result)}
+						<td
+							class="testcaseresult {resultKindClassName(currentCaseResult.result)}
 							{currentCaseResult.isSampleData ? 'sampleinput' : ''}"
 						>
 							<div

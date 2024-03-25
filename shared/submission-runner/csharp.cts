@@ -4,9 +4,7 @@ import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.c
 import { timeoutSeconds } from './settings.cjs';
 import { getSourceFilesWithText } from './sourceScraper.cjs';
 
-export const runCSharp: IRunner = async function (
-	params: IRunnerParams
-): Promise<IRunnerReturn> {
+export const runCSharp: IRunner = async function (params: IRunnerParams): Promise<IRunnerReturn> {
 	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cs');
 
 	console.log(`- RUN: ${params.srcDir}`);

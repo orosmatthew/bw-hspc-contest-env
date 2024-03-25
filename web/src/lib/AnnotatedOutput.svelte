@@ -12,9 +12,9 @@
 	const analysisResults = output != null ? analyzeSubmissionOutput(problem, output) : null;
 
 	const inputLines = problem.realInput
-        .replace('\r\n', '\n')
-        .split('\n')
-        .map((line) => line.trim())
+		.replace('\r\n', '\n')
+		.split('\n')
+		.map((line) => line.trim());
 
 	const inputCases = parseProblemInput(problem);
 
@@ -59,13 +59,16 @@
 			inputCases.caseStartIndexes[index],
 			index + 1 < inputCases.caseStartIndexes.length
 				? inputCases.caseStartIndexes[index + 1]
-				: inputLines.length);
+				: inputLines.length
+		);
 	}
 </script>
 
 {#if !inputCases.success}
 	<div class="mb-2">
-		<span style="font-weight: bold">Failed to parse problem input: </span><span>{inputCases.errorMessage}</span>
+		<span style="font-weight: bold">Failed to parse problem input: </span><span
+			>{inputCases.errorMessage}</span
+		>
 	</div>
 {/if}
 
@@ -104,16 +107,17 @@
 		{#if analysisResults}
 			{#each analysisResults.testCaseResults as testCaseResult, i}
 				<tr>
-					<td class="caselabelcell {i < numSampleCases ? "sample" : ""}">
+					<td class="caselabelcell {i < numSampleCases ? 'sample' : ''}">
 						{#if i < numSampleCases}
-							<span>(</span> <span class="inputCaseNumberLabel">#{testCaseResult.caseNum}</span> <span>)</span>
+							<span>(</span> <span class="inputCaseNumberLabel">#{testCaseResult.caseNum}</span>
+							<span>)</span>
 						{:else}
 							<span class="inputCaseNumberLabel">#{testCaseResult.caseNum}</span>
 						{/if}
 					</td>
 					<td class="inputTextCell">
 						{#if inputCases.success}
-							<pre>{inputLinesForCaseIndex(i).join("\n")}</pre>
+							<pre>{inputLinesForCaseIndex(i).join('\n')}</pre>
 						{/if}
 					</td>
 					<td
@@ -147,7 +151,7 @@
 		--noOutput-judgment: #ffdfa5;
 		--formatting: #feffc7;
 		--formatting-judgment: #fbff47;
-		
+
 		--judge-background: #e3e3e3;
 		--inputCaseNum-color: #888888;
 	}
@@ -155,7 +159,7 @@
 	[data-bs-theme='dark'] {
 		--correct: #003c00;
 		--correct-judgment: #006f00;
-		--incorrect:  #440000;
+		--incorrect: #440000;
 		--incorrect-judgment: #810000;
 		--crash: #00007a;
 		--crash-judgment: #0000b1;
@@ -265,7 +269,7 @@
 	}
 
 	td.crash {
-		background: var(--crash); ;
+		background: var(--crash);
 	}
 
 	td.crash.judgment {

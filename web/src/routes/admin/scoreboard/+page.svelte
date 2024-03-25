@@ -82,14 +82,15 @@
 										return p.id === problem.id;
 									})?.attempts !== 0}
 										<a href="/admin/submissions/latest/{contest.id}/{team.id}/{problem.id}">
-										{team.problems.find((p) => {
-											return p.id === problem.id;
-										})?.attempts}
-										{team.problems.find((p) => {
-											return p.id === problem.id;
-										})?.attempts === 1
-											? 'Attempt'
-											: 'Attempts'}</a><br />{#if team.problems.find((p) => {
+											{team.problems.find((p) => {
+												return p.id === problem.id;
+											})?.attempts}
+											{team.problems.find((p) => {
+												return p.id === problem.id;
+											})?.attempts === 1
+												? 'Attempt'
+												: 'Attempts'}</a
+										><br />{#if team.problems.find((p) => {
 											return p.id === problem.id;
 										})?.min}<span style="color:rgb(102,102,102)"
 												>{team.problems

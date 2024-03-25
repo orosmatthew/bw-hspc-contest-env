@@ -1,29 +1,29 @@
 export type AnalyzedOutputPreview = {
-    testCaseResults: TestCaseResultPreview[],
-    databaseString: string
-}
+	testCaseResults: TestCaseResultPreview[];
+	databaseString: string;
+};
 
 export type AnalyzedOutput = {
-    testCaseResults: TestCaseResult[],
-    databaseString: string
-}
+	testCaseResults: TestCaseResult[];
+	databaseString: string;
+};
 
 export type TestCaseResultPreview = {
-    caseNum: number;
-    isSampleData: boolean;
-    result: CaseResult;
-}
+	caseNum: number;
+	isSampleData: boolean;
+	result: CaseResult;
+};
 
 export type TestCaseResult = TestCaseResultPreview & {
-    judgeOutput: string[];
-    teamOutput: string[] | null;
-}
+	judgeOutput: string[];
+	teamOutput: string[] | null;
+};
 
 export enum CaseResult {
-    Correct,
-    FormattingIssue,
-    Incorrect,
-    Exception,
-    NoOutput,
-    RunnerFailure
+	Correct,
+	FormattingIssue,
+	Incorrect,
+	Exception,
+	NoOutput,
+	RunnerFailure
 }
