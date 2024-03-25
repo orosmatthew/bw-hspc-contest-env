@@ -18,6 +18,7 @@ export const load = (async ({ cookies }) => {
 		}
 		const data = {
 			timestamp: timestamp,
+			frozen: contest.freezeTime !== null ? contest.freezeTime < new Date() : false,
 			contest: {
 				name: contest.name,
 				problems: contest.problems.map((problem) => {

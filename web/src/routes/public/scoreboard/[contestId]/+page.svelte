@@ -31,7 +31,7 @@
 
 <div class="text-end mb-1">
 	{#if data.frozen}
-		FROZEN
+		<span class="badge bg-info">Frozen</span>
 	{/if}
 	{#if updating}
 		<div class="spinner-border spinner-border-sm text-secondary" />
