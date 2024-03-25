@@ -27,8 +27,15 @@ export const actions = {
 		const sampleOutput = data.get('sampleOutput');
 		const realInput = data.get('realInput');
 		const realOutput = data.get('realOutput');
+		const inputSpec = data.get('inputSpec');
+
 		if (!name || !pascalName || !sampleInput || !sampleOutput || !realInput || !realOutput) {
 			return { success: false };
+		}
+
+		let inputSpecValue = inputSpec?.toString().trim() ?? null;
+		if (inputSpecValue == '') {
+			inputSpecValue = null;
 		}
 
 		await db.problem.update({
@@ -39,7 +46,8 @@ export const actions = {
 				sampleInput: sampleInput.toString(),
 				sampleOutput: sampleOutput.toString(),
 				realInput: realInput.toString(),
-				realOutput: realOutput.toString()
+				realOutput: realOutput.toString(),
+				inputSpec: inputSpecValue
 			}
 		});
 

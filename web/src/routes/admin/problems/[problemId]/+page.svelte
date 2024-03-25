@@ -88,6 +88,15 @@
 					class="form-control"
 				/>
 			</div>
+			<h4 style="text-align:center" class="mt-3">Input Spec (optional)</h4>
+			<div class="col-md-auto">
+				<input
+					value={data.problemData.inputSpec}
+					disabled={!editing}
+					name="inputSpec"
+					class="form-control"
+				/>
+			</div>
 		</div>
 	</div>
 	<h4 style="text-align:center" class="mt-5">Sample Data</h4>
