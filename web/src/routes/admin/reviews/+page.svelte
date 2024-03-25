@@ -36,7 +36,7 @@
 		<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
 	</div>
 
-	<h1 style="text-align:center" class="mb-1">
+	<h1 style="text-align:center" class="pb-2">
 		<i class="bi bi-eye"></i> Pending Reviews ({data.reviewList.length})
 	</h1>
 
@@ -48,7 +48,7 @@
 		<SubmissionsList submissions={data.reviewList} sortDirection={'oldest first'}></SubmissionsList>
 	{/if}
 
-	<h1 style="text-align:center" class="mb-1">
+	<h1 style="text-align:center" class="pb-2">
 		<i class="bi bi-eye"></i> Queued Submissions ({data.queueList.length})
 	</h1>
 

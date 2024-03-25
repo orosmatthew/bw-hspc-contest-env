@@ -95,7 +95,7 @@
 </div>
 
 <div class="table-responsive">
-	<table class="table table-bordered" data-bs-theme={$theme}>
+	<table class="table table-bordered table-hover" data-bs-theme={$theme}>
 		<thead>
 			<tr>
 				<th></th>
