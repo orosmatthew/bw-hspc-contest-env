@@ -37,7 +37,10 @@
 			const confirmText =
 				correct === true
 					? `Grading as CORRECT. Are you sure?`
-					: `Grading as INCORRECT with message '${gradingMessage.value}'. Are you sure?`;
+					: gradingMessage.value.trim().length == 0
+						? `Grading as INCORRECT with NO MESSAGE! Are you sure?`
+						: `Grading as INCORRECT with message '${gradingMessage.value}'. Are you sure?`;
+
 			if ((await confirmModal.prompt(confirmText)) !== true) {
 				cancel();
 			}
@@ -224,7 +227,7 @@
 {/if}
 
 <hr />
-<h3 style="text-align: center">
+<h3 class="mt-3 mb-3">
 	Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) + 1} Details
 </h3>
 
@@ -285,6 +288,7 @@
 
 	tr.otherSubmission {
 		opacity: 0.65;
+		cursor: pointer;
 	}
 
 	.gradingArea {
