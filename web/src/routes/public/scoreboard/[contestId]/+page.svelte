@@ -24,7 +24,7 @@
 	});
 </script>
 
-<h2 style="text-align:center">{data.selected.name}</h2>
+<h2 style="text-align:center">{data.contest.name}</h2>
 <div class="row">
 	<div class="text-end" />
 </div>
@@ -46,19 +46,19 @@
 			<th>Team Name</th>
 			<th>Solves</th>
 			<th>Time</th>
-			{#each data.selected.problems as problem}
+			{#each data.contest.problems as problem}
 				<th>{problem.friendlyName}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
-		{#each data.selected.teams as team, i}
+		{#each data.contest.teams as team, i}
 			<tr>
 				<td style="text-align:center; font-size:24px;"><strong>{i + 1}</strong></td>
 				<td style="font-size:18px">{team.name}</td>
 				<td style="font-size:18px">{team.solves}</td>
 				<td style="font-size:18px">{team.time.toFixed(0)}</td>
-				{#each data.selected.problems as problem}
+				{#each data.contest.problems as problem}
 					<td>
 						<div class="row">
 							<div class="col-3">
