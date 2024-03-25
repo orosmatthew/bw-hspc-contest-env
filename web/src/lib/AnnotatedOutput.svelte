@@ -141,15 +141,15 @@
 
 <style>
 	:root {
-		--correct: #deffde;
+		--correct: #eeffee;
 		--correct-judgment: #abffab;
-		--incorrect: #ffe4e4;
+		--incorrect: #ffe9e9;
 		--incorrect-judgment: #ffabab;
 		--crash: #ffb1b1;
 		--crash-judgment: #ff6464;
-		--noOutput: #ffeacf;
+		--noOutput: #fffbef;
 		--noOutput-judgment: #ffdfa5;
-		--formatting: #feffc7;
+		--formatting: #ffffed;
 		--formatting-judgment: #fbff47;
 
 		--judge-background: #e3e3e3;
