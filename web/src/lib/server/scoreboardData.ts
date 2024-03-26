@@ -25,9 +25,11 @@ type ScoreboardDataType = {
 	timestamp: Date;
 	frozen: boolean;
 	contest: {
+		id: number;
 		name: string;
 		problems: { id: number; friendlyName: string }[];
 		teams: {
+			id: number;
 			name: string;
 			solves: number;
 			time: number;
@@ -41,6 +43,7 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 		timestamp: new Date(),
 		frozen: contest.freezeTime !== null ? contest.freezeTime < new Date() : false,
 		contest: {
+			id: contest.id,
 			name: contest.name,
 			problems: contest.problems.map((problem) => {
 				return { id: problem.id, friendlyName: problem.friendlyName };
@@ -48,6 +51,7 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 			teams: contest.teams
 				.map((team) => {
 					return {
+						id: team.id,
 						name: team.name,
 						solves: team.submissions.filter((submission) => {
 							return submission.contestId === contest.id && submission.state === 'Correct';
