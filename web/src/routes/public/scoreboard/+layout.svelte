@@ -12,6 +12,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Public Scoreboard</title>
+</svelte:head>
+
 <div class="row mt-2">
 	<div class="col d-flex flex-row-reverse gap-3">
 		<button
@@ -31,10 +35,10 @@
 				id="scoreboardSelect"
 				class="form-control form-select w-auto"
 			>
+				{#if $contestId === null}
+					<option value={null}>None</option>
+				{/if}
 				{#each data.contests as contest}
-					{#if $contestId === null}
-						<option value={null}>None</option>
-					{/if}
 					<option selected={contest.id === $contestId} value={contest.id}>{contest.name}</option>
 				{/each}
 			</select>

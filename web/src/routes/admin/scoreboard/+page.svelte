@@ -26,6 +26,9 @@
 </svelte:head>
 
 <div class="text-end">
+	{#if data.frozen}
+		<span class="badge bg-info">Frozen</span>
+	{/if}
 	{#if updating}
 		<div class="spinner-border spinner-border-sm text-secondary" />
 	{/if}

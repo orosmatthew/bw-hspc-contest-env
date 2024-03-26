@@ -19,6 +19,7 @@ export const load = (async ({ params }) => {
 	}
 	return {
 		name: contest.name,
+		frozen: contest.freezeTime === null ? false : new Date() >= contest.freezeTime,
 		problems: contest.problems.map((problem) => {
 			return { id: problem.id, name: problem.friendlyName };
 		}),
@@ -120,7 +121,7 @@ export const actions = {
 		await createRepos(contestId, resetTeamIds);
 		return { success: true };
 	},
-	'freeze-time': async ({ params, request }) => {
+	freeze: async ({ params }) => {
 		if (!params.contestId) {
 			return { success: false, message: 'No contest Id specified' };
 		}
@@ -128,18 +129,32 @@ export const actions = {
 		if (isNaN(contestId)) {
 			return { success: false, message: 'Invalid contest Id' };
 		}
-		const form = await request.formData();
-		const formFreezeTime = form.get('freezeTime');
-		if (formFreezeTime === null) {
-			return { success: false, message: 'Invalid input' };
-		}
-		const freezeTime = new Date(formFreezeTime.toString());
 		const contest = await db.contest.findUnique({ where: { id: contestId } });
 		if (contest === null) {
 			return { success: false, message: 'Invalid contest' };
 		}
 		try {
-			await db.contest.update({ where: { id: contestId }, data: { freezeTime } });
+			await db.contest.update({ where: { id: contestId }, data: { freezeTime: new Date() } });
+		} catch (e) {
+			console.error(`Database error: ${e}`);
+			return { success: false, message: `Database error: ${e}` };
+		}
+		return { success: true };
+	},
+	unfreeze: async ({ params }) => {
+		if (!params.contestId) {
+			return { success: false, message: 'No contest Id specified' };
+		}
+		const contestId = parseInt(params.contestId);
+		if (isNaN(contestId)) {
+			return { success: false, message: 'Invalid contest Id' };
+		}
+		const contest = await db.contest.findUnique({ where: { id: contestId } });
+		if (contest === null) {
+			return { success: false, message: 'Invalid contest' };
+		}
+		try {
+			await db.contest.update({ where: { id: contestId }, data: { freezeTime: null } });
 		} catch (e) {
 			console.error(`Database error: ${e}`);
 			return { success: false, message: `Database error: ${e}` };
