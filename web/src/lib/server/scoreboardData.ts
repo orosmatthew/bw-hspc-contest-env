@@ -81,7 +81,11 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 							return {
 								id: problem.id,
 								attempts: team.submissions.filter((submission) => {
-									const correct = team.submissions.find((s) => s.state === 'Correct');
+									const correct = team.submissions.find((s) => {
+										s.contestId === contest.id &&
+											s.problemId === problem.id &&
+											s.state === 'Correct';
+									});
 									if (correct !== undefined && submission.state === 'Incorrect') {
 										return (
 											submission.contestId === contest.id &&
