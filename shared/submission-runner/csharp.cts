@@ -1,16 +1,33 @@
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import kill from 'tree-kill';
+import * as util from 'util';
 import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.cjs';
 import { timeoutSeconds } from './settings.cjs';
 import { getSourceFilesWithText } from './sourceScraper.cjs';
 
+const execPromise = util.promisify(exec);
+
 export const runCSharp: IRunner = async function (params: IRunnerParams): Promise<IRunnerReturn> {
 	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cs');
 
-	console.log(`- RUN: ${params.srcDir}`);
-	const child = spawn('dotnet run', { shell: true, cwd: params.srcDir });
+	console.log(`- BUILD: ${params.srcDir}`);
 
 	try {
+		await execPromise(`dotnet build`, { cwd: params.srcDir });
+	} catch (e) {
+		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
+		console.log('Build errors: ' + buildErrorText);
+		return {
+			success: false,
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
+		};
+	}
+
+	console.log(`- RUN: ${params.srcDir}`);
+
+	try {
+		const child = spawn('dotnet run --no-build', { shell: true, cwd: params.srcDir });
+
 		let outputBuffer = '';
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
