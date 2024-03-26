@@ -31,10 +31,10 @@
 				id="scoreboardSelect"
 				class="form-control form-select w-auto"
 			>
+				{#if $contestId === null}
+					<option value={null}>None</option>
+				{/if}
 				{#each data.contests as contest}
-					{#if $contestId === null}
-						<option value={null}>None</option>
-					{/if}
 					<option selected={contest.id === $contestId} value={contest.id}>{contest.name}</option>
 				{/each}
 			</select>
