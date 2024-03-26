@@ -81,11 +81,20 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 							return {
 								id: problem.id,
 								attempts: team.submissions.filter((submission) => {
-									return (
-										submission.contestId === contest.id &&
-										submission.problemId === problem.id &&
-										(submission.state === 'Correct' || submission.state === 'Incorrect')
-									);
+									const correct = team.submissions.find((s) => s.state === 'Correct');
+									if (correct !== undefined && submission.state === 'Incorrect') {
+										return (
+											submission.contestId === contest.id &&
+											submission.problemId === problem.id &&
+											submission.createdAt < correct.createdAt
+										);
+									} else {
+										return (
+											submission.contestId === contest.id &&
+											submission.problemId === problem.id &&
+											(submission.state === 'Correct' || submission.state === 'Incorrect')
+										);
+									}
 								}).length,
 								graphic: team.submissions.find((submission) => {
 									return (
