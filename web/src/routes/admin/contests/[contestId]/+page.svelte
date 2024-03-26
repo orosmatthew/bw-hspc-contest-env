@@ -145,7 +145,10 @@
 <div class="mt-3 row">
 	<div class="col-6">
 		<h4>Teams</h4>
-		<a href={`${$page.url}/logins`} class="mb-2 btn btn-outline-secondary">Printable Logins</a>
+		<a
+			href={`/admin/contests/${$page.params.contestId}/logins`}
+			class="mb-2 btn btn-outline-secondary">Printable Logins</a
+		>
 		<div class="list-group">
 			{#each data.teams as team}
 				<div class="list-group-item">{team.name}</div>
