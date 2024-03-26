@@ -12,6 +12,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Public Scoreboard</title>
+</svelte:head>
+
 <div class="row mt-2">
 	<div class="col d-flex flex-row-reverse gap-3">
 		<button
