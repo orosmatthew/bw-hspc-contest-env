@@ -7,6 +7,7 @@
 <div class="row">
 	<div class="col-md-6">
 		<a
+			target="_blank"
 			class="card stats-card bg-body-tertiary stats-card-link stats-card-action"
 			draggable="false"
 			href="/public/scoreboard"
