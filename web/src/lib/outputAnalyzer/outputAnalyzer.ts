@@ -25,6 +25,7 @@ import { numInputCases } from './inputAnalyzer';
 const caseResultToCompactChar = new Map<CaseResult, string>([
 	[CaseResult.Correct, 'C'],
 	[CaseResult.FormattingIssue, 'F'],
+	[CaseResult.LabellingIssue, 'L'],
 	[CaseResult.Incorrect, 'I'],
 	[CaseResult.NoOutput, 'N'],
 	[CaseResult.Exception, 'E'],
@@ -116,13 +117,6 @@ function compareSingleCaseOutput(
 		}
 	}
 
-	const reassembledJudgeOutput = judgeCaseOutputLines.join(newline);
-	const reassembledTeamOutput = teamCaseOutputLines.join(newline);
-
-	if (reassembledJudgeOutput == reassembledTeamOutput) {
-		return CaseResult.FormattingIssue;
-	}
-
 	const judgeOutputAsSingleLineWithNormalizedSpace = judgeCaseOutputLines
 		.join(' ')
 		.replace(/\s+/g, ' ');
@@ -132,6 +126,29 @@ function compareSingleCaseOutput(
 
 	if (judgeOutputAsSingleLineWithNormalizedSpace == teamOutputAsSingleLineWithNormalizedSpace) {
 		return CaseResult.FormattingIssue;
+	}
+
+	const reassembledJudgeOutput = judgeCaseOutputLines.join(newline);
+	const reassembledTeamOutput = teamCaseOutputLines.join(newline);
+
+	const judgeCaseLabelText = reassembledJudgeOutput.substring(
+		0,
+		reassembledJudgeOutput.indexOf(':')
+	);
+	if (reassembledTeamOutput.startsWith(judgeCaseLabelText)) {
+		const reassembledJudgeOutputWithoutExactCaseLabel = reassembledJudgeOutput.substring(
+			judgeCaseLabelText.length + 1
+		);
+		const reassembledTeamOutputWithoutExactCaseLabel = reassembledTeamOutput.substring(
+			judgeCaseLabelText.length + 1
+		);
+
+		if (
+			reassembledJudgeOutputWithoutExactCaseLabel.trim() ==
+			reassembledTeamOutputWithoutExactCaseLabel.trim()
+		) {
+			return CaseResult.FormattingIssue;
+		}
 	}
 
 	const judgeOutputCaseStr = reassembledJudgeOutput.match(caseLabelRegex)?.[0] ?? '';
@@ -145,7 +162,7 @@ function compareSingleCaseOutput(
 		.trim();
 
 	if (reassembledJudgeOutputWithoutLabel == reassembledTeamOutputWithoutLabel) {
-		return CaseResult.FormattingIssue;
+		return CaseResult.LabellingIssue;
 	}
 
 	return CaseResult.Incorrect;

@@ -22,6 +22,7 @@ export type TestCaseResult = TestCaseResultPreview & {
 export enum CaseResult {
 	Correct,
 	FormattingIssue,
+	LabellingIssue,
 	Incorrect,
 	Exception,
 	NoOutput,

@@ -24,6 +24,8 @@
 				return 'correct';
 			case CaseResult.FormattingIssue:
 				return 'formatError';
+			case CaseResult.LabellingIssue:
+				return 'labelError';
 			case CaseResult.Exception:
 			case CaseResult.RunnerFailure:
 				return 'crash';
@@ -40,6 +42,8 @@
 				return 'Correct';
 			case CaseResult.FormattingIssue:
 				return 'Formatting';
+			case CaseResult.LabellingIssue:
+				return 'Label Error';
 			case CaseResult.Exception:
 				return 'Crash';
 			case CaseResult.NoOutput:
@@ -148,6 +152,8 @@
 		--noOutput-judgment: #ffdfa5;
 		--formatting: #ffffed;
 		--formatting-judgment: #fbff47;
+		--labelling: #ffecad;
+		--labelling-judgment: #ffdd24;
 
 		--judge-background: #e3e3e3;
 		--inputCaseNum-color: #888888;
@@ -164,6 +170,8 @@
 		--noOutput-judgment: #4c3100;
 		--formatting: #535b00;
 		--formatting-judgment: #6d7100;
+		--labelling: #473c00;
+		--labelling-judgment: #716000;
 
 		--judge-background: #4e4e4e;
 		--inputCaseNum-color: #acacac;
@@ -268,6 +276,14 @@
 
 	td.formatError.judgment {
 		background: var(--formatting-judgment);
+	}
+
+	td.labelError {
+		background: var(--labelling);
+	}
+
+	td.labelError.judgment {
+		background: var(--labelling-judgment);
 	}
 
 	td.crash {

@@ -71,7 +71,9 @@
 			case CaseResult.Incorrect:
 				return 'incorrect';
 			case CaseResult.FormattingIssue:
-				return 'correctignoringcaselabelling';
+				return 'formattingIssue';
+			case CaseResult.LabellingIssue:
+				return 'labellingIssue';
 		}
 	}
 </script>
@@ -119,7 +121,8 @@
 <style>
 	:root {
 		--correct-color: #9eff8e;
-		--correctIgnoringFormatting-color: #e1ed26;
+		--formattingIssue-color: #e1ed26;
+		--labellingIssue-color: #ffdd24;
 		--incorrect-color: #f4bcbc;
 		--noOutput-color: #cacaca;
 
@@ -130,7 +133,8 @@
 
 	[data-bs-theme='dark'] {
 		--correct-color: #2c951b;
-		--correctIgnoringFormatting-color: #c8d500;
+		--formattingIssue-color: #c8d500;
+		--labellingIssue-color: #d5a800;
 		--incorrect-color: #be0000;
 		--noOutput-color: #424242;
 
@@ -208,8 +212,12 @@
 		background-color: var(--incorrect-color);
 	}
 
-	div.correctignoringcaselabelling {
-		background-color: var(--correctIgnoringFormatting-color);
+	div.formattingIssue {
+		background-color: var(--formattingIssue-color);
+	}
+
+	div.labellingIssue {
+		background-color: var(--labellingIssue-color);
 	}
 
 	div.sampleinput {
