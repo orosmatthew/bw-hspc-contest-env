@@ -1,14 +1,21 @@
-export function getCleanLines(text: string | null): string[] {
-	if (text == null) {
-		return [];
-	}
+export const newline = '\n';
 
-	text.replaceAll('\r\n', '\n');
-	const allLines = text.split('\n');
-	const cleanLines = allLines.map((line) => cleanLine(line)).filter((line) => line.length > 0);
-	return cleanLines;
+export function normalizeInputLines(input: string): string[] {
+	return trimmedNonemptyLines(input);
 }
 
-export function cleanLine(line: string): string {
-	return line.trim();
+export function normalizeNewlines(output: string): string {
+	return output.replaceAll('\r\n', newline).replaceAll('\r', newline);
+}
+
+export function splitLines(output: string): string[] {
+	return normalizeNewlines(output).split(newline);
+}
+
+export function trimmedLines(output: string): string[] {
+	return splitLines(output).map((line) => line.trim());
+}
+
+export function trimmedNonemptyLines(output: string): string[] {
+	return trimmedLines(output).filter((line) => line.length > 0);
 }

@@ -1,5 +1,5 @@
 import type { Problem } from '@prisma/client';
-import { getCleanLines } from './analyzerUtils';
+import { newline, trimmedNonemptyLines } from './analyzerUtils';
 import {
 	CaseResult,
 	type AnalyzedOutput,
@@ -8,6 +8,7 @@ import {
 	type AnalyzedOutputPreview
 } from './analyzerTypes';
 import { caseLabelRegex, splitJudgeOutput, splitTeamOutput } from './outputSplitter';
+import { numInputCases } from './inputAnalyzer';
 
 // Team output analysis & test case results are used in two contexts:
 //   1) High Fidelity:
@@ -35,11 +36,11 @@ const compactCharToCaseResult = new Map<string, CaseResult>(
 );
 
 export function analyzeSubmissionOutput(problem: Problem, teamOutput: string): AnalyzedOutput {
-	const sampleCaseCount = parseInt(problem.sampleInput.split('\n')[0]);
-	const totalCaseCount = parseInt(problem.realInput.split('\n')[0]);
+	const sampleCaseCount = numInputCases(problem.sampleInput);
+	const totalCaseCount = numInputCases(problem.realInput);
 
-	const teamOutputLines = getCleanLines(teamOutput);
-	const judgeOutputLines = getCleanLines(problem.realOutput);
+	const teamOutputLines = trimmedNonemptyLines(teamOutput);
+	const judgeOutputLines = trimmedNonemptyLines(problem.realOutput);
 
 	const testCaseResults: TestCaseResult[] = [];
 
@@ -115,8 +116,8 @@ function compareSingleCaseOutput(
 		}
 	}
 
-	const reassembledJudgeOutput = judgeCaseOutputLines.join('\n');
-	const reassembledTeamOutput = teamCaseOutputLines.join('\n');
+	const reassembledJudgeOutput = judgeCaseOutputLines.join(newline);
+	const reassembledTeamOutput = teamCaseOutputLines.join(newline);
 
 	if (reassembledJudgeOutput == reassembledTeamOutput) {
 		return CaseResult.FormattingIssue;
@@ -148,4 +149,14 @@ function compareSingleCaseOutput(
 	}
 
 	return CaseResult.Incorrect;
+}
+
+export function autojudgeResponse(
+	judgeOutput: string,
+	teamOutput: string
+): 'Correct' | 'NeedsReview' {
+	const judgeLines = trimmedNonemptyLines(judgeOutput);
+	const teamLines = trimmedNonemptyLines(teamOutput);
+
+	return judgeLines.join(newline) == teamLines.join(newline) ? 'Correct' : 'NeedsReview';
 }

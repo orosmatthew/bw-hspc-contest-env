@@ -3,6 +3,7 @@ import type { Contest, Problem, Submission, Team } from '@prisma/client';
 import type { PageServerLoad } from './$types';
 import { analyzeSubmissionOutput } from '$lib/outputAnalyzer/outputAnalyzer';
 import type { Actions } from '@sveltejs/kit';
+import { numInputCases as numInputCasesFromHeader } from '$lib/outputAnalyzer/inputAnalyzer';
 
 export const load = (async () => {
 	const submissions = await db.submission.findMany({ include: { problem: true, team: true } });
@@ -97,7 +98,7 @@ async function regenerateTestCaseResultsForSubmissions(
 
 		log(`  Resulting DB String: ${analyzedOutput.databaseString}`);
 
-		const testCasesExpected = Number(submission.problem.realInput.split('\n')[0]);
+		const testCasesExpected = numInputCasesFromHeader(submission.problem.realInput);
 		const testCasesReported = analyzedOutput.testCaseResults.length;
 
 		log(`  Test Cases Expected: ${testCasesExpected}`);

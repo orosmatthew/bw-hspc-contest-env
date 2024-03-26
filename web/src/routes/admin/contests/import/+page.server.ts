@@ -5,6 +5,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { genPassword } from '../../teams/util';
 import { createRepos } from '$lib/server/repos';
 import { analyzeSubmissionOutput } from '$lib/outputAnalyzer/outputAnalyzer';
+import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
 
 export const load = (async () => {}) satisfies PageServerLoad;
 
@@ -94,18 +95,18 @@ export const actions = {
 							where: {
 								friendlyName: problem.ProblemName,
 								pascalName: problem.ShortName,
-								sampleInput: problem.SampleInput,
-								sampleOutput: problem.SampleOutput,
-								realInput: problem.RealInput,
-								realOutput: problem.RealOutput
+								sampleInput: normalizeNewlines(problem.SampleInput),
+								sampleOutput: normalizeNewlines(problem.SampleOutput),
+								realInput: normalizeNewlines(problem.RealInput),
+								realOutput: normalizeNewlines(problem.RealOutput)
 							},
 							create: {
 								friendlyName: problem.ProblemName,
 								pascalName: problem.ShortName,
-								sampleInput: problem.SampleInput,
-								sampleOutput: problem.SampleOutput,
-								realInput: problem.RealInput,
-								realOutput: problem.RealOutput
+								sampleInput: normalizeNewlines(problem.SampleInput),
+								sampleOutput: normalizeNewlines(problem.SampleOutput),
+								realInput: normalizeNewlines(problem.RealInput),
+								realOutput: normalizeNewlines(problem.RealOutput)
 							}
 						}))
 					},

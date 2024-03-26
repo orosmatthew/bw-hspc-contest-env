@@ -7,6 +7,7 @@
 	import { theme } from '../routes/stores';
 	import { analyzeSubmissionOutput } from './outputAnalyzer/outputAnalyzer';
 	import type { Problem } from '@prisma/client';
+	import { newline, trimmedLines } from './outputAnalyzer/analyzerUtils';
 
 	export let expectedOutput: string;
 	export let output: string | null;
@@ -21,16 +22,8 @@
 		if (!localDiff && output) {
 			localDiff = Diff.createPatch(
 				'Judge → Team',
-				expectedOutput
-					.replace('\r\n', '\n')
-					.split('\n')
-					.map((line) => line.trim())
-					.join('\n'),
-				(output ?? '')
-					.replace('\r\n', '\n')
-					.split('\n')
-					.map((line) => line.trim())
-					.join('\n')
+				trimmedLines(expectedOutput).join(newline),
+				trimmedLines(output ?? '').join(newline)
 			);
 		}
 
@@ -49,15 +42,8 @@
 	}
 
 	function drawAlignedDiff() {
-		const cleanJudgeOutputLines = expectedOutput
-			.replace('\r\n', '\n')
-			.split('\n')
-			.map((line) => line.trim());
-
-		const cleanTeamOutputLines = (output ?? '')
-			.replace('\r\n', '\n')
-			.split('\n')
-			.map((line) => line.trim());
+		const cleanJudgeOutputLines = trimmedLines(expectedOutput);
+		const cleanTeamOutputLines = trimmedLines(output ?? '');
 
 		localDiff = 'Index: Judge → Team\n';
 		localDiff += '===================================================================\n';

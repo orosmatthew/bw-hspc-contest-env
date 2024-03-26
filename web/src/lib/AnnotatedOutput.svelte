@@ -1,25 +1,22 @@
 <script lang="ts">
 	import type { Problem } from '@prisma/client';
-	import { parseProblemInput } from '$lib/outputAnalyzer/inputAnalyzer';
+	import { numInputCases, parseProblemInput } from '$lib/outputAnalyzer/inputAnalyzer';
 
 	import { theme } from '../routes/stores';
 	import { analyzeSubmissionOutput } from './outputAnalyzer/outputAnalyzer';
 	import { CaseResult } from './outputAnalyzer/analyzerTypes';
+	import { normalizeInputLines } from './outputAnalyzer/analyzerUtils';
 
 	export let problem: Problem;
 	export let output: string | null;
 
 	const analysisResults = output != null ? analyzeSubmissionOutput(problem, output) : null;
 
-	const inputLines = problem.realInput
-		.replace('\r\n', '\n')
-		.split('\n')
-		.map((line) => line.trim());
-
+	const inputLines = normalizeInputLines(problem.realInput);
 	const inputCases = parseProblemInput(problem);
 
-	const numCases = Number(problem.realInput.split('\n')[0]);
-	const numSampleCases = Number(problem.sampleInput.split('\n')[0]);
+	const numCases = Number(numInputCases(problem.realInput));
+	const numSampleCases = Number(numInputCases(problem.sampleInput));
 
 	function caseResultToClassName(caseResult: CaseResult): string {
 		switch (caseResult) {

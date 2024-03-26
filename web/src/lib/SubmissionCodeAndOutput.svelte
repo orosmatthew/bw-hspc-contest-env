@@ -4,6 +4,7 @@
 	import Tab from './TabBar/TabEntry.svelte';
 	import DiffView from './DiffView.svelte';
 	import AnnotatedOutput from './AnnotatedOutput.svelte';
+	import { normalizeInputLines, splitLines } from './outputAnalyzer/analyzerUtils';
 
 	export let problem: Problem;
 	export let expectedOutput: string;
@@ -11,16 +12,14 @@
 	export let diff: string | null;
 	export let sourceFiles: SubmissionSourceFile[];
 
-	let rawOutputRows = output?.split('\n').length ?? 1;
+	let rawOutputRows = splitLines(output ?? '').length;
 	let rawOutputCols =
-		output
-			?.split('\n')
+		splitLines(output ?? '')
 			.map((line) => line.length)
 			.reduce((p, c) => Math.max(p, c), 0) ?? 1;
 
-	let rawInputRows = problem.realInput.split('\n').length;
-	let rawInputCols = problem.realInput
-		.split('\n')
+	let rawInputRows = normalizeInputLines(problem.realInput).length;
+	let rawInputCols = normalizeInputLines(problem.realInput)
 		.map((line) => line.length)
 		.reduce((p, c) => Math.max(p, c), 0);
 

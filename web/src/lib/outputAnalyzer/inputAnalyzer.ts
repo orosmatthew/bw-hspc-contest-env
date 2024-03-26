@@ -1,4 +1,5 @@
 import type { Problem } from '@prisma/client';
+import { normalizeInputLines } from './analyzerUtils';
 
 export function parseProblemInput(
 	problem: Problem
@@ -24,11 +25,7 @@ export function parseProblemInputFromText(
 	| { success: false; caseStartIndexes: number[]; errorMessage: string } {
 	const result: number[] = [];
 	const splitSpec = spec.split(';');
-	const inputLines = inputText
-		.replace('\r\n', '\n')
-		.split('\n')
-		.map((line) => line.trim())
-		.filter((line) => line);
+	const inputLines = normalizeInputLines(inputText);
 
 	let lineIndex = 1;
 
@@ -74,4 +71,8 @@ export function parseProblemInputFromText(
 	}
 
 	return { success: false, caseStartIndexes: result, errorMessage };
+}
+
+export function numInputCases(input: string): number {
+	return Number(normalizeInputLines(input)[0]);
 }

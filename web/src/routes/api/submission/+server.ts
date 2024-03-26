@@ -3,7 +3,8 @@ import { error, json } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
 import * as Diff from 'diff';
-import { analyzeSubmissionOutput } from '$lib/outputAnalyzer/outputAnalyzer';
+import { analyzeSubmissionOutput, autojudgeResponse } from '$lib/outputAnalyzer/outputAnalyzer';
+import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
 
 export const GET = (async ({ request }) => {
 	const secret = request.headers.get('secret');
@@ -84,20 +85,24 @@ export const POST = (async ({ request }) => {
 		}
 	}
 
-	const testCaseResults =
-		data.data.result.output === undefined
-			? null
-			: analyzeSubmissionOutput(submission.problem, data.data.result.output).databaseString;
+	const teamOutput =
+		data.data.result.output != undefined ? normalizeNewlines(data.data.result.output) : null;
 
+	const testCaseResults =
+		teamOutput != null
+			? analyzeSubmissionOutput(submission.problem, teamOutput).databaseString
+			: null;
+
+	console.log(`Sandbox got response, kind is ${data.data.result.kind}`);
 	switch (data.data.result.kind) {
 		case 'Completed':
-			if (data.data.result.output!.trimEnd() === submission.problem.realOutput.trimEnd()) {
+			if (autojudgeResponse(submission.problem.realOutput, teamOutput!) == 'Correct') {
 				await db.submission.update({
 					where: { id: data.data.submissionId },
 					data: {
 						state: 'Correct',
 						gradedAt: new Date(),
-						actualOutput: data.data.result.output,
+						actualOutput: teamOutput,
 						stateReason: null,
 						stateReasonDetails: null,
 						testCaseResults,
@@ -111,14 +116,14 @@ export const POST = (async ({ request }) => {
 					'expected',
 					'actual',
 					submission.problem.realOutput,
-					data.data.result.output!
+					teamOutput!
 				);
 				await db.submission.update({
 					where: { id: data.data.submissionId },
 					data: {
 						state: 'InReview',
 						diff: diff,
-						actualOutput: data.data.result.output,
+						actualOutput: teamOutput,
 						stateReason: null,
 						stateReasonDetails: null,
 						testCaseResults,
@@ -149,7 +154,7 @@ export const POST = (async ({ request }) => {
 				data: {
 					state: 'Incorrect',
 					gradedAt: new Date(),
-					actualOutput: data.data.result.output,
+					actualOutput: teamOutput,
 					stateReason: 'TimeLimitExceeded',
 					stateReasonDetails: data.data.result.resultKindReason,
 					testCaseResults,
