@@ -12,9 +12,7 @@
 	export let includesAllAttempts = false;
 	export let sortDirection: 'newest first' | 'oldest first';
 
-	const allQueued: boolean = submissions.find((s) => s.state != 'Queued') === undefined;
-
-	const showOutputColumns = !allQueued;
+	let showOutputColumns = true;
 
 	let historyCounts = new Map<string, number>();
 	let attemptNumbers = new Map<Submission, number>();
@@ -28,6 +26,8 @@
 	}
 
 	$: {
+		showOutputColumns = submissions.some((s) => s.state != 'Queued');
+
 		submissions.sort(
 			(s1, s2) =>
 				(s1.createdAt.getTime() - s2.createdAt.getTime()) *
