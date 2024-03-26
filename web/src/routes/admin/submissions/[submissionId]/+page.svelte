@@ -70,31 +70,72 @@
 {/if}
 
 <div class="row">
-	<div class="col-6">
+	<div class="col-4">
 		<a href="/admin/submissions" class="mb-3 btn btn-outline-primary">All Submissions</a>
 	</div>
-	<div class="col-6 text-end">
-		<form
-			method="POST"
-			action="?/delete"
-			use:enhance={async ({ cancel }) => {
-				if (
-					(await confirmModal.prompt(
-						'Are you SURE you want to delete the selected submission?'
-					)) !== true
-				) {
-					cancel();
-				}
-				return async ({ update }) => {
-					await update();
-				};
-			}}
-		>
-			<button type="submit" class="btn btn-danger"
-				>Delete Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) +
-					1}</button
+	<div class="col-8 text-end">
+		<div>
+			<form
+				method="POST"
+				action="?/clearJudgment"
+				style="display: inline-block"
+				use:enhance={async ({ cancel }) => {
+					if (
+						(await confirmModal.prompt(
+							'Are you SURE you want move this to "In Review"? The team will see this state change. This will NOT rerun the autoJudge.'
+						)) !== true
+					) {
+						cancel();
+					}
+					return async ({ update }) => {
+						await update();
+					};
+				}}
 			>
-		</form>
+				<button type="submit" class="btn btn-warning m-1">Clear Judgment</button>
+			</form>
+			<form
+				method="POST"
+				action="?/rerun"
+				style="display: inline-block"
+				use:enhance={async ({ cancel }) => {
+					if (
+						(await confirmModal.prompt(
+							'Are you SURE you want to reset to "Queued" and rerun team code on the sandbox? The team will see this state change.'
+						)) !== true
+					) {
+						cancel();
+					}
+					return async ({ update }) => {
+						await update();
+					};
+				}}
+			>
+				<button type="submit" class="btn btn-warning m-1">Rerun Submission</button>
+			</form>
+			<form
+				method="POST"
+				action="?/delete"
+				style="display: inline-block"
+				use:enhance={async ({ cancel }) => {
+					if (
+						(await confirmModal.prompt(
+							'Are you SURE you want to delete the selected submission?'
+						)) !== true
+					) {
+						cancel();
+					}
+					return async ({ update }) => {
+						await update();
+					};
+				}}
+			>
+				<button type="submit" class="btn btn-danger m-1"
+					>Delete Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) +
+						1}</button
+				>
+			</form>
+		</div>
 	</div>
 </div>
 

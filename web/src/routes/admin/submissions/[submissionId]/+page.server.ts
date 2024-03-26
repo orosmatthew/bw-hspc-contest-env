@@ -64,6 +64,62 @@ export const actions = {
 		}
 		redirect(302, '/admin/submissions');
 	},
+	clearJudgment: async ({ params }) => {
+		const submissionId = parseInt(params.submissionId);
+		try {
+			const submission = await db.submission.findUnique({
+				where: { id: submissionId }
+			});
+
+			if (!submission) {
+				return { success: false, error: 'submission not found' };
+			}
+
+			const newStateReason =
+				submission.stateReason == 'IncorrectOverriddenAsCorrect' ? null : submission.stateReason;
+
+			await db.submission.update({
+				where: { id: submissionId },
+				data: {
+					state: 'InReview',
+					gradedAt: null,
+					message: null,
+					stateReason: newStateReason
+				}
+			});
+		} catch (error) {
+			return { success: false, error: error?.toString() ?? '' };
+		}
+		redirect(302, `/admin/submissions/${submissionId}`);
+	},
+	rerun: async ({ params }) => {
+		const submissionId = parseInt(params.submissionId);
+		try {
+			await db.submission.update({
+				where: { id: submissionId },
+				data: {
+					state: 'Queued',
+					stateReason: null,
+					stateReasonDetails: null,
+					gradedAt: null,
+					message: null,
+					actualOutput: null,
+					diff: null,
+					exitCode: null,
+					runtimeMilliseconds: null,
+					testCaseResults: null,
+					sourceFiles: {
+						deleteMany: {
+							submissionId: submissionId
+						}
+					}
+				}
+			});
+		} catch (error) {
+			return { success: false, error: error?.toString() ?? '' };
+		}
+		redirect(302, `/admin/submissions/${submissionId}`);
+	},
 	submitGrade: async ({ request, params }) => {
 		const submissionId = parseInt(params.submissionId);
 		if (isNaN(submissionId)) {
