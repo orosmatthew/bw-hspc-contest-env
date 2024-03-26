@@ -79,7 +79,10 @@
 									{#if team.problems.find((p) => {
 										return p.id === problem.id;
 									})?.attempts !== 0}
-										<a href="/admin/submissions/latest/{data.contest.id}/{team.id}/{problem.id}">
+										<a
+											style="text-decoration: initial;"
+											href="/admin/submissions/latest/{data.contest.id}/{team.id}/{problem.id}"
+										>
 											{team.problems.find((p) => {
 												return p.id === problem.id;
 											})?.attempts}
