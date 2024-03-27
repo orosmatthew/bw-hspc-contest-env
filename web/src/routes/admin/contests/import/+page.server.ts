@@ -1,9 +1,11 @@
 import { db } from '$lib/server/prisma';
-import { Language, SubmissionState } from '@prisma/client';
+import type { Language, SubmissionState } from '@prisma/client';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { genPassword } from '../../teams/util';
 import { createRepos } from '$lib/server/repos';
+import { analyzeSubmissionOutput } from '$lib/outputAnalyzer/outputAnalyzer';
+import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
 
 export const load = (async () => {}) satisfies PageServerLoad;
 
@@ -21,6 +23,7 @@ export type ProblemImportData = {
 	SampleOutput: string;
 	RealInput: string;
 	RealOutput: string;
+	InputSpec?: string;
 };
 
 export type TeamImportData = {
@@ -83,7 +86,7 @@ export const actions = {
 							create: {
 								name: team.TeamName,
 								password: genPassword(),
-								language: inferTeamLanguage(parsedContest, team) ?? Language.Java
+								language: inferTeamLanguage(parsedContest, team) ?? 'Java'
 							}
 						}))
 					},
@@ -92,18 +95,18 @@ export const actions = {
 							where: {
 								friendlyName: problem.ProblemName,
 								pascalName: problem.ShortName,
-								sampleInput: problem.SampleInput,
-								sampleOutput: problem.SampleOutput,
-								realInput: problem.RealInput,
-								realOutput: problem.RealOutput
+								sampleInput: normalizeNewlines(problem.SampleInput),
+								sampleOutput: normalizeNewlines(problem.SampleOutput),
+								realInput: normalizeNewlines(problem.RealInput),
+								realOutput: normalizeNewlines(problem.RealOutput)
 							},
 							create: {
 								friendlyName: problem.ProblemName,
 								pascalName: problem.ShortName,
-								sampleInput: problem.SampleInput,
-								sampleOutput: problem.SampleOutput,
-								realInput: problem.RealInput,
-								realOutput: problem.RealOutput
+								sampleInput: normalizeNewlines(problem.SampleInput),
+								sampleOutput: normalizeNewlines(problem.SampleOutput),
+								realInput: normalizeNewlines(problem.RealInput),
+								realOutput: normalizeNewlines(problem.RealOutput)
 							}
 						}))
 					},
@@ -125,13 +128,58 @@ export const actions = {
 											connect: {
 												name: submission.TeamName
 											}
-										}
+										},
+										sourceFiles: submission.Code
+											? {
+													create: {
+														pathFromProblemRoot: 'importedCode.txt',
+														content: submission.Code
+													}
+												}
+											: {}
 									})
 								)
 							: []
 					}
 				}
 			});
+
+			const contestWithProblems = await db.contest.findUnique({
+				where: { id: contest.id },
+				include: { problems: true }
+			});
+			for (const problem of contestWithProblems?.problems ?? []) {
+				const importedInputSpec = parsedContest.Problems.find(
+					(p) => p.ShortName == problem.pascalName
+				)?.InputSpec;
+				if (importedInputSpec) {
+					await db.problem.update({
+						where: { id: problem.id },
+						data: { inputSpec: importedInputSpec }
+					});
+				}
+			}
+
+			if (includeSubmissions) {
+				const insertedSubmissions = await db.submission.findMany({
+					where: { contestId: contest.id },
+					include: { problem: true }
+				});
+				for (const insertedSubmission of insertedSubmissions) {
+					if (!insertedSubmission.actualOutput) {
+						continue;
+					}
+
+					const testCaseResultString = analyzeSubmissionOutput(
+						insertedSubmission.problem,
+						insertedSubmission.actualOutput
+					).databaseString;
+					await db.submission.update({
+						where: { id: insertedSubmission.id },
+						data: { testCaseResults: testCaseResultString }
+					});
+				}
+			}
 
 			if (createReposAndKeepContestRunning) {
 				const fullContest = await db.contest.findUnique({
@@ -170,11 +218,11 @@ export const actions = {
 function convertSubmissionState(submission: SubmissionImportData): SubmissionState {
 	switch (submission.State) {
 		case 'Correct':
-			return SubmissionState.Correct;
+			return 'Correct';
 		case 'Incorrect':
-			return SubmissionState.Incorrect;
+			return 'Incorrect';
 		default:
-			return SubmissionState.InReview;
+			return 'InReview';
 	}
 }
 
@@ -191,11 +239,11 @@ function inferTeamLanguage(
 
 	switch (submissionWithCode.Language) {
 		case 'Java':
-			return Language.Java;
+			return 'Java';
 		case 'C#':
-			return Language.CSharp;
+			return 'CSharp';
 		case 'C++':
-			return Language.CPP;
+			return 'CPP';
 		default:
 			throw new Error('Unrecognized language: ' + submissionWithCode.Language);
 	}

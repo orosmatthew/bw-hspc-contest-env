@@ -90,13 +90,17 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 	const git: SimpleGit = simpleGit({ baseDir: repoDir });
 	await git.clone(teamRepoUrl, '.');
 	await git.checkout(submissionData.submission.commitHash);
+
 	const problemName = submissionData.submission.problem.pascalName;
+	const studentCodeRootForProblem = join(repoDir, problemName);
+
 	let runResult: RunResult | undefined;
 
 	try {
 		if (submissionData.submission.teamLanguage === 'Java') {
 			const res = await runJava({
 				srcDir: repoDir,
+				studentCodeRootForProblem,
 				mainFile: join(repoDir, problemName, problemName + '.java'),
 				mainClass: problemName,
 				input: submissionData.submission.problem.realInput
@@ -109,6 +113,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		} else if (submissionData.submission.teamLanguage === 'CSharp') {
 			const res = await runCSharp({
 				srcDir: join(repoDir, problemName),
+				studentCodeRootForProblem,
 				input: submissionData.submission.problem.realInput
 			});
 			if (res.success === true) {
@@ -119,6 +124,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		} else if (submissionData.submission.teamLanguage === 'CPP') {
 			const res = await runCpp({
 				srcDir: repoDir,
+				studentCodeRootForProblem,
 				input: submissionData.submission.problem.realInput,
 				cppPlatform: 'GCC',
 				problemName: submissionData.submission.problem.pascalName
@@ -131,7 +137,7 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 		}
 	} catch (error) {
 		runResult = {
-			kind: 'SandboxError',
+			kind: 'RunError',
 			resultKindReason: `An unexpected error occurred: ${EOL} ${error}`
 		};
 	}
@@ -169,7 +175,7 @@ function printRunResult(runResult: RunResult) {
 	console.log(`- RESULT: ${getRunResultDisplayText()}`);
 
 	function getRunResultDisplayText() {
-		if (runResult.kind == 'SandboxError') {
+		if (runResult.kind == 'RunError') {
 			return 'Sandbox error: ' + runResult.resultKindReason;
 		}
 

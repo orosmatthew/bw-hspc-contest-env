@@ -172,9 +172,19 @@ export class BWPanel {
 		this.webviewPostMessage({ msg: 'onRunningOutput', data: '[Compiling...]' });
 
 		let killFunc: (() => void) | undefined;
+
+		const studentCodeRootForProblem = join(
+			repoDir,
+			'BWContest',
+			teamData.contestId.toString(),
+			teamData.teamId.toString(),
+			problem.pascalName
+		);
+
 		if (teamData.language === 'Java') {
 			const res = await runJava({
 				input,
+				studentCodeRootForProblem,
 				mainClass: problem.pascalName,
 				mainFile: join(
 					repoDir,
@@ -213,6 +223,7 @@ export class BWPanel {
 		} else if (teamData.language === 'CSharp') {
 			const res = await runCSharp({
 				input,
+				studentCodeRootForProblem,
 				srcDir: join(
 					repoDir,
 					'BWContest',
@@ -242,6 +253,7 @@ export class BWPanel {
 		} else if (teamData.language === 'CPP') {
 			const res = await runCpp({
 				input,
+				studentCodeRootForProblem,
 				cppPlatform: process.platform === 'win32' ? 'VisualStudio' : 'GCC',
 				problemName: problem.pascalName,
 				srcDir: join(

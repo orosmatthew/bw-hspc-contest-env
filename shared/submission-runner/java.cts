@@ -4,6 +4,7 @@ import * as util from 'util';
 import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.cjs';
 import { timeoutSeconds } from './settings.cjs';
 import kill from 'tree-kill';
+import { getSourceFilesWithText } from './sourceScraper.cjs';
 
 const execPromise = util.promisify(exec);
 
@@ -18,6 +19,8 @@ interface IRunnerParamsJava extends IRunnerParams {
 export const runJava: IRunner<IRunnerParamsJava> = async function (
 	params: IRunnerParamsJava
 ): Promise<IRunnerReturn> {
+	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.java');
+
 	console.log(`- BUILD: ${params.mainFile}`);
 	const compileCommand = `javac -cp ${join(params.srcDir, 'src')} ${params.mainFile} -d ${join(params.srcDir, 'build')}`;
 
@@ -28,7 +31,7 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 		console.log('Build errors: ' + buildErrorText);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText }
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
 		};
 	}
 
@@ -71,14 +74,16 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 							kind: 'Completed',
 							output: outputBuffer,
 							exitCode: child.exitCode!,
-							runtimeMilliseconds
+							runtimeMilliseconds,
+							sourceFiles
 						});
 					} else {
 						console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
 						resolve({
 							kind: 'TimeLimitExceeded',
 							output: outputBuffer,
-							resultKindReason: `Timeout after ${timeoutSeconds} seconds`
+							resultKindReason: `Timeout after ${timeoutSeconds} seconds`,
+							sourceFiles
 						});
 					}
 				});
@@ -108,6 +113,6 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 			}
 		};
 	} catch (error) {
-		return { success: false, runResult: { kind: 'RunError' } };
+		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
 	}
 };

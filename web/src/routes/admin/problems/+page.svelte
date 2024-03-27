@@ -1,7 +1,16 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { Actions, PageData } from './$types';
+	import Modal from '$lib/Modal.svelte';
+	import InputSpecDescription from './InputSpecDescription.svelte';
 
 	export let data: PageData;
+	export let form: Actions;
+
+	let inputSpecModal: Modal;
+
+	$: if (form) {
+		inputSpecModal.hide();
+	}
 </script>
 
 <svelte:head>
@@ -26,6 +35,14 @@
 			<tr>
 				<th>Id</th>
 				<th>Name</th>
+				<th
+					>Input Spec <button
+						class="btn btn-link btn-sm pt-0 pb-0"
+						on:click={() => {
+							inputSpecModal.show();
+						}}><i class="bi bi-info-circle"></i></button
+					></th
+				>
 				<th>Actions</th>
 			</tr>
 		</thead>
@@ -34,7 +51,14 @@
 				<tr>
 					<td>{problem.id}</td>
 					<td>{problem.friendlyName}</td>
-					<td
+					<td>
+						{#if problem.inputSpec != null}
+							{problem.parsedInput.success ? '✅' : '❌'}
+							<span class="inputSpec">{problem.inputSpec}</span>
+						{:else}
+							<span class="inputSpecMissing">none</span>
+						{/if}
+					</td><td
 						><a
 							href={`/admin/problems/${problem.id.toString()}`}
 							class="btn btn-sm btn-outline-secondary">Details</a
@@ -45,3 +69,17 @@
 		</tbody>
 	</table>
 </div>
+
+<Modal title="Input Spec" bind:this={inputSpecModal}>
+	<InputSpecDescription {inputSpecModal} />
+</Modal>
+
+<style>
+	.inputSpec {
+		font-family: monospace;
+	}
+
+	.inputSpecMissing {
+		font-style: italic;
+	}
+</style>

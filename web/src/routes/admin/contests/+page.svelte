@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormAlert from '$lib/FormAlert.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -9,6 +10,8 @@
 </svelte:head>
 
 <h1 style="text-align:center" class="mb-1"><i class="bi bi-flag"></i> Contests</h1>
+
+<FormAlert />
 
 <div class="d-flex flex-row justify-content-end">
 	<a href="/admin/contests/create" class="btn btn-outline-success m-1">Create</a>

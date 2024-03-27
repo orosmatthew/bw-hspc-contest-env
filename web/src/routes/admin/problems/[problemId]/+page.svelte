@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import ConfirmModal from '$lib/ConfirmModal.svelte';
+	import { parseProblemInput } from '$lib/outputAnalyzer/inputAnalyzer';
 	import { stretchTextarea } from '$lib/util';
 	import type { Actions, PageData } from './$types';
 
@@ -26,6 +27,11 @@
 	}
 
 	let confirmModal: ConfirmModal;
+
+	const parsedInput = parseProblemInput(data.problemData);
+	let inputSpecStatus = parsedInput.success
+		? '✅ Input Spec matches Real Input'
+		: `❌ ${parsedInput.errorMessage}`;
 </script>
 
 <svelte:head>
@@ -88,6 +94,18 @@
 					class="form-control"
 				/>
 			</div>
+			<h4 style="text-align:center" class="mt-3">Input Spec (optional)</h4>
+			<div class="col-md-auto">
+				<input
+					value={data.problemData.inputSpec}
+					disabled={!editing}
+					name="inputSpec"
+					class="form-control"
+				/>
+			</div>
+			{#if !editing}
+				<span style="max-width: 400px; display: block; font-style: italic">{inputSpecStatus}</span>
+			{/if}
 		</div>
 	</div>
 	<h4 style="text-align:center" class="mt-5">Sample Data</h4>

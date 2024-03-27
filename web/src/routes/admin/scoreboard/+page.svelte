@@ -82,14 +82,19 @@
 									{#if team.problems.find((p) => {
 										return p.id === problem.id;
 									})?.attempts !== 0}
-										{team.problems.find((p) => {
-											return p.id === problem.id;
-										})?.attempts}
-										{team.problems.find((p) => {
-											return p.id === problem.id;
-										})?.attempts === 1
-											? 'Attempt'
-											: 'Attempts'}<br />{#if team.problems.find((p) => {
+										<a
+											style="text-decoration: initial;"
+											href="/admin/submissions/latest/{data.contest.id}/{team.id}/{problem.id}"
+										>
+											{team.problems.find((p) => {
+												return p.id === problem.id;
+											})?.attempts}
+											{team.problems.find((p) => {
+												return p.id === problem.id;
+											})?.attempts === 1
+												? 'Attempt'
+												: 'Attempts'}</a
+										><br />{#if team.problems.find((p) => {
 											return p.id === problem.id;
 										})?.min}<span style="color:rgb(102,102,102)"
 												>{team.problems

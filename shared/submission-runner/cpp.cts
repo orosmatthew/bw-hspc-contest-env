@@ -6,6 +6,7 @@ import { timeoutSeconds } from './settings.cjs';
 import kill from 'tree-kill';
 import * as os from 'os';
 import * as fs from 'fs-extra';
+import { getSourceFilesWithText } from './sourceScraper.cjs';
 
 const execPromise = util.promisify(exec);
 
@@ -22,6 +23,15 @@ interface IRunnerParamsCpp extends IRunnerParams {
 export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 	params: IRunnerParamsCpp
 ): Promise<IRunnerReturn> {
+	const sourceFiles = await getSourceFilesWithText(
+		params.studentCodeRootForProblem,
+		'.cpp',
+		'.cc',
+		'.c',
+		'.h',
+		'.hpp'
+	);
+
 	const tmpDir = os.tmpdir();
 	const buildDir = join(tmpDir, 'bwcontest-cpp');
 	if (fs.existsSync(buildDir)) {
@@ -39,7 +49,7 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 		console.log('Build errors: ' + buildErrorText);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText }
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
 		};
 	}
 
@@ -51,7 +61,7 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 		console.log('Build errors: ' + buildErrorText);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText }
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
 		};
 	}
 
@@ -99,14 +109,16 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 							kind: 'Completed',
 							output: outputBuffer,
 							exitCode: child.exitCode!,
-							runtimeMilliseconds
+							runtimeMilliseconds,
+							sourceFiles
 						});
 					} else {
 						console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
 						resolve({
 							kind: 'TimeLimitExceeded',
 							output: outputBuffer,
-							resultKindReason: `Timeout after ${timeoutSeconds} seconds`
+							resultKindReason: `Timeout after ${timeoutSeconds} seconds`,
+							sourceFiles
 						});
 					}
 				});
@@ -136,6 +148,6 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 			}
 		};
 	} catch (error) {
-		return { success: false, runResult: { kind: 'RunError' } };
+		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
 	}
 };

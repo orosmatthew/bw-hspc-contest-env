@@ -2,6 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
+	import SubmissionsList from '$lib/SubmissionsList.svelte';
 
 	export let data: PageData;
 
@@ -27,22 +28,37 @@
 	<title>Reviews</title>
 </svelte:head>
 
-<h1 style="text-align:center" class="mb-1"><i class="bi bi-eye"></i> Reviews</h1>
+{#if data.reviewList != null}
+	<div class="mb-3 text-end">
+		{#if updating}
+			<div class="spinner-border spinner-border-sm text-secondary" />
+		{/if}
+		<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
+	</div>
 
-<div class="mb-3 text-end">
-	{#if updating}
-		<div class="spinner-border spinner-border-sm text-secondary" />
-	{/if}
-	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
-</div>
+	<h1 style="text-align:center" class="pb-2">
+		<i class="bi bi-eye"></i> Pending Reviews ({data.reviewList.length})
+	</h1>
 
-<ul class="list-group">
 	{#if data.reviewList.length === 0}
-		<div class="alert alert-success">No Submission to Review!</div>
+		<ul class="list-group">
+			<div class="alert alert-success">No Submission to Review!</div>
+		</ul>
+	{:else}
+		<SubmissionsList submissions={data.reviewList} sortDirection={'oldest first'}></SubmissionsList>
 	{/if}
-	{#each data.reviewList as review}
-		<a href={'/admin/diff/' + review.id.toString()} class="list-group-item list-group-item-action"
-			>{review.createdAt.toLocaleDateString() + ' ' + review.createdAt.toLocaleTimeString()}</a
-		>
-	{/each}
-</ul>
+
+	<h1 style="text-align:center" class="pb-2">
+		<i class="bi bi-eye"></i> Queued Submissions ({data.queueList.length})
+	</h1>
+
+	{#if data.queueList.length === 0}
+		<ul class="list-group">
+			<div class="alert alert-success">No Queued Submissions!</div>
+		</ul>
+	{:else}
+		<SubmissionsList submissions={data.queueList} sortDirection={'oldest first'}></SubmissionsList>
+	{/if}
+{:else}
+	<h2 class="text-center">Select Contest</h2>
+{/if}

@@ -44,6 +44,9 @@ model Submission {
   stateReason        SubmissionStateReason?
   stateReasonDetails String?
   actualOutput       String?
+  testCaseResults    String?
+  exitCode           Int?
+  runtimeMilliseconds Int?
   commitHash         String
   diff               String?
   message            String?
@@ -53,6 +56,15 @@ model Submission {
   problemId          Int
   contestId          Int
   contest            Contest                @relation(fields: [contestId], references: [id])
+  sourceFiles        SubmissionSourceFile[] @relation()
+}
+
+model SubmissionSourceFile {
+  id                    Int           @id @default(autoincrement())
+  submissionId          Int
+  submission            Submission    @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  pathFromProblemRoot   String
+  content               String
 }
 
 model Problem {
@@ -63,6 +75,7 @@ model Problem {
   sampleOutput String
   realInput    String
   realOutput   String
+  inputSpec    String?
   submissions  Submission[]
   contests     Contest[]    @relation("ProblemContestRelation")
 }
