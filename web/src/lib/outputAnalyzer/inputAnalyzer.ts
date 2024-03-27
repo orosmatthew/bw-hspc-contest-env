@@ -30,6 +30,7 @@ export function parseProblemInputFromText(
 	let lineIndex = 1;
 
 	try {
+		let iterations = 0;
 		while (lineIndex < inputLines.length) {
 			result.push(lineIndex);
 
@@ -43,12 +44,17 @@ export function parseProblemInputFromText(
 					lineIndex += 1 + linesToConsume;
 				}
 			}
+
+			iterations++;
+			if (iterations > inputLines.length * 5) {
+				throw Error(`Infinite loop detected. Input has ${inputLines.length} lines, gave up after ${iterations} iterations.`);
+			}
 		}
 	} catch (error) {
 		return {
 			success: false,
 			caseStartIndexes: result,
-			errorMessage: 'Error thrown while parsing:' + (error?.toString() ?? '')
+			errorMessage: 'Error thrown while parsing. ' + (error?.toString() ?? '')
 		};
 	}
 
