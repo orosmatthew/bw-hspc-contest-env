@@ -14,7 +14,7 @@
 			updating = true;
 			await invalidateAll();
 			updating = false;
-		}, 3000);
+		}, 10000);
 	});
 
 	onDestroy(() => {
