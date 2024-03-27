@@ -47,7 +47,9 @@ export function parseProblemInputFromText(
 
 			iterations++;
 			if (iterations > inputLines.length * 5) {
-				throw Error(`Infinite loop detected. Input has ${inputLines.length} lines, gave up after ${iterations} iterations.`);
+				throw Error(
+					`Infinite loop detected. Input has ${inputLines.length} lines, gave up after ${iterations} iterations.`
+				);
 			}
 		}
 	} catch (error) {
