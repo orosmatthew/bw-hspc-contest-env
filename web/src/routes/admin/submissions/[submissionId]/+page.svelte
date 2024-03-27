@@ -111,7 +111,11 @@
 					};
 				}}
 			>
-				<button type="submit" class="btn btn-warning m-1">Rerun Submission</button>
+				<button
+					type="submit"
+					class="btn btn-warning m-1"
+					disabled={data.submission.commitHash.trim().length == 0}>Rerun Submission</button
+				>
 			</form>
 			<form
 				method="POST"
