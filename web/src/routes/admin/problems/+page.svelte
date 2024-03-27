@@ -1,15 +1,11 @@
 <script lang="ts">
 	import type { Actions, PageData } from './$types';
-	import { onMount } from 'svelte';
-	import { beforeNavigate } from '$app/navigation';
 	import Modal from '$lib/Modal.svelte';
-	import { enhance } from '$app/forms';
 	import InputSpecDescription from './InputSpecDescription.svelte';
 
 	export let data: PageData;
 	export let form: Actions;
 
-	let modalElement: HTMLDivElement;
 	let inputSpecModal: Modal;
 
 	$: if (form) {
