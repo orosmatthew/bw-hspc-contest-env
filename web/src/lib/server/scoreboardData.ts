@@ -10,8 +10,10 @@ type ScoreboardContestDataType = {
 		friendlyName: string;
 	}[];
 	teams: {
+		id: number;
 		name: string;
 		submissions: {
+			id: number;
 			contestId: number;
 			createdAt: Date;
 			state: SubmissionState;
