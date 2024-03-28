@@ -5,6 +5,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			theme: 'light' | 'dark';
+			selectedContest: number | null;
 		}
 		// interface PageData {}
 		// interface Platform {}

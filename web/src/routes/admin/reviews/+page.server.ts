@@ -1,10 +1,8 @@
 import { db } from '$lib/server/prisma';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ cookies }) => {
-	const selectedContestIdStr = cookies.get('selectedContest');
-	const selectedContestId =
-		selectedContestIdStr === undefined ? null : parseInt(selectedContestIdStr);
+export const load = (async ({ locals }) => {
+	const selectedContestId = locals.selectedContest;
 
 	if (selectedContestId == null) {
 		return {

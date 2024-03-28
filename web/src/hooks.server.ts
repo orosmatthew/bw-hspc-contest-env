@@ -2,6 +2,7 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { PrismaClient } from '@prisma/client';
 import { startGitServer } from '$lib/server/gitserver';
 import { hashPassword, isSessionValid, logout } from '$lib/server/auth';
+import { db } from '$lib/server/prisma';
 
 async function createDefaultAccount(db: PrismaClient) {
 	const count = await db.user.count();
@@ -48,7 +49,33 @@ export const handle = (async ({ event, resolve }) => {
 		}
 		const contestParam = event.url.searchParams.get('c');
 		if (contestParam !== null) {
-			event.cookies.set('selectedContest', contestParam, { path: '/admin' });
+			const selectedContest = parseInt(contestParam);
+			if (isNaN(selectedContest)) {
+				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
+				event.locals.selectedContest = null;
+			} else {
+				const contest = await db.contest.findUnique({ where: { id: selectedContest } });
+				if (contest !== null) {
+					event.cookies.set('selectedContest', contestParam, { path: '/admin', secure: false });
+					event.locals.selectedContest = selectedContest;
+				} else {
+					event.cookies.delete('selectedContest', { path: '/admin', secure: false });
+					event.locals.selectedContest = null;
+				}
+			}
+		} else if (event.cookies.get('selectedContest') !== undefined) {
+			const selectedContest = parseInt(event.cookies.get('selectedContest')!);
+			if (isNaN(selectedContest)) {
+				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
+				event.locals.selectedContest = null;
+			}
+			const contest = await db.contest.findUnique({ where: { id: selectedContest } });
+			if (contest !== null) {
+				event.locals.selectedContest = selectedContest;
+			} else {
+				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
+				event.locals.selectedContest = null;
+			}
 		}
 	}
 	const res = await resolve(event, {

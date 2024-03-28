@@ -24,8 +24,15 @@
 	});
 
 	beforeNavigate(({ to }) => {
-		if ($selectedContest !== null && to !== null && to.url.pathname.startsWith('/admin')) {
+		if (
+			$selectedContest !== null &&
+			to !== null &&
+			to.url.pathname.startsWith('/admin') &&
+			!isNaN($selectedContest)
+		) {
 			to.url.searchParams.set('c', $selectedContest.toString());
+		} else {
+			$selectedContest = null;
 		}
 	});
 
