@@ -90,32 +90,34 @@
 		let judgeLinesPrinted = 0;
 		let teamLinesPrinted = 0;
 
-		for (let caseIndex = 0; caseIndex < analyzedOutput.testCaseResults.length; caseIndex++) {
-			const judgeCaseLines = analyzedOutput.testCaseResults[caseIndex].judgeOutput;
-			const teamCaseLines = analyzedOutput.testCaseResults[caseIndex].teamOutput ?? [];
+		if (analyzedOutput !== null) {
+			for (let caseIndex = 0; caseIndex < analyzedOutput.testCaseResults.length; caseIndex++) {
+				const judgeCaseLines = analyzedOutput.testCaseResults[caseIndex].judgeOutput;
+				const teamCaseLines = analyzedOutput.testCaseResults[caseIndex].teamOutput ?? [];
 
-			localDiff += `@@ -${judgeLinesPrinted + 1} +${teamLinesPrinted + 1} @@ Case ${caseIndex + 1}\n`;
-			judgeLinesPrinted += judgeCaseLines.length;
-			teamLinesPrinted += teamCaseLines?.length ?? 0;
+				localDiff += `@@ -${judgeLinesPrinted + 1} +${teamLinesPrinted + 1} @@ Case ${caseIndex + 1}\n`;
+				judgeLinesPrinted += judgeCaseLines.length;
+				teamLinesPrinted += teamCaseLines?.length ?? 0;
 
-			for (
-				let caseLineIndex = 0;
-				caseLineIndex < Math.max(judgeCaseLines.length, teamCaseLines.length);
-				caseLineIndex++
-			) {
-				if (caseLineIndex < judgeCaseLines.length && caseLineIndex < teamCaseLines.length) {
-					if (judgeCaseLines[caseLineIndex] == teamCaseLines[caseLineIndex]) {
-						localDiff += ` ${judgeCaseLines[caseLineIndex]}\n`;
-						continue;
+				for (
+					let caseLineIndex = 0;
+					caseLineIndex < Math.max(judgeCaseLines.length, teamCaseLines.length);
+					caseLineIndex++
+				) {
+					if (caseLineIndex < judgeCaseLines.length && caseLineIndex < teamCaseLines.length) {
+						if (judgeCaseLines[caseLineIndex] == teamCaseLines[caseLineIndex]) {
+							localDiff += ` ${judgeCaseLines[caseLineIndex]}\n`;
+							continue;
+						}
 					}
-				}
 
-				if (caseLineIndex < judgeCaseLines.length) {
-					localDiff += `-${judgeCaseLines[caseLineIndex]}\n`;
-				}
+					if (caseLineIndex < judgeCaseLines.length) {
+						localDiff += `-${judgeCaseLines[caseLineIndex]}\n`;
+					}
 
-				if (caseLineIndex < teamCaseLines.length) {
-					localDiff += `+${teamCaseLines[caseLineIndex]}\n`;
+					if (caseLineIndex < teamCaseLines.length) {
+						localDiff += `+${teamCaseLines[caseLineIndex]}\n`;
+					}
 				}
 			}
 		}

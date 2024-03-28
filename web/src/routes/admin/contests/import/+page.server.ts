@@ -170,10 +170,9 @@ export const actions = {
 						continue;
 					}
 
-					const testCaseResultString = analyzeSubmissionOutput(
-						insertedSubmission.problem,
-						insertedSubmission.actualOutput
-					).databaseString;
+					const testCaseResultString =
+						analyzeSubmissionOutput(insertedSubmission.problem, insertedSubmission.actualOutput)
+							?.databaseString ?? 'Unknown';
 					await db.submission.update({
 						where: { id: insertedSubmission.id },
 						data: { testCaseResults: testCaseResultString }

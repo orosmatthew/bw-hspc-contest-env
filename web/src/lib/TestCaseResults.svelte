@@ -44,8 +44,9 @@
 			previousSubmission?.actualOutput != null
 				? {
 						condensed,
-						testCases: analyzeSubmissionOutput(problem, previousSubmission.actualOutput)
-							.testCaseResults
+						testCases:
+							analyzeSubmissionOutput(problem, previousSubmission.actualOutput)?.testCaseResults ??
+							[]
 					}
 				: null;
 
@@ -53,7 +54,8 @@
 			submission.actualOutput != null
 				? {
 						condensed,
-						testCases: analyzeSubmissionOutput(problem, submission.actualOutput).testCaseResults
+						testCases:
+							analyzeSubmissionOutput(problem, submission.actualOutput)?.testCaseResults ?? []
 					}
 				: null;
 	}

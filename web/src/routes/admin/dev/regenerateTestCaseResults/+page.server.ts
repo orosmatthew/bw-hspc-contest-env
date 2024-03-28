@@ -96,10 +96,10 @@ async function regenerateTestCaseResultsForSubmissions(
 
 		const analyzedOutput = analyzeSubmissionOutput(submission.problem, submission.actualOutput);
 
-		log(`  Resulting DB String: ${analyzedOutput.databaseString}`);
+		log(`  Resulting DB String: ${analyzedOutput?.databaseString ?? 'Unknown'}`);
 
 		const testCasesExpected = numInputCasesFromHeader(submission.problem.realInput);
-		const testCasesReported = analyzedOutput.testCaseResults.length;
+		const testCasesReported = analyzedOutput?.testCaseResults.length ?? 'Unknown';
 
 		log(`  Test Cases Expected: ${testCasesExpected}`);
 		log(`  Test Cases Included: ${testCasesReported}`);
@@ -110,7 +110,7 @@ async function regenerateTestCaseResultsForSubmissions(
 
 		await db.submission.update({
 			where: { id: submission.id },
-			data: { testCaseResults: analyzedOutput.databaseString }
+			data: { testCaseResults: analyzedOutput?.databaseString ?? 'Unknown' }
 		});
 	}
 }

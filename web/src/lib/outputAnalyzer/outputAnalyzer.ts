@@ -36,7 +36,10 @@ const compactCharToCaseResult = new Map<string, CaseResult>(
 	[...caseResultToCompactChar.entries()].map(([caseResult, char]) => [char, caseResult])
 );
 
-export function analyzeSubmissionOutput(problem: Problem, teamOutput: string): AnalyzedOutput {
+export function analyzeSubmissionOutput(
+	problem: Problem,
+	teamOutput: string
+): AnalyzedOutput | null {
 	const sampleCaseCount = numInputCases(problem.sampleInput);
 	const totalCaseCount = numInputCases(problem.realInput);
 
@@ -52,7 +55,10 @@ export function analyzeSubmissionOutput(problem: Problem, teamOutput: string): A
 		const caseNum = i + 1;
 		const isSampleData = caseNum <= sampleCaseCount;
 
-		const judgeCaseOutputLines = judgeCaseOutputs[i]!.lines;
+		const judgeCaseOutputLines = judgeCaseOutputs[i]?.lines;
+		if (judgeCaseOutputLines === undefined) {
+			return null;
+		}
 		const teamCaseOutputLines = teamCaseOutputs[i]?.lines ?? null;
 
 		const caseCompareResult =

@@ -90,7 +90,7 @@ export const POST = (async ({ request }) => {
 
 	const testCaseResults =
 		teamOutput != null
-			? analyzeSubmissionOutput(submission.problem, teamOutput).databaseString
+			? analyzeSubmissionOutput(submission.problem, teamOutput)?.databaseString ?? 'Unknown'
 			: null;
 
 	console.log(`Sandbox got response, kind is ${data.data.result.kind}`);
