@@ -159,7 +159,8 @@
 		<tbody>
 			{#each data.submissionHistory as submission, i}
 				<tr
-					on:click={() => goto(`/admin/submissions/${submission.id.toString()}`)}
+					on:click={() =>
+						goto(`/admin/submissions/${submission.id.toString()}`, { noScroll: true })}
 					class="{submission.id == data.id
 						? 'specifiedSubmission'
 						: 'otherSubmission'} {submission.state === 'InReview' ? 'inReview' : ''}"

@@ -23,14 +23,14 @@
 			case 'Correct':
 				return 'correct';
 			case 'FormattingIssue':
-				return 'formatError';
+				return 'format-error';
 			case 'LabellingIssue':
-				return 'labelError';
+				return 'label-error';
 			case 'Exception':
 			case 'RunnerFailure':
 				return 'crash';
 			case 'NoOutput':
-				return 'noOutput';
+				return 'no-output';
 			case 'Incorrect':
 				return 'incorrect';
 		}
@@ -67,80 +67,81 @@
 
 {#if !inputCases.success}
 	<div class="mb-2">
-		<span style="font-weight: bold">Failed to parse problem input: </span><span
-			>{inputCases.errorMessage}</span
-		>
+		<b>Failed to parse problem input: </b><span>{inputCases.errorMessage}</span>
 	</div>
 {/if}
 
-<table class="outputdiff" data-bs-theme={$theme}>
-	<thead>
-		<tr>
-			<td colspan="2">
-				<b>{numCases} Test Cases</b>
-			</td>
-			<td class="sectionStart" colspan="2">
-				<b>Team</b>
-			</td>
-			<td class="sectionStart">
-				<b>Judge</b>
-			</td>
-		</tr>
-		<tr>
-			<td class="caseNumColumn">
-				<b>Case #</b>
-			</td>
-			<td>
-				<b>Data</b>
-			</td>
-			<td class="sectionStart">
-				<b>Judgment</b>
-			</td>
-			<td>
-				<b>Output</b>
-			</td>
-			<td class="sectionStart">
-				<b>Output</b>
-			</td>
-		</tr>
-	</thead>
-	<tbody>
-		{#if analysisResults}
-			{#each analysisResults.testCaseResults as testCaseResult, i}
-				<tr>
-					<td class="caseNumColumn caseLabelCell {i < numSampleCases ? 'sample' : ''}">
-						{#if i < numSampleCases}
-							<span>(</span> <span class="inputCaseNumberLabel">#{testCaseResult.caseNum}</span>
-							<span>)</span>
-						{:else}
-							<span class="inputCaseNumberLabel">#{testCaseResult.caseNum}</span>
-						{/if}
-					</td>
-					<td class="inputTextCell">
-						{#if inputCases.success}
-							<pre>{inputLinesForCaseIndex(i).join('\n')}</pre>
-						{/if}
-					</td>
-					<td
-						class="outputTextCell sectionStart judgment {caseResultToClassName(
-							testCaseResult.result
-						)}">{caseResultToDisplayText(testCaseResult.result)}</td
-					>
-					<td class="outputTextCell {caseResultToClassName(testCaseResult.result)}">
-						{#if testCaseResult.teamOutput}
-							<pre class="outputstatus">{testCaseResult.teamOutput.join('\n')}</pre>
-						{/if}
-					</td>
-					<td class="outputTextCell sectionStart judgeOutput">
-						<pre class="outputstatus">{testCaseResult.judgeOutput.join('\n')}</pre>
-					</td>
-				</tr>
-			{/each}
-		{/if}
-	</tbody>
-</table>
+<div class="pt-2 table-resonsive table-bordered">
+	<table class="table table-hover" data-bs-theme={$theme}>
+		<thead>
+			<tr>
+				<td class="text-center" colspan="2">
+					<b>{numCases} Test Cases</b>
+				</td>
+				<td class="text-center" colspan="2">
+					<b>Team</b>
+				</td>
+				<td class="text-center">
+					<b>Judge</b>
+				</td>
+			</tr>
+			<tr>
+				<td class="text-center">
+					<b>Case #</b>
+				</td>
+				<td class="text-center">
+					<b>Data</b>
+				</td>
+				<td class="text-center">
+					<b>Judgment</b>
+				</td>
+				<td class="text-center">
+					<b>Output</b>
+				</td>
+				<td class="text-center">
+					<b>Output</b>
+				</td>
+			</tr>
+		</thead>
+		<tbody>
+			{#if analysisResults}
+				{#each analysisResults.testCaseResults as testCaseResult, i}
+					<tr>
+						<td class="text-secondary text-center">
+							{#if i < numSampleCases}
+								<span>sample</span><br /><i>#{testCaseResult.caseNum}</i>
+							{:else}
+								<i>#{testCaseResult.caseNum}</i>
+							{/if}
+						</td>
+						<td style="max-width:300px">
+							<b class="font-monospace">
+								{#if inputCases.success}
+									<pre>{inputLinesForCaseIndex(i).join('\n')}</pre>
+								{/if}
+							</b>
+						</td>
+						<td
+							style="max-width:300px"
+							class="judgment {caseResultToClassName(testCaseResult.result)}"
+							>{caseResultToDisplayText(testCaseResult.result)}</td
+						>
+						<td style="max-width:300px" class={caseResultToClassName(testCaseResult.result)}>
+							{#if testCaseResult.teamOutput}
+								<pre class="outputstatus">{testCaseResult.teamOutput.join('\n')}</pre>
+							{/if}
+						</td>
+						<td style="max-width:300px" class="judge-output">
+							<pre class="outputstatus">{testCaseResult.judgeOutput.join('\n')}</pre>
+						</td>
+					</tr>
+				{/each}
+			{/if}
+		</tbody>
+	</table>
+</div>
 
-<style>
+<style lang="scss">
 	:root {
 		--correct: #eeffee;
 		--correct-judgment: #abffab;
@@ -148,15 +149,14 @@
 		--incorrect-judgment: #ffabab;
 		--crash: #ffb1b1;
 		--crash-judgment: #ff6464;
-		--noOutput: #fffbef;
-		--noOutput-judgment: #ffdfa5;
+		--no-output: #fffbef;
+		--no-output-judgment: #ffdfa5;
 		--formatting: #ffffed;
 		--formatting-judgment: #fbff47;
 		--labelling: #ffecad;
 		--labelling-judgment: #ffdd24;
 
 		--judge-background: #e3e3e3;
-		--inputCaseNum-color: #888888;
 	}
 
 	[data-bs-theme='dark'] {
@@ -166,146 +166,64 @@
 		--incorrect-judgment: #810000;
 		--crash: #00007a;
 		--crash-judgment: #0000b1;
-		--noOutput: #241700;
-		--noOutput-judgment: #4c3100;
+		--no-output: #241700;
+		--no-output-judgment: #4c3100;
 		--formatting: #535b00;
 		--formatting-judgment: #6d7100;
 		--labelling: #473c00;
 		--labelling-judgment: #716000;
 
 		--judge-background: #4e4e4e;
-		--inputCaseNum-color: #acacac;
 	}
 
-	table.outputdiff {
-		border: 2px solid;
-	}
+	td {
+		&.correct {
+			background: var(--correct);
 
-	table thead {
-		border-bottom: 2px solid;
-	}
+			&.judgment {
+				background: var(--correct-judgment);
+			}
+		}
 
-	table td {
-		padding-left: 20px;
-		padding-right: 20px;
-		border-left: 1px solid;
-		border-right: 1px solid;
-	}
+		&.incorrect {
+			background: var(--incorrect);
 
-	table thead td {
-		border-bottom: 1px solid;
-		padding-top: 3px;
-		padding-bottom: 4px;
-		text-align: center;
-	}
+			&.judgment {
+				background: var(--incorrect-judgment);
+			}
+		}
 
-	table tbody td {
-		border-bottom: 1px solid #888888;
-	}
+		&.format-error {
+			background: var(--formatting);
 
-	table td:first-child {
-		border-left: none;
-	}
+			&.judgment {
+				background: var(--formatting-judgment);
+			}
+		}
 
-	table td.sectionStart {
-		border-left: 5px double;
-	}
+		&.label-error {
+			background: var(--labelling);
 
-	table td:last-child {
-		border-right: none;
-	}
+			&.judgment {
+				background: var(--labelling-judgment);
+			}
+		}
 
-	td.caseLabelCell {
-		width: 100px;
-		vertical-align: top;
-		text-align: center;
-		color: var(--inputCaseNum-color);
-	}
+		&.crash {
+			background: var(--crash);
 
-	td.caseLabelCell.sample {
-		color: var(--inputCaseNum-color);
-	}
+			&.judgment {
+				background: var(--crash-judgment);
+				font-weight: bold;
+			}
+		}
 
-	.inputCaseNumberLabel {
-		font-style: italic;
-	}
+		&.no-output.judgment {
+			background: var(--no-output-judgment);
+		}
 
-	td.inputTextCell {
-		vertical-align: top;
-		max-width: 400px;
-		overflow-x: auto;
-		font-weight: bold;
-	}
-
-	td.outputTextCell {
-		vertical-align: top;
-		max-width: 700px;
-		overflow-x: auto;
-	}
-
-	.caseNumColumn {
-		padding-left: 6px;
-		padding-right: 6px;
-	}
-
-	pre {
-		display: inline-block;
-		margin-top: 3px;
-		margin-bottom: -3px;
-	}
-
-	td.correct {
-		background: var(--correct);
-	}
-
-	td.correct.judgment {
-		background: var(--correct-judgment);
-	}
-
-	td.incorrect {
-		background: var(--incorrect);
-	}
-
-	td.incorrect.judgment {
-		background: var(--incorrect-judgment);
-	}
-
-	td.formatError {
-		background: var(--formatting);
-	}
-
-	td.formatError.judgment {
-		background: var(--formatting-judgment);
-	}
-
-	td.labelError {
-		background: var(--labelling);
-	}
-
-	td.labelError.judgment {
-		background: var(--labelling-judgment);
-	}
-
-	td.crash {
-		background: var(--crash);
-	}
-
-	td.crash.judgment {
-		background: var(--crash-judgment);
-		font-weight: bold;
-	}
-
-	td.noOutput {
-		background: var(--noOutput);
-		font-style: italic;
-		font-size: small;
-	}
-
-	td.noOutput.judgment {
-		background: var(--noOutput-judgment);
-	}
-
-	td.judgeOutput {
-		background: var(--judge-background);
+		&.judge-output {
+			background: var(--judge-background);
+		}
 	}
 </style>

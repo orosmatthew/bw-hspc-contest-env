@@ -27,3 +27,10 @@
 <body class="container">
 	<slot />
 </body>
+
+<style>
+	@font-face {
+		font-family: JetbrainsMono;
+		src: url('/JetBrainsMono-Regular.woff2');
+	}
+</style>
