@@ -63,7 +63,7 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 								.filter((submission) => {
 									return submission.contestId === contest.id && submission.state === 'Correct';
 								})
-								.toSorted((a, b) => b.contestId.valueOf() - a.createdAt.valueOf());
+								.toSorted((a, b) => a.contestId.valueOf() - b.createdAt.valueOf());
 							const penaltyTime =
 								team.submissions.filter((submission) => {
 									return (
@@ -90,7 +90,7 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 								id: problem.id,
 								attempts: team.submissions.filter((submission) => {
 									const correct = team.submissions
-										.toSorted((a, b) => b.contestId.valueOf() - a.createdAt.valueOf())
+										.toSorted((a, b) => a.contestId.valueOf() - b.createdAt.valueOf())
 										.find((s) => {
 											s.contestId === contest.id &&
 												s.problemId === problem.id &&
@@ -133,7 +133,7 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 									: null,
 								min: (() => {
 									const correctSubmission = team.submissions
-										.toSorted((a, b) => b.contestId.valueOf() - a.createdAt.valueOf())
+										.toSorted((a, b) => a.contestId.valueOf() - b.createdAt.valueOf())
 										.find((submission) => {
 											return (
 												submission.contestId === contest.id &&
