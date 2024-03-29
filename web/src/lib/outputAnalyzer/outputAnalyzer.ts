@@ -1,11 +1,11 @@
 import type { Problem } from '@prisma/client';
 import { newline, trimmedNonemptyLines } from './analyzerUtils';
-import {
+import type {
 	CaseResult,
-	type AnalyzedOutput,
-	type TestCaseResult,
-	type TestCaseResultPreview,
-	type AnalyzedOutputPreview
+	AnalyzedOutput,
+	TestCaseResult,
+	TestCaseResultPreview,
+	AnalyzedOutputPreview
 } from './analyzerTypes';
 import { caseLabelRegex, splitJudgeOutput, splitTeamOutput } from './outputSplitter';
 import { numInputCases } from './inputAnalyzer';
@@ -23,13 +23,13 @@ import { numInputCases } from './inputAnalyzer';
 //       the case was in the sample input (capitalization)
 
 const caseResultToCompactChar = new Map<CaseResult, string>([
-	[CaseResult.Correct, 'C'],
-	[CaseResult.FormattingIssue, 'F'],
-	[CaseResult.LabellingIssue, 'L'],
-	[CaseResult.Incorrect, 'I'],
-	[CaseResult.NoOutput, 'N'],
-	[CaseResult.Exception, 'E'],
-	[CaseResult.RunnerFailure, 'X']
+	['Correct', 'C'],
+	['FormattingIssue', 'F'],
+	['LabellingIssue', 'L'],
+	['Incorrect', 'I'],
+	['NoOutput', 'N'],
+	['Exception', 'E'],
+	['RunnerFailure', 'X']
 ]);
 
 const compactCharToCaseResult = new Map<string, CaseResult>(
@@ -106,7 +106,7 @@ function compareSingleCaseOutput(
 	teamCaseOutputLines: string[] | null
 ): CaseResult {
 	if (teamCaseOutputLines == null) {
-		return CaseResult.NoOutput;
+		return 'NoOutput';
 	}
 
 	if (judgeCaseOutputLines.length == teamCaseOutputLines.length) {
@@ -119,7 +119,7 @@ function compareSingleCaseOutput(
 		}
 
 		if (allMatch) {
-			return CaseResult.Correct;
+			return 'Correct';
 		}
 	}
 
@@ -131,7 +131,7 @@ function compareSingleCaseOutput(
 		.replace(/\s+/g, ' ');
 
 	if (judgeOutputAsSingleLineWithNormalizedSpace == teamOutputAsSingleLineWithNormalizedSpace) {
-		return CaseResult.FormattingIssue;
+		return 'FormattingIssue';
 	}
 
 	const reassembledJudgeOutput = judgeCaseOutputLines.join(newline);
@@ -153,7 +153,7 @@ function compareSingleCaseOutput(
 			reassembledJudgeOutputWithoutExactCaseLabel.trim() ==
 			reassembledTeamOutputWithoutExactCaseLabel.trim()
 		) {
-			return CaseResult.FormattingIssue;
+			return 'FormattingIssue';
 		}
 	}
 
@@ -168,13 +168,13 @@ function compareSingleCaseOutput(
 		.trim();
 
 	if (reassembledJudgeOutputWithoutLabel == reassembledTeamOutputWithoutLabel) {
-		return CaseResult.LabellingIssue;
+		return 'LabellingIssue';
 	}
 
-	return CaseResult.Incorrect;
+	return 'Incorrect';
 }
 
-export function autojudgeResponse(
+export function autoJudgeResponse(
 	judgeOutput: string,
 	teamOutput: string
 ): 'Correct' | 'NeedsReview' {

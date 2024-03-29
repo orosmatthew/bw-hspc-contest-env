@@ -3,7 +3,7 @@ import { error, json } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
 import * as Diff from 'diff';
-import { analyzeSubmissionOutput, autojudgeResponse } from '$lib/outputAnalyzer/outputAnalyzer';
+import { analyzeSubmissionOutput, autoJudgeResponse } from '$lib/outputAnalyzer/outputAnalyzer';
 import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
 
 export const GET = (async ({ request }) => {
@@ -96,7 +96,7 @@ export const POST = (async ({ request }) => {
 	console.log(`Sandbox got response, kind is ${data.data.result.kind}`);
 	switch (data.data.result.kind) {
 		case 'Completed':
-			if (autojudgeResponse(submission.problem.realOutput, teamOutput!) == 'Correct') {
+			if (autoJudgeResponse(submission.problem.realOutput, teamOutput!) == 'Correct') {
 				await db.submission.update({
 					where: { id: data.data.submissionId },
 					data: {

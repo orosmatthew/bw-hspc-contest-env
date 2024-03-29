@@ -19,12 +19,11 @@ export type TestCaseResult = TestCaseResultPreview & {
 	teamOutput: string[] | null;
 };
 
-export enum CaseResult {
-	Correct,
-	FormattingIssue,
-	LabellingIssue,
-	Incorrect,
-	Exception,
-	NoOutput,
-	RunnerFailure
-}
+export type CaseResult =
+	| 'Correct'
+	| 'FormattingIssue'
+	| 'LabellingIssue'
+	| 'Incorrect'
+	| 'Exception'
+	| 'NoOutput'
+	| 'RunnerFailure';

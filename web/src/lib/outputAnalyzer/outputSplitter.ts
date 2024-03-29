@@ -1,10 +1,10 @@
-import { CaseResult } from './analyzerTypes';
+import type { CaseResult } from './analyzerTypes';
 
 export const caseLabelRegex = /^case\s*[\d]*\s*:?\s*/i;
 
 const errorIndicators: { text: string; forcedResult: CaseResult }[] = [
-	{ text: 'Error: Invalid or corrupt jarfile', forcedResult: CaseResult.RunnerFailure },
-	{ text: 'Exception in thread', forcedResult: CaseResult.Exception }
+	{ text: 'Error: Invalid or corrupt jarfile', forcedResult: 'RunnerFailure' },
+	{ text: 'Exception in thread', forcedResult: 'Exception' }
 ];
 
 export function splitJudgeOutput(

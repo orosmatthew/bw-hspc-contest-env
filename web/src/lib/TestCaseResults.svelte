@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { Problem, Submission } from '@prisma/client';
-	import {
+	import type {
 		CaseResult,
-		type TestCaseResult,
-		type TestCaseResultPreview
+		TestCaseResult,
+		TestCaseResultPreview
 	} from './outputAnalyzer/analyzerTypes';
 	import { theme } from '../routes/stores';
 	import { analyzeSubmissionOutput, rehydrateOutputPreview } from './outputAnalyzer/outputAnalyzer';
@@ -62,25 +62,25 @@
 
 	function resultKindClassName(caseResult: CaseResult): string {
 		switch (caseResult) {
-			case CaseResult.Correct:
+			case 'Correct':
 				return 'correct';
-			case CaseResult.NoOutput:
-				return 'nooutput';
-			case CaseResult.Exception:
+			case 'NoOutput':
+				return 'no-output';
+			case 'Exception':
 				return 'exception';
-			case CaseResult.RunnerFailure:
-				return 'buildfailure';
-			case CaseResult.Incorrect:
+			case 'RunnerFailure':
+				return 'build-failure';
+			case 'Incorrect':
 				return 'incorrect';
-			case CaseResult.FormattingIssue:
-				return 'formattingIssue';
-			case CaseResult.LabellingIssue:
-				return 'labellingIssue';
+			case 'FormattingIssue':
+				return 'formatting-issue';
+			case 'LabellingIssue':
+				return 'labelling-issue';
 		}
 	}
 </script>
 
-<table class="resultstable" data-bs-theme={$theme}>
+<table class="result-stable" data-bs-theme={$theme}>
 	<tbody>
 		{#if currentSubmitResults}
 			{@const numCases = currentSubmitResults.testCases.length}
@@ -99,15 +99,15 @@
 						{@const currentCaseIndex = rowNum * cellsPerRow + colNum}
 						{@const currentCaseResult = currentSubmitResults.testCases[currentCaseIndex]}
 						<td
-							class="testcaseresult {resultKindClassName(currentCaseResult.result)}
-							{currentCaseResult.isSampleData ? 'sampleinput' : ''}"
+							class="test-case-result {resultKindClassName(currentCaseResult.result)}
+							{currentCaseResult.isSampleData ? 'sample-input' : ''}"
 						>
 							<div
-								class="testcaseresult {resultKindClassName(currentCaseResult.result)}
-							{currentCaseResult.isSampleData ? 'sampleinput' : ''}
+								class="test-case-result {resultKindClassName(currentCaseResult.result)}
+							{currentCaseResult.isSampleData ? 'sample-input' : ''}
 							{previousSubmitResults &&
 								previousSubmitResults.testCases[currentCaseIndex].result != currentCaseResult.result
-									? 'changedFromPreviousSubmit'
+									? 'changed-from-previous-submit'
 									: ''}"
 							>
 								<span class="textcaseresultsymbol"></span>
@@ -123,61 +123,61 @@
 <style>
 	:root {
 		--correct-color: #9eff8e;
-		--formattingIssue-color: #e1ed26;
-		--labellingIssue-color: #ffdd24;
+		--formatting-issue-color: #e1ed26;
+		--labelling-issue-color: #ffdd24;
 		--incorrect-color: #f4bcbc;
-		--noOutput-color: #cacaca;
+		--no-output-color: #cacaca;
 
-		--testcase-border-color: #555555;
-		--testcase-border-color-hover: #000000;
+		--test-case-border-color: #555555;
+		--test-case-border-color-hover: #000000;
 		--changed-border-color: #6e6ecf;
 	}
 
 	[data-bs-theme='dark'] {
 		--correct-color: #2c951b;
-		--formattingIssue-color: #c8d500;
-		--labellingIssue-color: #d5a800;
+		--formatting-issue-color: #c8d500;
+		--labelling-issue-color: #d5a800;
 		--incorrect-color: #be0000;
-		--noOutput-color: #424242;
+		--no-output-color: #424242;
 
-		--testcase-border-color: #e0e0e0;
-		--testcase-border-color-hover: #ffffff;
+		--test-case-border-color: #e0e0e0;
+		--test-case-border-color-hover: #ffffff;
 		--changed-border-color: #ecffd2;
 	}
 
-	table.resultstable {
+	table.result-stable {
 		border-collapse: separate;
 		border-spacing: 3px;
 	}
 
-	div.testcaseresult:hover {
+	div.test-case-result:hover {
 		transform: scale(1.15);
 	}
 
-	td.submissionresult {
+	td.submission-result {
 		width: 104px;
 		min-width: 104px;
 	}
 
-	td.testcaseresult {
+	td.test-case-result {
 		width: 16px;
 		height: 16px;
 		max-height: 16px;
 		max-width: 16px;
 	}
 
-	td.sampleinput {
+	td.sample-input {
 		width: 11px;
 		height: 11px;
 	}
 
-	div.testcaseresult {
-		border: 1px solid var(--testcase-border-color);
+	div.test-case-result {
+		border: 1px solid var(--test-case-border-color);
 		height: 16px;
 		width: 16px;
 	}
 
-	div .testcaseresult .changedFromPreviousSubmit {
+	div .test-case-result .changed-from-previous-submit {
 		border: 2px solid var(--changed-border-color);
 	}
 
@@ -185,8 +185,8 @@
 		background-color: var(--correct-color);
 	}
 
-	div.nooutput {
-		background-color: var(--noOutput-color);
+	div.no-output {
+		background-color: var(--no-output-color);
 	}
 
 	div.exception {
@@ -206,7 +206,7 @@
 		height: 18px;
 	}
 
-	div.buildfailure {
+	div.build-failure {
 		background-color: #5555aa;
 	}
 
@@ -214,15 +214,15 @@
 		background-color: var(--incorrect-color);
 	}
 
-	div.formattingIssue {
-		background-color: var(--formattingIssue-color);
+	div.formatting-issue {
+		background-color: var(--formatting-issue-color);
 	}
 
-	div.labellingIssue {
-		background-color: var(--labellingIssue-color);
+	div.labelling-issue {
+		background-color: var(--labelling-issue-color);
 	}
 
-	div.sampleinput {
+	div.sample-input {
 		height: 10px;
 		width: 10px;
 		padding: 0;

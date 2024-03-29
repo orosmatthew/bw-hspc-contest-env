@@ -4,7 +4,7 @@
 
 	import { theme } from '../routes/stores';
 	import { analyzeSubmissionOutput } from './outputAnalyzer/outputAnalyzer';
-	import { CaseResult } from './outputAnalyzer/analyzerTypes';
+	import type { CaseResult } from './outputAnalyzer/analyzerTypes';
 	import { normalizeInputLines } from './outputAnalyzer/analyzerUtils';
 
 	export let problem: Problem;
@@ -20,37 +20,37 @@
 
 	function caseResultToClassName(caseResult: CaseResult): string {
 		switch (caseResult) {
-			case CaseResult.Correct:
+			case 'Correct':
 				return 'correct';
-			case CaseResult.FormattingIssue:
+			case 'FormattingIssue':
 				return 'formatError';
-			case CaseResult.LabellingIssue:
+			case 'LabellingIssue':
 				return 'labelError';
-			case CaseResult.Exception:
-			case CaseResult.RunnerFailure:
+			case 'Exception':
+			case 'RunnerFailure':
 				return 'crash';
-			case CaseResult.NoOutput:
+			case 'NoOutput':
 				return 'noOutput';
-			case CaseResult.Incorrect:
+			case 'Incorrect':
 				return 'incorrect';
 		}
 	}
 
 	function caseResultToDisplayText(caseResult: CaseResult): string {
 		switch (caseResult) {
-			case CaseResult.Correct:
+			case 'Correct':
 				return 'Correct';
-			case CaseResult.FormattingIssue:
+			case 'FormattingIssue':
 				return 'Formatting';
-			case CaseResult.LabellingIssue:
+			case 'LabellingIssue':
 				return 'Label Error';
-			case CaseResult.Exception:
+			case 'Exception':
 				return 'Crash';
-			case CaseResult.NoOutput:
+			case 'NoOutput':
 				return 'No Output';
-			case CaseResult.RunnerFailure:
+			case 'RunnerFailure':
 				return 'Run Fail';
-			case CaseResult.Incorrect:
+			case 'Incorrect':
 				return 'Incorrect';
 		}
 	}
