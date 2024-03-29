@@ -59,9 +59,11 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 							return submission.contestId === contest.id && submission.state === 'Correct';
 						}).length,
 						time: (() => {
-							const correctSubmissions = team.submissions.filter((submission) => {
-								return submission.contestId === contest.id && submission.state === 'Correct';
-							});
+							const correctSubmissions = team.submissions
+								.filter((submission) => {
+									return submission.contestId === contest.id && submission.state === 'Correct';
+								})
+								.toSorted((a, b) => b.contestId.valueOf() - a.createdAt.valueOf());
 							const penaltyTime =
 								team.submissions.filter((submission) => {
 									return (
@@ -87,11 +89,13 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 							return {
 								id: problem.id,
 								attempts: team.submissions.filter((submission) => {
-									const correct = team.submissions.find((s) => {
-										s.contestId === contest.id &&
-											s.problemId === problem.id &&
-											s.state === 'Correct';
-									});
+									const correct = team.submissions
+										.toSorted((a, b) => b.contestId.valueOf() - a.createdAt.valueOf())
+										.find((s) => {
+											s.contestId === contest.id &&
+												s.problemId === problem.id &&
+												s.state === 'Correct';
+										});
 									if (
 										correct !== undefined &&
 										(submission.state === 'Incorrect' ||
@@ -128,13 +132,15 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 										: 'incorrect'
 									: null,
 								min: (() => {
-									const correctSubmission = team.submissions.find((submission) => {
-										return (
-											submission.contestId === contest.id &&
-											submission.problemId === problem.id &&
-											submission.state === 'Correct'
-										);
-									});
+									const correctSubmission = team.submissions
+										.toSorted((a, b) => b.contestId.valueOf() - a.createdAt.valueOf())
+										.find((submission) => {
+											return (
+												submission.contestId === contest.id &&
+												submission.problemId === problem.id &&
+												submission.state === 'Correct'
+											);
+										});
 									if (correctSubmission) {
 										const gradedAt = correctSubmission.gradedAt!.valueOf();
 										return (gradedAt - contest.startTime!.valueOf()) / 60000;
