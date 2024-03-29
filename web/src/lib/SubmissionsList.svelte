@@ -18,7 +18,7 @@
 	let attemptNumbers = new Map<Submission, number>();
 
 	function getAttemptText(submission: Submission): string {
-		return `#${attemptNumbers.get(submission) ?? -1} / ${historyCounts.get(getSubmissionHistoryKey(submission)) ?? -1}`;
+		return `${attemptNumbers.get(submission) ?? -1} / ${historyCounts.get(getSubmissionHistoryKey(submission)) ?? -1}`;
 	}
 
 	function getSubmissionHistoryKey(submission: Submission): string {
