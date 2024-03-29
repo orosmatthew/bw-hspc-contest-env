@@ -9,7 +9,10 @@ export function dateFromContestMinutes(contestStart: Date, minutesFromStart: num
 }
 
 export function minutesFromContestStart(contest: Contest, eventTimestamp: Date): number {
-	return minutesBetweenTimestamps(contest.startTime!, eventTimestamp);
+	if (contest.startTime === null) {
+		throw new Error("contest.startTime is null when it shouldn't");
+	}
+	return minutesBetweenTimestamps(contest.startTime, eventTimestamp);
 }
 
 export function minutesBetweenTimestamps(start: Date, end: Date): number {
@@ -17,8 +20,11 @@ export function minutesBetweenTimestamps(start: Date, end: Date): number {
 }
 
 export function submissionTimestampHoverText(contest: Contest, submission: Submission): string {
+	if (contest.startTime === null) {
+		throw new Error("contest.startTime is null when it shouldn't");
+	}
 	return (
-		`Contest: ${fullTimestampDisplay(contest.startTime!)}\n` +
+		`Contest: ${fullTimestampDisplay(contest.startTime)}\n` +
 		`Submission: ${fullTimestampDisplay(submission.createdAt)}`
 	);
 }

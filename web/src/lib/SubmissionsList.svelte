@@ -48,8 +48,16 @@
 					historyCounts.set(key, 0);
 				}
 
-				historyCounts.set(key, historyCounts.get(key)! + 1);
-				attemptNumbers.set(submission, historyCounts.get(key)!);
+				const h1 = historyCounts.get(key);
+				if (h1 === undefined) {
+					throw new Error("historyCounts.get(key) is undefined when it shouldn't");
+				}
+				historyCounts.set(key, h1 + 1);
+				const h2 = historyCounts.get(key);
+				if (h2 === undefined) {
+					throw new Error("historyCounts.get(key) is undefined when it shouldn't");
+				}
+				attemptNumbers.set(submission, h2);
 			}
 		}
 	}

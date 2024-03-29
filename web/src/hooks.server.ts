@@ -48,6 +48,7 @@ export const handle = (async ({ event, resolve }) => {
 			redirect(302, '/login');
 		}
 		const contestParam = event.url.searchParams.get('c');
+		const contestCookie = event.cookies.get('selectedContest');
 		if (contestParam !== null) {
 			const selectedContest = parseInt(contestParam);
 			if (isNaN(selectedContest)) {
@@ -63,8 +64,8 @@ export const handle = (async ({ event, resolve }) => {
 					event.locals.selectedContest = null;
 				}
 			}
-		} else if (event.cookies.get('selectedContest') !== undefined) {
-			const selectedContest = parseInt(event.cookies.get('selectedContest')!);
+		} else if (contestCookie !== undefined) {
+			const selectedContest = parseInt(contestCookie);
 			if (isNaN(selectedContest)) {
 				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
 				event.locals.selectedContest = null;

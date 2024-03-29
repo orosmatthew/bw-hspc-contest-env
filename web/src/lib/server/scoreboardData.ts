@@ -79,8 +79,13 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 								}).length * 10;
 							let time = penaltyTime;
 							correctSubmissions.forEach((correctSubmission) => {
-								const gradedAt = correctSubmission.gradedAt!.valueOf();
-								const min = (gradedAt - contest.startTime!.valueOf()) / 60000;
+								if (correctSubmission.gradedAt === null || contest.startTime === null) {
+									throw new Error(
+										"correctSubmission.gradedAt === null || contest.startTime === null was true when it shouldn't"
+									);
+								}
+								const gradedAt = correctSubmission.gradedAt.valueOf();
+								const min = (gradedAt - contest.startTime.valueOf()) / 60000;
 								time += min;
 							});
 							return time;
@@ -142,8 +147,13 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 											);
 										});
 									if (correctSubmission) {
-										const gradedAt = correctSubmission.gradedAt!.valueOf();
-										return (gradedAt - contest.startTime!.valueOf()) / 60000;
+										if (correctSubmission.gradedAt === null || contest.startTime === null) {
+											throw new Error(
+												"correctSubmission.gradedAt === null || contest.startTime === null is true when it shouldn't"
+											);
+										}
+										const gradedAt = correctSubmission.gradedAt.valueOf();
+										return (gradedAt - contest.startTime.valueOf()) / 60000;
 									}
 									return undefined;
 								})()

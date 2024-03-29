@@ -81,22 +81,32 @@ export function analyzeSubmissionOutput(
 		databaseString
 	};
 
-	function getDatabaseRepresentation(testCaseResult: TestCaseResult): string {
-		const char = caseResultToCompactChar.get(testCaseResult.result)!;
+	function getDatabaseRepresentation(testCaseResult: TestCaseResult): string | null {
+		const char = caseResultToCompactChar.get(testCaseResult.result);
+		if (char === undefined) {
+			return null;
+		}
 		return testCaseResult.isSampleData ? char.toLowerCase() : char;
 	}
 }
 
 export function rehydrateOutputPreview(databaseString: string): AnalyzedOutputPreview {
-	const testCaseResultPreviews = databaseString.split('').map<TestCaseResultPreview>((char, i) => {
-		const result = compactCharToCaseResult.get(char.toUpperCase())!;
-		const caseNum = i + 1;
-		const isSampleData = 'a' <= char && char <= 'z';
-		return { caseNum, isSampleData, result };
-	});
+	const testCaseResultPreviews = databaseString
+		.split('')
+		.map<TestCaseResultPreview | null>((char, i) => {
+			const result = compactCharToCaseResult.get(char.toUpperCase());
+			if (result === undefined) {
+				return null;
+			}
+			const caseNum = i + 1;
+			const isSampleData = 'a' <= char && char <= 'z';
+			return { caseNum, isSampleData, result };
+		});
 
 	return {
-		testCaseResults: testCaseResultPreviews,
+		testCaseResults: testCaseResultPreviews.filter((t): t is TestCaseResultPreview => {
+			return t !== null;
+		}),
 		databaseString
 	};
 }

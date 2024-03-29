@@ -8,7 +8,10 @@ import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
 
 export const GET = (async ({ request }) => {
 	const secret = request.headers.get('secret');
-	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET!) {
+	if (process.env.WEB_SANDBOX_SECRET === undefined) {
+		throw new Error('Environment WEB_SANDBOX_SECRET is undefined');
+	}
+	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET) {
 		throw error(401, 'Unauthorized');
 	}
 	const submissions = await db.submission.findMany({
@@ -42,7 +45,10 @@ export const GET = (async ({ request }) => {
 
 export const POST = (async ({ request }) => {
 	const secret = request.headers.get('secret');
-	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET!) {
+	if (process.env.WEB_SANDBOX_SECRET === undefined) {
+		throw new Error('Environment WEB_SANDBOX_SECRET is undefined');
+	}
+	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET) {
 		throw error(401, 'Unauthorized');
 	}
 	const requestJson = await request.json();
@@ -96,7 +102,7 @@ export const POST = (async ({ request }) => {
 	console.log(`Sandbox got response, kind is ${data.data.result.kind}`);
 	switch (data.data.result.kind) {
 		case 'Completed':
-			if (autoJudgeResponse(submission.problem.realOutput, teamOutput!) == 'Correct') {
+			if (autoJudgeResponse(submission.problem.realOutput, teamOutput ?? '') == 'Correct') {
 				await db.submission.update({
 					where: { id: data.data.submissionId },
 					data: {
@@ -116,7 +122,7 @@ export const POST = (async ({ request }) => {
 					'expected',
 					'actual',
 					submission.problem.realOutput,
-					teamOutput!
+					teamOutput ?? ''
 				);
 				await db.submission.update({
 					where: { id: data.data.submissionId },

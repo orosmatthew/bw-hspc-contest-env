@@ -28,7 +28,11 @@
 		}
 
 		if (localDiff) {
-			const diff2htmlUi = new Diff2HtmlUI(document.getElementById(`diff_${kind}`)!, localDiff, {
+			const e = document.getElementById(`diff_${kind}`);
+			if (e === null) {
+				throw new Error('Cannot find diff element');
+			}
+			const diff2htmlUi = new Diff2HtmlUI(e, localDiff, {
 				drawFileList: false,
 				matching: 'words',
 				diffStyle: 'word',
@@ -67,7 +71,11 @@
 		}
 
 		if (localDiff) {
-			const diff2htmlUi = new Diff2HtmlUI(document.getElementById(`diff_${kind}`)!, localDiff, {
+			const e = document.getElementById(`diff_${kind}`);
+			if (e === null) {
+				throw new Error('Cannot find diff element');
+			}
+			const diff2htmlUi = new Diff2HtmlUI(e, localDiff, {
 				drawFileList: false,
 				matching: 'none',
 				diffStyle: 'word',
@@ -123,7 +131,11 @@
 		}
 
 		if (localDiff) {
-			const diff2htmlUi = new Diff2HtmlUI(document.getElementById(`diff_${kind}`)!, localDiff, {
+			const e = document.getElementById(`diff_${kind}`);
+			if (e === null) {
+				throw new Error('Cannot find diff element');
+			}
+			const diff2htmlUi = new Diff2HtmlUI(e, localDiff, {
 				drawFileList: false,
 				matching: 'none',
 				diffStyle: 'word',

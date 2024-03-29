@@ -113,31 +113,37 @@ export const actions = {
 					submissions: {
 						create: hasSubmissions
 							? parsedContest.Submissions.toSorted((a, b) => a.SubmitTime - b.SubmitTime).map(
-									(submission) => ({
-										createdAt: dateFromContestMinutes(contestStart!, submission.SubmitTime),
-										gradedAt: dateFromContestMinutes(contestStart!, submission.SubmitTime + 1),
-										state: convertSubmissionState(submission),
-										actualOutput: submission.TeamOutput,
-										commitHash: '',
-										problem: {
-											connect: {
-												pascalName: submission.ProblemShortName
+									(submission) =>
+										(() => {
+											if (contestStart === null) {
+												throw new Error("contestStart is null when it shouldn't");
 											}
-										},
-										team: {
-											connect: {
-												name: submission.TeamName
-											}
-										},
-										sourceFiles: submission.Code
-											? {
-													create: {
-														pathFromProblemRoot: 'importedCode.txt',
-														content: submission.Code
+											return {
+												createdAt: dateFromContestMinutes(contestStart, submission.SubmitTime),
+												gradedAt: dateFromContestMinutes(contestStart, submission.SubmitTime + 1),
+												state: convertSubmissionState(submission),
+												actualOutput: submission.TeamOutput,
+												commitHash: '',
+												problem: {
+													connect: {
+														pascalName: submission.ProblemShortName
 													}
-												}
-											: {}
-									})
+												},
+												team: {
+													connect: {
+														name: submission.TeamName
+													}
+												},
+												sourceFiles: submission.Code
+													? {
+															create: {
+																pathFromProblemRoot: 'importedCode.txt',
+																content: submission.Code
+															}
+														}
+													: {}
+											};
+										})()
 								)
 							: []
 					}

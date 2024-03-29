@@ -62,7 +62,10 @@ function splitOutputWithCaseLabels(
 	if (outputCaseLineRanges.length > totalCaseCount) {
 		// More case labels than expected
 		const extraLines = outputLines.slice(outputCaseLineRanges[totalCaseCount].startIndex);
-		outputCases[totalCaseCount - 1]!.lines.push(...extraLines);
+		const c = outputCases[totalCaseCount - 1];
+		if (c !== null) {
+			c.lines.push(...extraLines);
+		}
 	}
 
 	if (interruptionLines.length > 0) {
@@ -70,11 +73,14 @@ function splitOutputWithCaseLabels(
 		if (lastIndexWithRecordedOutput + 1 < outputCases.length) {
 			outputCases[lastIndexWithRecordedOutput + 1] = {
 				lines: interruptionLines,
-				forcedResult: errorIndicator!.forcedResult
+				forcedResult: errorIndicator?.forcedResult ?? null
 			};
 		} else {
-			outputCases[outputCases.length - 1]!.lines.push(...interruptionLines);
-			outputCases[outputCases.length - 1]!.forcedResult = errorIndicator!.forcedResult;
+			const c = outputCases[outputCases.length - 1];
+			if (c !== null) {
+				c.lines.push(...interruptionLines);
+				c.forcedResult = errorIndicator?.forcedResult ?? null;
+			}
 		}
 	}
 
@@ -151,11 +157,14 @@ function splitOutputWithoutCaseLabels(
 		if (lastIndexWithRecordedOutput + 1 < teamOutputCases.length) {
 			teamOutputCases[lastIndexWithRecordedOutput + 1] = {
 				lines: interruptionLines,
-				forcedResult: errorIndicator!.forcedResult
+				forcedResult: errorIndicator?.forcedResult ?? null
 			};
 		} else {
-			teamOutputCases[teamOutputCases.length - 1]!.lines.push(...interruptionLines);
-			teamOutputCases[teamOutputCases.length - 1]!.forcedResult = errorIndicator!.forcedResult;
+			const c = teamOutputCases[teamOutputCases.length - 1];
+			if (c !== null) {
+				c.lines.push(...interruptionLines);
+				c.forcedResult = errorIndicator?.forcedResult ?? null;
+			}
 		}
 	}
 
