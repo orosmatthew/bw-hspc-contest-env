@@ -1,6 +1,5 @@
 <script lang="ts" context="module">
 	import { writable } from 'svelte/store';
-	import { z } from 'zod';
 	const tabs = [
 		'Inspector',
 		'Team Code',
@@ -10,8 +9,7 @@
 		'Raw Output',
 		'Raw Input'
 	] as const;
-	const tabType = z.enum(tabs);
-	export type Tab = z.infer<typeof tabType>;
+	export type Tab = (typeof tabs)[number];
 	export const selectedTab = writable<Tab>('Inspector');
 </script>
 
