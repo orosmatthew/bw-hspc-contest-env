@@ -10,14 +10,14 @@
 	"devDependencies": {
 		"@types/fs-extra": "^11.0.4",
 		"@types/node": "20.x",
-		"@typescript-eslint/eslint-plugin": "^7.3.1",
-		"@typescript-eslint/parser": "^7.3.1",
+		"@typescript-eslint/eslint-plugin": "^7.4.0",
+		"@typescript-eslint/parser": "^7.4.0",
 		"esbuild": "^0.20.2",
 		"eslint": "^8.57.0",
 		"fs-extra": "^11.2.0",
 		"prettier": "^3.2.5",
 		"tree-kill": "^1.2.2",
-		"typescript": "^5.4.2",
+		"typescript": "^5.4.3",
 		"zod": "^3.22.4"
 	}
 }
