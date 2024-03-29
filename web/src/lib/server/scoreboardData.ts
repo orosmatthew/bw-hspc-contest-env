@@ -92,7 +92,12 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 											s.problemId === problem.id &&
 											s.state === 'Correct';
 									});
-									if (correct !== undefined && submission.state === 'Incorrect') {
+									if (
+										correct !== undefined &&
+										(submission.state === 'Incorrect' ||
+											submission.state === 'Queued' ||
+											submission.state === 'InReview')
+									) {
 										return (
 											submission.contestId === contest.id &&
 											submission.problemId === problem.id &&
@@ -102,7 +107,10 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 										return (
 											submission.contestId === contest.id &&
 											submission.problemId === problem.id &&
-											(submission.state === 'Correct' || submission.state === 'Incorrect')
+											(submission.state === 'Correct' ||
+												submission.state === 'Incorrect' ||
+												submission.state === 'InReview' ||
+												submission.state === 'Queued')
 										);
 									}
 								}).length,
