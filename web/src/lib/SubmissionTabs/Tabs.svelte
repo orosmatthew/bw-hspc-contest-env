@@ -5,7 +5,7 @@
 		'Team Code',
 		'Line Diff',
 		'Case Diff',
-		'Old Diff',
+		'Basic Diff',
 		'Raw Output',
 		'Raw Input'
 	] as const;

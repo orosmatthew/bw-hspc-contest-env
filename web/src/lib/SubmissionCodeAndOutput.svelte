@@ -48,7 +48,7 @@
 			</p>
 			<DiffView {expectedOutput} {output} {diff} {problem} kind="case-diff" />
 		</Tab>
-		<Tab tab="Old Diff">
+		<Tab tab="Basic Diff">
 			<p class="diffExplanation">
 				Uses a diff tool to create a diff. May produce confusing diffs if it matches
 				non-corresponding outputs.
