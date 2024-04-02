@@ -4,13 +4,56 @@ import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.c
 import { timeoutSeconds } from './settings.cjs';
 import { getSourceFilesWithText } from './sourceScraper.cjs';
 
+type CSharpBuildResult =
+	| { success: true }
+	| { success: false; exitCode: number | null; errorText: string };
+
 export const runCSharp: IRunner = async function (params: IRunnerParams): Promise<IRunnerReturn> {
 	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cs');
 
-	console.log(`- RUN: ${params.srcDir}`);
-	const child = spawn('dotnet run', { shell: true, cwd: params.srcDir });
+	console.log(`- BUILD: ${params.srcDir}`);
+	const buildResult = await new Promise<CSharpBuildResult>((resolve) => {
+		try {
+			let buildOutput = '';
+			const buildProcess = spawn(`dotnet build`, { shell: true, cwd: params.srcDir });
+			buildProcess.stdout.setEncoding('utf8');
+			buildProcess.stdout.on('data', (data) => {
+				buildOutput += data.toString();
+			});
 
+			buildProcess.on('error', (error) => {
+				resolve({ success: false, exitCode: null, errorText: error.message });
+			});
+
+			buildProcess.on('close', (exitCode) => {
+				if (exitCode === 0) {
+					resolve({ success: true });
+				} else {
+					resolve({ success: false, exitCode, errorText: buildOutput });
+				}
+			});
+		} catch (e) {
+			const buildErrorText = e?.toString() ?? 'Unknown build errors.';
+			resolve({ success: false, exitCode: null, errorText: buildErrorText });
+		}
+	});
+
+	if (!buildResult.success) {
+		return {
+			success: false,
+			runResult: {
+				kind: 'CompileFailed',
+				resultKindReason: buildResult.errorText,
+				exitCode: buildResult.exitCode ?? undefined,
+				sourceFiles
+			}
+		};
+	}
+
+	console.log(`- RUN: ${params.srcDir}`);
 	try {
+		const child = spawn('dotnet run --no-build', { shell: true, cwd: params.srcDir });
+
 		let outputBuffer = '';
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
