@@ -16,15 +16,17 @@
 <div class="pb-4">
 	<Tabs>
 		<Tab tab="Inspector">
-			<AnnotatedOutput {problem} {output} />
+			<div class="pt-2">
+				<AnnotatedOutput {problem} {output} />
+			</div>
 		</Tab>
 		<Tab tab="Team Code">
 			{#if sourceFiles.length == 0}
-				<div>
+				<div class="pt-2">
 					<span style="font-weight: bold">No Code Recorded</span>
 				</div>
 			{:else}
-				<div>
+				<div class="pt-2">
 					{#each sourceFiles as sourceFile}
 						<div>
 							<b class="font-monospace">{sourceFile.pathFromProblemRoot}</b>
@@ -36,20 +38,20 @@
 		</Tab>
 
 		<Tab tab="Line Diff">
-			<p class="diffExplanation">
+			<p class="diffExplanation pt-2">
 				Lines are compared by index, with no attempt to match similar lines or determine test case
 				output boundaries
 			</p>
 			<DiffView {expectedOutput} {output} {diff} {problem} kind="aligned" />
 		</Tab>
 		<Tab tab="Case Diff">
-			<p class="diffExplanation">
+			<p class="diffExplanation pt-2">
 				Uses heuristics to group outputs by case, producing a case-by-case diff.
 			</p>
 			<DiffView {expectedOutput} {output} {diff} {problem} kind="case-diff" />
 		</Tab>
 		<Tab tab="Basic Diff">
-			<p class="diffExplanation">
+			<p class="diffExplanation pt-2">
 				Uses a diff tool to create a diff. May produce confusing diffs if it matches
 				non-corresponding outputs.
 			</p>
@@ -57,10 +59,14 @@
 		</Tab>
 
 		<Tab tab="Raw Output">
-			<Code code={output ?? ''} highlight={false} />
+			<div class="pt-2">
+				<Code code={output ?? ''} highlight={false} />
+			</div>
 		</Tab>
 		<Tab tab="Raw Input">
-			<Code code={problem.realInput} highlight={false} />
+			<div class="pt-2">
+				<Code code={problem.realInput} highlight={false} />
+			</div>
 		</Tab>
 	</Tabs>
 </div>

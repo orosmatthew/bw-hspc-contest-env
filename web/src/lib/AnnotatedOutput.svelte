@@ -71,7 +71,7 @@
 	</div>
 {/if}
 
-<div class="pt-2 table-resonsive ">
+<div class="pt-2 table-resonsive">
 	<table class="table table-hover table-bordered" data-bs-theme={$theme}>
 		<thead>
 			<tr>
