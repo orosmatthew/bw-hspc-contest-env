@@ -33,7 +33,9 @@ project(bwcontest)
 
 `;
 
-export const templateCppProblem = `#include <iostream>
+export const templateCppProblem = `#include <bits/stdc++.h>
+
+// using namespace std;
 
 int main()
 {
