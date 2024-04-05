@@ -16,11 +16,81 @@
 	export let form: Actions;
 
 	let confirmModal: ConfirmModal;
-	let gradingMessage: HTMLTextAreaElement;
 
 	$: if (form && form.success) {
 		goto('/admin/reviews');
 	}
+
+	type JudgeResponseCategory = {
+		title: string;
+		message: string;
+		correct: boolean | null;
+		description?: string;
+	};
+
+	let chosenJudgeResponse: JudgeResponseCategory | null = null;
+
+	const customResponseCategory: JudgeResponseCategory = {
+		title: 'Custom',
+		message: '',
+		correct: null
+	};
+
+	const judgeResponseCategories: JudgeResponseCategory[] = [
+		{
+			title: 'Output Incorrect',
+			message: 'Output Incorrect',
+			correct: false,
+			description: 'Grader discretion: less than 50% correct'
+		},
+		{
+			title: 'Some Output Incorrect',
+			message: 'Some Output Incorrect',
+			correct: false,
+			description: 'Grader discretion: between 50% and 90% correct'
+		},
+		{
+			title: 'One Output Incorrect',
+			message: 'One Output Incorrect',
+			correct: false,
+			description: 'Grader discretion: more than 90% correct'
+		},
+		{
+			title: 'Formatting Problem',
+			message: 'Formatting Problem',
+			correct: false,
+			description: 'Problems with output that are unrelated to correctness'
+		},
+		{
+			title: 'Compile Error',
+			message: 'Compile Error',
+			correct: false,
+			description: 'Compilation issues are typically auto-judged'
+		},
+		{
+			title: 'Timeout Exceeded',
+			message: 'Timeout Exceeded',
+			correct: false,
+			description: 'Timeout violations are typically auto-judged'
+		},
+		{
+			title: 'Correct',
+			message: 'Correct',
+			correct: true,
+			description: 'All cases correct'
+		},
+		customResponseCategory
+	];
+
+	const responseTitleToResponse = new Map<string, JudgeResponseCategory>(
+		judgeResponseCategories.map((e) => [e.title, e])
+	);
+	const responseTextToResponse = new Map<string, JudgeResponseCategory>(
+		judgeResponseCategories.map((e) => [e.message, e])
+	);
+
+	let judgeResponseTextArea: HTMLTextAreaElement;
+	let judgeResponsePicker: HTMLSelectElement;
 
 	let correct: boolean | null = null;
 
@@ -37,9 +107,9 @@
 			const confirmText =
 				correct === true
 					? `Grading as CORRECT. Are you sure?`
-					: gradingMessage.value.trim().length == 0
+					: judgeResponseTextArea.value.trim().length == 0
 						? `Grading as INCORRECT with NO MESSAGE! Are you sure?`
-						: `Grading as INCORRECT with message '${gradingMessage.value}'. Are you sure?`;
+						: `Grading as INCORRECT with message '${judgeResponseTextArea.value}'. Are you sure?`;
 
 			if ((await confirmModal.prompt(confirmText)) !== true) {
 				cancel();
@@ -48,6 +118,38 @@
 				await update();
 			};
 		});
+	}
+
+	function judgeResponseCategoryPicked() {
+		const response = responseTitleToResponse.get(judgeResponsePicker.value);
+		if (!response) {
+			return;
+		}
+
+		chosenJudgeResponse = response;
+		judgeResponseTextArea.value = response.message;
+		correct = response.correct;
+	}
+
+	function judgeResponseTextChange() {
+		chosenJudgeResponse =
+			responseTextToResponse.get(judgeResponseTextArea.value) ?? customResponseCategory;
+		judgeResponsePicker.value = chosenJudgeResponse.title;
+
+		if (chosenJudgeResponse.correct != null) {
+			correct = chosenJudgeResponse.correct;
+		}
+	}
+
+	function judgeResponseCategoryLabel(response: JudgeResponseCategory): string {
+		switch (response.correct) {
+			case null:
+				return `✏️ ${response.title}`;
+			case true:
+				return `✅ ${response.title}`;
+			case false:
+				return `❌ ${response.title}`;
+		}
 	}
 </script>
 
@@ -232,9 +334,33 @@
 			Grade Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) + 1}
 		</h3>
 		<form method="POST" action="?/submitGrade" use:enhanceConfirmGrading>
-			<h5>Message</h5>
-			<textarea bind:this={gradingMessage} name="message" class="mb-3 form-control" />
-
+			<div class="mb-1">
+				<span class="h5" style="display: inline;">Response: </span>
+				<select
+					bind:this={judgeResponsePicker}
+					on:change={judgeResponseCategoryPicked}
+					class="form-control form-select w-auto ms-1"
+					style="display: inline;"
+				>
+					<option disabled selected>Options...</option>
+					{#each judgeResponseCategories as judgeResponseCategory}
+						<option value={judgeResponseCategory.title}
+							>{judgeResponseCategoryLabel(judgeResponseCategory)}</option
+						>
+					{/each}
+				</select>
+				<span class="ms-1" style="display: inline; font-style: italic;"
+					>{chosenJudgeResponse?.description ?? ''}</span
+				>
+			</div>
+			<textarea
+				bind:this={judgeResponseTextArea}
+				id="gradingMessageText"
+				on:input={judgeResponseTextChange}
+				name="message"
+				class="mb-3 form-control"
+				placeholder="Choose from built-in responses above, or enter custom response..."
+			/>
 			<div class="row justify-content-end">
 				<div class="text-end">
 					<input name="correct" type="hidden" value={correct} />
@@ -357,5 +483,22 @@
 	.gradingArea.pendingIncorrect {
 		background-color: var(--specifiedSubmissionInReviewPendingIncorrect-background-color);
 		border-color: var(--specifiedSubmissionInReviewPendingIncorrect-border-color);
+	}
+
+	#gradingMessageText::-webkit-input-placeholder {
+		color: gray;
+		font-style: italic;
+	}
+	#gradingMessageText:-moz-placeholder {
+		color: gray;
+		font-style: italic;
+	}
+	#gradingMessageText::-moz-placeholder {
+		color: gray;
+		font-style: italic;
+	}
+	#gradingMessageText:-ms-input-placeholder {
+		color: gray;
+		font-style: italic;
 	}
 </style>
