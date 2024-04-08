@@ -10,6 +10,7 @@ import { runCpp } from 'bwcontest-shared/submission-runner/cpp.cjs';
 import { TeamData } from './sharedTypes';
 import outputPanelLog from './outputPanelLog';
 import { recordInitialSubmission } from './contestMonitor/contestStateSyncManager';
+import { RunResult } from 'bwcontest-shared/submission-runner/types.cjs';
 
 export type ProblemData = {
 	id: number;
@@ -208,7 +209,10 @@ export class BWPanel {
 			});
 			if (res.success === true) {
 				killFunc = res.killFunc;
-				res.runResult.then(() => {
+				res.runResult.then((runResult) => {
+					if (runResult.kind == 'TimeLimitExceeded') {
+						this.postOutputWithTimeLimitExceededNotice(outputBuffer);
+					}
 					this.runningProgram = undefined;
 					this.webviewPostMessage({ msg: 'onRunningDone' });
 				});
@@ -216,7 +220,7 @@ export class BWPanel {
 				this.runningProgram = undefined;
 				this.webviewPostMessage({
 					msg: 'onRunningOutput',
-					data: `${res.runResult.kind}:\n${res.runResult.output}`
+					data: this.createFailureMessage(res.runResult)
 				});
 				this.webviewPostMessage({ msg: 'onRunningDone' });
 			}
@@ -238,7 +242,10 @@ export class BWPanel {
 			});
 			if (res.success === true) {
 				killFunc = res.killFunc;
-				res.runResult.then(() => {
+				res.runResult.then((runResult) => {
+					if (runResult.kind == 'TimeLimitExceeded') {
+						this.postOutputWithTimeLimitExceededNotice(outputBuffer);
+					}
 					this.runningProgram = undefined;
 					this.webviewPostMessage({ msg: 'onRunningDone' });
 				});
@@ -246,7 +253,7 @@ export class BWPanel {
 				this.runningProgram = undefined;
 				this.webviewPostMessage({
 					msg: 'onRunningOutput',
-					data: `${res.runResult.kind}:\n${res.runResult.output}`
+					data: this.createFailureMessage(res.runResult)
 				});
 				this.webviewPostMessage({ msg: 'onRunningDone' });
 			}
@@ -269,7 +276,10 @@ export class BWPanel {
 			});
 			if (res.success === true) {
 				killFunc = res.killFunc;
-				res.runResult.then(() => {
+				res.runResult.then((runResult) => {
+					if (runResult.kind == 'TimeLimitExceeded') {
+						this.postOutputWithTimeLimitExceededNotice(outputBuffer);
+					}
 					this.runningProgram = undefined;
 					this.webviewPostMessage({ msg: 'onRunningDone' });
 				});
@@ -277,7 +287,7 @@ export class BWPanel {
 				this.runningProgram = undefined;
 				this.webviewPostMessage({
 					msg: 'onRunningOutput',
-					data: `${res.runResult.kind}:\n${res.runResult.output}`
+					data: this.createFailureMessage(res.runResult)
 				});
 				this.webviewPostMessage({ msg: 'onRunningDone' });
 			}
@@ -290,6 +300,24 @@ export class BWPanel {
 			};
 		} else {
 			this.webviewPostMessage({ msg: 'onRunningDone' });
+		}
+	}
+
+	private postOutputWithTimeLimitExceededNotice(outputBuffer: string[]): void {
+		this.webviewPostMessage({
+			msg: 'onRunningOutput',
+			data: outputBuffer.join('') + '\n---\nTime Limit Exceeded'
+		});
+	}
+
+	private createFailureMessage(runResult: RunResult): string {
+		switch (runResult.kind) {
+			case 'CompileFailed':
+				return 'Compilation Error:\n' + runResult.resultKindReason;
+			case 'RunError':
+				return 'Environment Error:\n' + runResult.resultKindReason;
+			default:
+				return `${runResult.kind}:\n${runResult.output}`;
 		}
 	}
 
