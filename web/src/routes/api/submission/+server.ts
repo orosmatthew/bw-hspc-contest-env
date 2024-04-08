@@ -165,7 +165,8 @@ export const POST = (async ({ request }) => {
 					stateReasonDetails: data.data.result.resultKindReason,
 					testCaseResults,
 					exitCode: data.data.result.exitCode,
-					runtimeMilliseconds: data.data.result.runtimeMilliseconds
+					runtimeMilliseconds: data.data.result.runtimeMilliseconds,
+					message: 'Time Limit Exceeded'
 				}
 			});
 			return json({ success: true });
