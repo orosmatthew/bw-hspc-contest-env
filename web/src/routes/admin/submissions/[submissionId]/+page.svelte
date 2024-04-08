@@ -330,11 +330,11 @@
 				: 'pendingIncorrect'}"
 		data-bs-theme={$theme}
 	>
-		<h3>
+		<h3 class="pb-1">
 			Grade Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) + 1}
 		</h3>
 		<form method="POST" action="?/submitGrade" use:enhanceConfirmGrading>
-			<div class="mb-1">
+			<div class="pb-2">
 				<span class="h5" style="display: inline;">Response: </span>
 				<select
 					bind:this={judgeResponsePicker}
