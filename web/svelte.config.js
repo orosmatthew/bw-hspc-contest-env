@@ -6,7 +6,8 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter()
+		adapter: adapter(),
+		csrf: false,
 	},
 	vitePlugin: {
 		inspector: true
