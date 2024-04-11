@@ -96,7 +96,7 @@
 				}}
 				id={`problem_${problem.id}`}
 				type="button"
-				class={'tab ' + (activeProblemIndex === i ? 'active' : '')}>{problem.name}</button
+				class={'tab ' + (activeProblemIndex === i ? 'active' : 'inactive')}>{problem.name}</button
 			>
 		{/each}
 	</div>
@@ -137,9 +137,7 @@
 	.tab-container {
 		display: flex;
 		flex-direction: row;
-		align-items: center;
 		justify-content: space-between;
-		height: 30px;
 		margin-bottom: 10px;
 	}
 
@@ -148,10 +146,18 @@
 		border: none;
 		cursor: pointer;
 		text-align: center;
+		margin-left: 2px;
+		margin-right: 2px;
+		border: 1px solid var(--vscode-checkbox-border);
 	}
 
 	.tab.active {
-		background-color: rgb(95, 103, 118);
+		border: 1px solid var(--vscode-checkbox-selectBorder);
+	}
+
+	.tab.inactive {
+		color: var(--vscode-tab-inactiveForeground);
+		background-color: var(--vscode-tab-inactiveBackground);
 	}
 
 	.loader {
