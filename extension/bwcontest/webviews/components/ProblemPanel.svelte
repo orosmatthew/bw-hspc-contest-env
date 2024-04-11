@@ -96,7 +96,7 @@
 				}}
 				id={`problem_${problem.id}`}
 				type="button"
-				class={'tab ' + (activeProblemIndex === i ? 'active' : '')}>{problem.name}</button
+				class={'tab ' + (activeProblemIndex === i ? 'active' : 'inactive')}>{problem.name}</button
 			>
 		{/each}
 	</div>
@@ -150,8 +150,9 @@
 		text-align: center;
 	}
 
-	.tab.active {
-		background-color: rgb(95, 103, 118);
+	.tab.inactive {
+		color: var(--vscode-tab-inactiveForeground);
+		background-color: var(--vscode-tab-inactiveBackground);
 	}
 
 	.loader {
