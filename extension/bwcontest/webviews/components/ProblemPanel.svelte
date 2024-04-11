@@ -146,6 +146,13 @@
 		border: none;
 		cursor: pointer;
 		text-align: center;
+		margin-left: 2px;
+		margin-right: 2px;
+		border: 1px solid var(--vscode-checkbox-border);
+	}
+
+	.tab.active {
+		border: 1px solid var(--vscode-checkbox-selectBorder);
 	}
 
 	.tab.inactive {
