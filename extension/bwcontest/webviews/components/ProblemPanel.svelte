@@ -137,9 +137,7 @@
 	.tab-container {
 		display: flex;
 		flex-direction: row;
-		align-items: center;
 		justify-content: space-between;
-		height: 30px;
 		margin-bottom: 10px;
 	}
 
