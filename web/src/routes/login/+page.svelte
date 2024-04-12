@@ -16,6 +16,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Admin Login</title>
+</svelte:head>
+
 <div transition:fly|global={{ y: -50 }} class="container login-modal bg-body-tertiary">
 	<h1 class="mt-3 text-center">BW Contest Admin</h1>
 	{#if form && !dismissed}
@@ -55,7 +59,10 @@
 			/>
 			<label for="passwordInput">Password</label>
 		</div>
-		<div class="d-flex flex-row mt-4 mb-4 justify-content-end">
+		<div class="d-flex flex-row mt-4 mb-4 justify-content-between">
+			<a href="/public/scoreboard" class="btn btn-outline-secondary"
+				><i class="bi bi-link-45deg"></i> Public Scoreboard</a
+			>
 			<button type="submit" class="btn btn-primary">Login</button>
 		</div>
 	</form>
