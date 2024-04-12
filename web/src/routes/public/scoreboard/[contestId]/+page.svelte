@@ -14,6 +14,8 @@
 
 	const scrollInterval = 10000;
 
+	let autoScrollTimeout: ReturnType<typeof setTimeout> | null = null;
+
 	onMount(() => {
 		updateInterval = setInterval(async () => {
 			updating = true;
@@ -21,7 +23,7 @@
 			updating = false;
 		}, 10000);
 		if ($autoScrollEnabled) {
-			setTimeout(autoScroll, scrollInterval);
+			autoScrollTimeout = setTimeout(autoScroll, scrollInterval);
 		}
 		autoScrollEnabled.subscribe((enabled) => {
 			if (enabled) {
@@ -32,6 +34,9 @@
 
 	onDestroy(() => {
 		clearInterval(updateInterval);
+		if (autoScrollTimeout !== null) {
+			clearTimeout(autoScrollTimeout);
+		}
 	});
 
 	type AutoScrollDir = 'up' | 'down';
@@ -51,7 +56,7 @@
 			behavior: 'smooth'
 		});
 		if ($autoScrollEnabled) {
-			setTimeout(autoScroll, scrollInterval);
+			autoScrollTimeout = setTimeout(autoScroll, scrollInterval);
 		}
 	}
 </script>
