@@ -55,6 +55,7 @@ export const runCSharp: IRunner = async function (params: IRunnerParams): Promis
 		const child = spawn('dotnet run --no-build', { shell: true, cwd: params.srcDir });
 
 		let outputBuffer = '';
+		params.outputCallback?.('');
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
 			outputBuffer += data.toString();

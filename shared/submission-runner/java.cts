@@ -40,6 +40,7 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 
 	try {
 		let outputBuffer = '';
+		params.outputCallback?.('');
 		const child = spawn(runCommand, { shell: true });
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
