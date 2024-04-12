@@ -7,7 +7,7 @@ const config = {
 
 	kit: {
 		adapter: adapter(),
-		csrf: false,
+		csrf: false
 	},
 	vitePlugin: {
 		inspector: true

@@ -4,6 +4,7 @@
 	import { contestId } from '../stores';
 	import { onDestroy, onMount } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { autoScrollEnabled } from '../+layout.svelte';
 
 	$contestId = parseInt($page.params.contestId);
 	export let data: PageData;
@@ -11,17 +12,48 @@
 	let updateInterval: ReturnType<typeof setInterval>;
 	let updating = false;
 
+	const scrollInterval = 10000;
+
 	onMount(() => {
 		updateInterval = setInterval(async () => {
 			updating = true;
 			await invalidateAll();
 			updating = false;
 		}, 10000);
+		if ($autoScrollEnabled) {
+			setTimeout(autoScroll, scrollInterval);
+		}
+		autoScrollEnabled.subscribe((enabled) => {
+			if (enabled) {
+				autoScroll();
+			}
+		});
 	});
 
 	onDestroy(() => {
 		clearInterval(updateInterval);
 	});
+
+	type AutoScrollDir = 'up' | 'down';
+	let autoScrollDir: AutoScrollDir = 'down';
+	function autoScroll() {
+		let scrollOffset = window.innerHeight / 2;
+		let y = window.scrollY;
+		let height = document.body.scrollHeight - window.innerHeight;
+
+		if (autoScrollDir === 'down' && y >= height) {
+			autoScrollDir = 'up';
+		} else if (autoScrollDir === 'up' && y <= 0) {
+			autoScrollDir = 'down';
+		}
+		window.scrollTo({
+			top: y + (autoScrollDir == 'down' ? 1 : -1) * scrollOffset,
+			behavior: 'smooth'
+		});
+		if ($autoScrollEnabled) {
+			setTimeout(autoScroll, scrollInterval);
+		}
+	}
 </script>
 
 <h2 style="text-align:center">{data.contest.name}</h2>

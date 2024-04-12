@@ -1,5 +1,10 @@
+<script lang="ts" context="module">
+	export const autoScrollEnabled = writable<boolean>(false);
+</script>
+
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { writable } from 'svelte/store';
 	import { theme } from '../../stores';
 	import type { PageData } from './$types';
 	import { contestId } from './stores';
@@ -27,6 +32,16 @@
 			class="btn btn-outline-secondary"
 			><i class={`bi bi-${$theme == 'light' ? 'sun' : 'moon'}`} /></button
 		>
+		<div class="form-check form-switch align-self-center">
+			<input
+				bind:value={$autoScrollEnabled}
+				class="form-check-input"
+				type="checkbox"
+				role="switch"
+				id="autoScrollCheck"
+			/>
+			<label class="form-check-label" for="autoScrollCheck">AutoScroll</label>
+		</div>
 		<div class="d-flex flex-row gap-2">
 			<label class="form-label mt-auto mb-auto" for="scoreboardSelect">Scoreboard</label>
 			<select
