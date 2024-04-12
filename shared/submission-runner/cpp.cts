@@ -135,7 +135,9 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 					child.stdin.destroy();
 					child.stdout.destroy();
 					child.stderr.destroy();
-					child.kill('SIGKILL');
+					if (child.pid !== undefined) {
+						kill(child.pid);
+					}
 				}, timeoutSeconds * 1000);
 			}),
 			killFunc() {
