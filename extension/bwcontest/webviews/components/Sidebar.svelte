@@ -96,7 +96,15 @@
 			repoState = m.data;
 		}
 	});
+
+	function onKey(event: KeyboardEvent) {
+		if (!loggedIn && event.key === 'Enter') {
+			onLogin();
+		}
+	}
 </script>
+
+<svelte:window on:keypress={onKey} />
 
 {#if !loggedIn}
 	<h1>Contest Login</h1>
