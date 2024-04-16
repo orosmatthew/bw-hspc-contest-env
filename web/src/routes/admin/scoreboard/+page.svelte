@@ -25,6 +25,16 @@
 	<title>Admin Scoreboards</title>
 </svelte:head>
 
+{#if data.contest !== null}
+	<div class="pb-2 d-flex flex-row-reverse">
+		<a
+			href={`/admin/scoreboard/json/${data.contest.id}`}
+			target="_blank"
+			class="btn btn-outline-secondary btn-sm">JSON Export</a
+		>
+	</div>
+{/if}
+
 <div class="text-end">
 	{#if data.frozen}
 		<span class="badge bg-info">Frozen</span>
