@@ -4,7 +4,6 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/prisma';
 
 type ScoreboardExportSchema = {
-	version: 3;
 	problems: string[];
 	teams: {
 		correct: number;
@@ -33,7 +32,6 @@ export const GET = (async ({ params }) => {
 	const problems = data.contest.problems.map((p) => p.friendlyName);
 	const problemIds = data.contest.problems.map((p) => p.id);
 	const exportData: ScoreboardExportSchema = {
-		version: 3,
 		problems: problems,
 		teams: data.contest.teams.map((t) => {
 			return {
@@ -53,23 +51,3 @@ export const GET = (async ({ params }) => {
 	};
 	return json(exportData);
 }) satisfies RequestHandler;
-
-/**
- * type ScoreboardDataType = {
-	timestamp: Date;
-	frozen: boolean;
-	contest: {
-		id: number;
-		name: string;
-		problems: { id: number; friendlyName: string }[];
-		teams: {
-			id: number;
-			name: string;
-			solves: number;
-			time: number;
-			problems: { id: number; attempts: number; graphic: string | null; min: number | undefined }[];
-		}[];
-	};
-};
- * 
- */
