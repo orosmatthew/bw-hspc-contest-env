@@ -39,13 +39,13 @@ export const GET = (async ({ params }) => {
 			return {
 				correct: t.solves,
 				name: t.name,
-				points: t.time,
+				points: parseFloat(t.time.toFixed(2)),
 				problems: t.problems
 					.sort((a, b) => problemIds.indexOf(a.id) - problemIds.indexOf(b.id))
 					.map((p) => {
 						return {
 							attempts: p.attempts !== 0 ? p.attempts : null,
-							time: p.min ?? null
+							time: p.min !== undefined ? parseFloat(p.min.toFixed(2)) : null
 						};
 					})
 			};
