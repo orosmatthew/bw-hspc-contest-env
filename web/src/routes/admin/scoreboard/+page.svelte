@@ -52,7 +52,7 @@
 	</div>
 
 	<table class="table table-striped table-bordered">
-		<thead>
+		<thead class="sticky-header">
 			<tr>
 				<th>Place</th>
 				<th>Team Name</th>
@@ -125,3 +125,10 @@
 {:else}
 	<h2 class="text-center">Scoreboard - Select Contest</h2>
 {/if}
+
+<style lang="scss">
+	.sticky-header {
+		position: sticky;
+		top: -1px;
+	}
+</style>
