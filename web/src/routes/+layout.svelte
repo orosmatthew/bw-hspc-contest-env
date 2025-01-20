@@ -29,9 +29,9 @@
 	}
 </script>
 
-<body class="container">
+<div class="container">
 	{@render children?.()}
-</body>
+</div>
 
 <style>
 	@font-face {
