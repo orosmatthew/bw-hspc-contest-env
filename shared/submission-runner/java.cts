@@ -116,6 +116,7 @@ export const runJava: IRunner<IRunnerParamsJava> = async function (
 			}
 		};
 	} catch (error) {
+		console.error(error);
 		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
 	}
 };

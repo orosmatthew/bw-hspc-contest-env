@@ -130,6 +130,7 @@ export const runCSharp: IRunner = async function (params: IRunnerParams): Promis
 			}
 		};
 	} catch (error) {
+		console.error(error);
 		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
 	}
 };

@@ -151,6 +151,7 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 			}
 		};
 	} catch (error) {
+		console.error(error);
 		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
 	}
 };
