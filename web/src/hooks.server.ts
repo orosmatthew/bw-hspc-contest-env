@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { startGitServer } from '$lib/server/gitserver';
 import { hashPassword, isSessionValid, logout } from '$lib/server/auth';
 import { db } from '$lib/server/prisma';
+import { building } from '$app/environment';
 
 async function createDefaultAccount(db: PrismaClient) {
 	const count = await db.user.count();
@@ -15,7 +16,7 @@ async function createDefaultAccount(db: PrismaClient) {
 	});
 }
 
-if (process.env.INIT !== undefined && process.env.INIT === 'true') {
+if (!building) {
 	console.log('Runtime initialization...');
 	const db = new PrismaClient();
 	createDefaultAccount(db);
