@@ -10,6 +10,7 @@ import { runCpp } from 'bwcontest-shared/submission-runner/cpp.cjs';
 import { RunResult, RunResultZod } from 'bwcontest-shared/submission-runner/types.cjs';
 import { z } from 'zod';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const submissionPostData = z
 	.object({
 		submissionId: z.number(),
@@ -277,7 +278,6 @@ async function run() {
 
 	let iterationsSinceProcessedSubmission = 0;
 	let anySubmissionsProcessed = false;
-	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		switch (await processNextSubmission()) {
 			case SubmissionProcessingResult.SubmissionProcessed:
