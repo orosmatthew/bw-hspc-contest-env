@@ -1,7 +1,11 @@
 <script lang="ts">
 	import Modal from '$lib/Modal.svelte';
 
-	export let inputSpecModal: Modal;
+	interface Props {
+		inputSpecModal: Modal;
+	}
+
+	let { inputSpecModal }: Props = $props();
 </script>
 
 <div class="modal-body">
@@ -49,7 +53,7 @@
 </div>
 <div class="modal-footer">
 	<button
-		on:click={() => {
+		onclick={() => {
 			inputSpecModal.hide();
 		}}
 		type="button"

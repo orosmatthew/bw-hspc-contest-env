@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
 	export const autoScrollEnabled = writable<boolean>(false);
 </script>
 
@@ -8,7 +8,12 @@
 	import { theme } from '../../stores';
 	import type { PageData } from './$types';
 	import { contestId } from './stores';
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+		children?: import('svelte').Snippet;
+	}
+
+	let { data, children }: Props = $props();
 
 	function onContestSelect() {
 		if ($contestId != null) {
@@ -24,13 +29,13 @@
 <div class="row mt-2">
 	<div class="col d-flex flex-row-reverse gap-3">
 		<button
-			on:click={() => {
+			onclick={() => {
 				$theme = $theme === 'light' ? 'dark' : 'light';
 			}}
 			type="button"
 			aria-label="theme"
 			class="btn btn-outline-secondary"
-			><i class={`bi bi-${$theme == 'light' ? 'sun' : 'moon'}`} /></button
+			><i class={`bi bi-${$theme == 'light' ? 'sun' : 'moon'}`}></i></button
 		>
 		<div class="form-check form-switch align-self-center">
 			<input
@@ -46,7 +51,7 @@
 			<label class="form-label mt-auto mb-auto" for="scoreboardSelect">Scoreboard</label>
 			<select
 				bind:value={$contestId}
-				on:change={onContestSelect}
+				onchange={onContestSelect}
 				id="scoreboardSelect"
 				class="form-control form-select w-auto"
 			>
@@ -60,4 +65,4 @@
 		</div>
 	</div>
 </div>
-<slot />
+{@render children?.()}

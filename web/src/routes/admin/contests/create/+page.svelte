@@ -4,12 +4,18 @@
 	import FormAlert from '$lib/FormAlert.svelte';
 	import type { Actions, PageData } from './$types';
 
-	export let data: PageData;
-	export let form: Actions;
-
-	$: if (form && form.success) {
-		goto('/admin/contests');
+	interface Props {
+		data: PageData;
+		form: Actions;
 	}
+
+	let { data, form }: Props = $props();
+
+	$effect(() => {
+		if (form && form.success) {
+			goto('/admin/contests');
+		}
+	});
 
 	function selectTeamsAll() {
 		document.querySelectorAll<HTMLInputElement>('.team-checkbox').forEach((elem) => {
@@ -53,10 +59,10 @@
 			<h4>Teams</h4>
 			<div class="row mb-2">
 				<div>
-					<button on:click={selectTeamsAll} type="button" class="btn btn-outline-secondary btn-sm"
+					<button onclick={selectTeamsAll} type="button" class="btn btn-outline-secondary btn-sm"
 						>Select All</button
 					>
-					<button on:click={selectTeamsNone} type="button" class="btn btn-outline-secondary btn-sm"
+					<button onclick={selectTeamsNone} type="button" class="btn btn-outline-secondary btn-sm"
 						>Select None</button
 					>
 				</div>
@@ -78,13 +84,11 @@
 			<h4>Problems</h4>
 			<div class="row mb-2">
 				<div>
-					<button
-						on:click={selectProblemsAll}
-						type="button"
-						class="btn btn-outline-secondary btn-sm">Select All</button
+					<button onclick={selectProblemsAll} type="button" class="btn btn-outline-secondary btn-sm"
+						>Select All</button
 					>
 					<button
-						on:click={selectProblemsNone}
+						onclick={selectProblemsNone}
 						type="button"
 						class="btn btn-outline-secondary btn-sm">Select None</button
 					>

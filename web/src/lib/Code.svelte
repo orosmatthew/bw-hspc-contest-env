@@ -2,8 +2,12 @@
 	import hljs from 'highlight.js';
 	import 'highlight.js/styles/atom-one-dark.min.css';
 
-	export let code: string;
-	export let highlight: boolean;
+	interface Props {
+		code: string;
+		highlight: boolean;
+	}
+
+	let { code, highlight }: Props = $props();
 </script>
 
 <div class="border border-secondary border-2 p-2 rounded-3 fs-5" style="background-color:#282c34">

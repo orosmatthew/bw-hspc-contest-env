@@ -9,11 +9,15 @@
 	import type { Problem } from '@prisma/client';
 	import { newline, trimmedLines } from './outputAnalyzer/analyzerUtils';
 
-	export let expectedOutput: string;
-	export let output: string | null;
-	export let diff: string | null;
-	export let kind: 'aligned' | 'best-match' | 'case-diff';
-	export let problem: Problem;
+	interface Props {
+		expectedOutput: string;
+		output: string | null;
+		diff: string | null;
+		kind: 'aligned' | 'best-match' | 'case-diff';
+		problem: Problem;
+	}
+
+	let { expectedOutput, output, diff, kind, problem }: Props = $props();
 
 	let localDiff: string | null = null;
 
@@ -168,7 +172,7 @@
 	id={`diff_${kind}`}
 	class:d2h-dark-color-scheme={$theme === 'dark'}
 	class:d2h-light-color-scheme={$theme === 'light'}
-/>
+></div>
 
 <style>
 	.diffView {

@@ -1,16 +1,20 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { contestId } from '../stores';
 	import { onDestroy, onMount } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { autoScrollEnabled } from '../+layout.svelte';
+	import { page } from '$app/state';
 
-	$contestId = parseInt($page.params.contestId);
-	export let data: PageData;
+	$contestId = parseInt(page.params.contestId);
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let updateInterval: ReturnType<typeof setInterval>;
-	let updating = false;
+	let updating = $state(false);
 
 	const scrollInterval = 10000;
 
@@ -63,7 +67,7 @@
 
 <h2 style="text-align:center">{data.contest.name}</h2>
 <div class="row">
-	<div class="text-end" />
+	<div class="text-end"></div>
 </div>
 
 <div class="text-end mb-1">
@@ -71,7 +75,7 @@
 		<span class="badge bg-info">Frozen</span>
 	{/if}
 	{#if updating}
-		<div class="spinner-border spinner-border-sm text-secondary" />
+		<div class="spinner-border spinner-border-sm text-secondary"></div>
 	{/if}
 	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
 </div>

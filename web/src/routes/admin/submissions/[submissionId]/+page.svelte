@@ -12,14 +12,20 @@
 	import TestCaseResults from '$lib/TestCaseResults.svelte';
 	import { theme } from '../../../../routes/stores';
 
-	export let data: PageData;
-	export let form: Actions;
-
-	let confirmModal: ConfirmModal;
-
-	$: if (form && form.success) {
-		goto('/admin/reviews');
+	interface Props {
+		data: PageData;
+		form: Actions;
 	}
+
+	let { data, form }: Props = $props();
+
+	let confirmModal: ConfirmModal | undefined = $state();
+
+	$effect(() => {
+		if (form && form.success) {
+			goto('/admin/reviews');
+		}
+	});
 
 	type JudgeResponseCategory = {
 		title: string;
@@ -28,7 +34,7 @@
 		description?: string;
 	};
 
-	let chosenJudgeResponse: JudgeResponseCategory | null = null;
+	let chosenJudgeResponse: JudgeResponseCategory | null = $state(null);
 
 	const customResponseCategory: JudgeResponseCategory = {
 		title: 'Custom',
@@ -89,10 +95,10 @@
 		judgeResponseCategories.map((e) => [e.message, e])
 	);
 
-	let judgeResponseTextArea: HTMLTextAreaElement;
-	let judgeResponsePicker: HTMLSelectElement;
+	let judgeResponseTextArea: HTMLTextAreaElement | undefined = $state();
+	let judgeResponsePicker: HTMLSelectElement | undefined = $state();
 
-	let correct: boolean | null = null;
+	let correct: boolean | null = $state(null);
 
 	function incorrectClicked() {
 		correct = correct != false ? false : null;
@@ -104,6 +110,16 @@
 
 	function enhanceConfirmGrading(form: HTMLFormElement) {
 		enhance(form, async ({ cancel }) => {
+			if (judgeResponseTextArea === undefined) {
+				console.error('judgeResponseTextArea is undefined, aborting');
+				cancel();
+				return;
+			}
+			if (confirmModal === undefined) {
+				console.error('confirmModal is undefined, aborting');
+				cancel();
+				return;
+			}
 			const confirmText =
 				correct === true
 					? `Grading as CORRECT. Are you sure?`
@@ -121,6 +137,14 @@
 	}
 
 	function judgeResponseCategoryPicked() {
+		if (judgeResponseTextArea === undefined) {
+			console.error('judgeResponseTextArea is undefined');
+			return;
+		}
+		if (judgeResponsePicker === undefined) {
+			console.error('judgeResponsePicker is undefined');
+			return;
+		}
 		const response = responseTitleToResponse.get(judgeResponsePicker.value);
 		if (!response) {
 			return;
@@ -132,6 +156,14 @@
 	}
 
 	function judgeResponseTextChange() {
+		if (judgeResponseTextArea === undefined) {
+			console.error('judgeResponseTextArea is undefined');
+			return;
+		}
+		if (judgeResponsePicker === undefined) {
+			console.error('judgeResponsePicker is undefined');
+			return;
+		}
 		chosenJudgeResponse =
 			responseTextToResponse.get(judgeResponseTextArea.value) ?? customResponseCategory;
 		judgeResponsePicker.value = chosenJudgeResponse.title;
@@ -182,6 +214,11 @@
 				action="?/clearJudgment"
 				style="display: inline-block"
 				use:enhance={async ({ cancel }) => {
+					if (confirmModal === undefined) {
+						console.error('confirmModal is undefined, aborting');
+						cancel();
+						return;
+					}
 					if (
 						(await confirmModal.prompt(
 							'Are you SURE you want move this to "In Review"? The team will see this state change. This will NOT rerun the autoJudge.'
@@ -201,6 +238,11 @@
 				action="?/rerun"
 				style="display: inline-block"
 				use:enhance={async ({ cancel }) => {
+					if (confirmModal === undefined) {
+						console.error('confirmModal is undefined, aborting');
+						cancel();
+						return;
+					}
 					if (
 						(await confirmModal.prompt(
 							'Are you SURE you want to reset to "Queued" and rerun team code on the sandbox? The team will see this state change.'
@@ -224,6 +266,11 @@
 				action="?/delete"
 				style="display: inline-block"
 				use:enhance={async ({ cancel }) => {
+					if (confirmModal === undefined) {
+						console.error('confirmModal is undefined, aborting');
+						cancel();
+						return;
+					}
 					if (
 						(await confirmModal.prompt(
 							'Are you SURE you want to delete the selected submission?'
@@ -261,8 +308,7 @@
 		<tbody>
 			{#each data.submissionHistory as submission, i}
 				<tr
-					on:click={() =>
-						goto(`/admin/submissions/${submission.id.toString()}`, { noScroll: true })}
+					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`, { noScroll: true })}
 					class="{submission.id == data.id
 						? 'specifiedSubmission'
 						: 'otherSubmission'} {submission.state === 'InReview' ? 'inReview' : ''}"
@@ -338,7 +384,7 @@
 				<span class="h5" style="display: inline;">Response: </span>
 				<select
 					bind:this={judgeResponsePicker}
-					on:change={judgeResponseCategoryPicked}
+					onchange={judgeResponseCategoryPicked}
 					class="form-control form-select w-auto ms-1"
 					style="display: inline;"
 				>
@@ -356,17 +402,17 @@
 			<textarea
 				bind:this={judgeResponseTextArea}
 				id="gradingMessageText"
-				on:input={judgeResponseTextChange}
+				oninput={judgeResponseTextChange}
 				name="message"
 				class="mb-3 form-control"
 				placeholder="Choose from built-in responses above, or enter custom response..."
-			/>
+			></textarea>
 			<div class="row justify-content-end">
 				<div class="text-end">
 					<input name="correct" type="hidden" value={correct} />
 					<div class="btn-group" role="group">
 						<input
-							on:click={incorrectClicked}
+							onclick={incorrectClicked}
 							type="radio"
 							class="btn-check"
 							name="btnradio"
@@ -376,7 +422,7 @@
 						/>
 						<label class="btn btn-outline-danger" for="btn_incorrect">Incorrect</label>
 						<input
-							on:click={correctClicked}
+							onclick={correctClicked}
 							type="radio"
 							class="btn-check"
 							name="btnradio"

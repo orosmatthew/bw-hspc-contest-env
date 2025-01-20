@@ -3,11 +3,17 @@
 	import { goto } from '$app/navigation';
 	import type { Actions } from './$types';
 
-	export let form: Actions;
-
-	$: if (form && form.success) {
-		goto('/admin/problems');
+	interface Props {
+		form: Actions;
 	}
+
+	let { form }: Props = $props();
+
+	$effect(() => {
+		if (form && form.success) {
+			goto('/admin/problems');
+		}
+	});
 </script>
 
 <svelte:head>
@@ -30,7 +36,7 @@
 	<div class="row justify-content-center">
 		<h4 style="text-align:center" class="mt-3">Name</h4>
 		<div class="col-md-auto">
-			<textarea name="name" class="form-control" />
+			<textarea name="name" class="form-control"></textarea>
 		</div>
 		<h4 style="text-align:center" class="mt-3">PascalCase Name (for filenames)</h4>
 		<div class="col-md-auto">
@@ -41,11 +47,11 @@
 	<div class="row">
 		<div class="col-6">
 			<h5>Input</h5>
-			<textarea name="sampleInput" class="form-control" />
+			<textarea name="sampleInput" class="form-control"></textarea>
 		</div>
 		<div class="col-6">
 			<h5>Output</h5>
-			<textarea name="sampleOutput" class="form-control" />
+			<textarea name="sampleOutput" class="form-control"></textarea>
 		</div>
 	</div>
 
@@ -53,11 +59,11 @@
 	<div class="row">
 		<div class="col-6">
 			<h5>Input</h5>
-			<textarea name="realInput" class="form-control" />
+			<textarea name="realInput" class="form-control"></textarea>
 		</div>
 		<div class="col-6">
 			<h5>Output</h5>
-			<textarea name="realOutput" class="form-control" />
+			<textarea name="realOutput" class="form-control"></textarea>
 		</div>
 	</div>
 	<div class="mt-3 row">

@@ -1,23 +1,18 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { afterUpdate } from 'svelte';
+	import { page } from '$app/state';
 	import { slide } from 'svelte/transition';
 
-	let dismissed = false;
-	let success = false;
-	let message: string | undefined;
-	let manualPopup = false;
+	let dismissed = $state(false);
+	let success = $state(false);
+	let message: string | undefined = $state();
+	let manualPopup = $state(false);
 
-	$: if ($page.form !== null) {
-		manualPopup = false;
-		dismissed = false;
-		success = $page.form.success;
-		message = $page.form.message;
-	}
-
-	afterUpdate(() => {
-		if ($page.form !== null) {
-			success = $page.form.success;
+	$effect(() => {
+		if (page.form !== null) {
+			manualPopup = false;
+			dismissed = false;
+			success = page.form.success;
+			message = page.form.message;
 		}
 	});
 
@@ -29,18 +24,19 @@
 	}
 </script>
 
-{#if ($page.form !== null && dismissed === false) || (manualPopup === true && dismissed === false)}
+{#if (page.form !== null && dismissed === false) || (manualPopup === true && dismissed === false)}
 	<div
 		transition:slide|local
 		class={`mt-2 mb-2 alert alert-dismissible alert-${success ? 'success' : 'danger'}`}
 	>
-		{success ? 'Success' : message ?? 'Unknown error'}
+		{success ? 'Success' : (message ?? 'Unknown error')}
 		<button
-			on:click={() => {
+			aria-label="close"
+			onclick={() => {
 				dismissed = true;
 			}}
 			type="button"
 			class="btn-close"
-		/>
+		></button>
 	</div>
 {/if}

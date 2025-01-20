@@ -1,23 +1,31 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import ConfirmModal from '$lib/ConfirmModal.svelte';
 	import { parseProblemInput } from '$lib/outputAnalyzer/inputAnalyzer';
 	import { stretchTextarea } from '$lib/util';
 	import type { Actions, PageData } from './$types';
 
-	let editing = false;
-	let error = false;
+	let editing = $state(false);
+	let error = $state(false);
 
-	export let data: PageData;
-	export let form: Actions;
+	interface Props {
+		data: PageData;
+		form: Actions;
+	}
+
+	let { data, form }: Props = $props();
 
 	async function deleteProblem() {
+		if (confirmModal === undefined) {
+			console.error('confirmModal is undefined, aborting');
+			return;
+		}
 		const sure = await confirmModal.prompt('Are you sure?');
 		if (!sure) {
 			return;
 		}
-		const res = await fetch($page.url, { method: 'DELETE' });
+		const res = await fetch(page.url, { method: 'DELETE' });
 		const data = await res.json();
 		if (data.success) {
 			goto('/admin/problems');
@@ -26,7 +34,7 @@
 		}
 	}
 
-	let confirmModal: ConfirmModal;
+	let confirmModal: ConfirmModal | undefined = $state();
 
 	const parsedInput = parseProblemInput(data.problemData);
 	let inputSpecStatus = parsedInput.success
@@ -55,10 +63,10 @@
 		<a href="/admin/problems" class="btn btn-outline-primary">All Problems</a>
 	</div>
 	<div class="col-6 text-end">
-		<button on:click={deleteProblem} type="button" class="btn btn-danger">Delete</button>
+		<button onclick={deleteProblem} type="button" class="btn btn-danger">Delete</button>
 		{#if !editing}
 			<button
-				on:click={() => {
+				onclick={() => {
 					if (!editing) {
 						editing = true;
 					}
@@ -161,7 +169,7 @@
 				<button
 					type="button"
 					class="btn btn-secondary"
-					on:click={async () => {
+					onclick={async () => {
 						location.reload();
 					}}>Cancel</button
 				>

@@ -6,11 +6,15 @@
 	import AnnotatedOutput from './AnnotatedOutput.svelte';
 	import Code from './Code.svelte';
 
-	export let problem: Problem;
-	export let expectedOutput: string;
-	export let output: string | null;
-	export let diff: string | null;
-	export let sourceFiles: SubmissionSourceFile[];
+	interface Props {
+		problem: Problem;
+		expectedOutput: string;
+		output: string | null;
+		diff: string | null;
+		sourceFiles: SubmissionSourceFile[];
+	}
+
+	let { problem, expectedOutput, output, diff, sourceFiles }: Props = $props();
 </script>
 
 <div class="pb-4">

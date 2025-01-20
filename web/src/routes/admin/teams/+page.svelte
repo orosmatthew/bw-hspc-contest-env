@@ -6,24 +6,29 @@
 	import type { Actions, PageData } from './$types';
 	import { genPassword } from './util';
 
-	export let data: PageData;
-	export let form: Actions;
+	interface Props {
+		data: PageData;
+		form: Actions;
+	}
+
+	let { data, form }: Props = $props();
 
 	function editGenPassword() {
 		(document.getElementById('editTeamPassword') as HTMLInputElement).value = genPassword();
 	}
 
-	$: if (form) {
-		addModal.hide();
-		editModal.hide();
-		confirmModal.cancel();
-	}
+	let addModal: Modal | undefined = $state();
+	let confirmModal: ConfirmModal | undefined = $state();
+	let editModal: Modal | undefined = $state();
 
-	let addModal: Modal;
-	let confirmModal: ConfirmModal;
-	let editModal: Modal;
-
-	let editTeam: PageData['teams'][number] | undefined;
+	let editTeam: PageData['teams'][number] | undefined = $state();
+	$effect(() => {
+		if (form) {
+			addModal?.hide();
+			editModal?.hide();
+			confirmModal?.cancel();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -81,8 +86,11 @@
 							value={editTeam.password}
 							required
 						/>
-						<button type="button" on:click={editGenPassword} class="btn btn-outline-primary"
-							><i class="bi bi-arrow-clockwise"></i></button
+						<button
+							type="button"
+							onclick={editGenPassword}
+							class="btn btn-outline-primary"
+							aria-label="generate password"><i class="bi bi-arrow-clockwise"></i></button
 						>
 					</div>
 				{/if}
@@ -90,8 +98,8 @@
 		</div>
 		<div class="modal-footer">
 			<button
-				on:click={() => {
-					editModal.hide();
+				onclick={() => {
+					editModal?.hide();
 				}}
 				type="button"
 				class="btn btn-secondary">Cancel</button
@@ -115,8 +123,8 @@
 		</div>
 		<div class="modal-footer">
 			<button
-				on:click={() => {
-					addModal.hide();
+				onclick={() => {
+					addModal?.hide();
 				}}
 				type="button"
 				class="btn btn-secondary">Cancel</button
@@ -131,8 +139,8 @@
 <div class="row mb-3">
 	<div class="text-end">
 		<button
-			on:click={() => {
-				addModal.show();
+			onclick={() => {
+				addModal?.show();
 			}}
 			type="button"
 			class="btn btn-success">Add</button
@@ -169,9 +177,10 @@
 					<td><code>{team.password}</code></td>
 					<td>
 						<button
-							on:click={() => {
+							aria-label="edit"
+							onclick={() => {
 								editTeam = team;
-								editModal.show();
+								editModal?.show();
 							}}
 							class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil-square"></i></button
 						>
@@ -180,6 +189,11 @@
 							class="d-inline"
 							method="POST"
 							use:enhance={async ({ cancel }) => {
+								if (confirmModal === undefined) {
+									console.error('confirmModal is undefined, aborting');
+									cancel();
+									return;
+								}
 								if (
 									!(await confirmModal.prompt(`Are you sure you want to delete team ${team.name}?`))
 								) {
@@ -191,7 +205,7 @@
 							}}
 						>
 							<input type="hidden" name="teamId" value={team.id} />
-							<button type="submit" class="btn btn-sm btn-danger"
+							<button type="submit" class="btn btn-sm btn-danger" aria-label="delete"
 								><i class="bi bi-trash3"></i></button
 							>
 						</form>

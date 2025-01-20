@@ -5,20 +5,18 @@
 	import type { Actions } from './$types';
 	import type { ContestImportData } from './+page.server';
 
-	export let form: Actions;
-
-	$: if (form && form.success) {
-		goto('/admin/contests');
+	interface Props {
+		form: Actions;
 	}
 
-	let jsonText = '';
-	let parsesCorrectly: boolean | null = null;
+	let { form }: Props = $props();
 
-	let numProblems: number | null = null;
-	let numTeams: number | null = null;
-	let numSubmissions: number | null = null;
+	let jsonText = $state('');
+	let parsesCorrectly: boolean | null = $state(null);
 
-	$: jsonText, updateUIFromJson();
+	let numProblems: number | null = $state(null);
+	let numTeams: number | null = $state(null);
+	let numSubmissions: number | null = $state(null);
 
 	function updateUIFromJson() {
 		try {
@@ -39,6 +37,16 @@
 			parsesCorrectly = null;
 		}
 	}
+	$effect(() => {
+		if (form && form.success) {
+			goto('/admin/contests');
+		}
+	});
+	$effect(() => {
+		if (jsonText) {
+			updateUIFromJson();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -61,7 +69,7 @@
 			style={parsesCorrectly == null
 				? ''
 				: `border: 2px solid ${parsesCorrectly ? 'green' : 'red'}`}
-		/>
+		></textarea>
 	</div>
 
 	<div class="mb-4">

@@ -8,22 +8,26 @@
 	import { theme } from '../routes/stores';
 	import { analyzeSubmissionOutput, rehydrateOutputPreview } from './outputAnalyzer/outputAnalyzer';
 
-	export let problem: Problem;
-	export let submission: Submission;
-	export let condensed: boolean = false;
-	export let previousSubmission: Submission | null = null;
+	interface Props {
+		problem: Problem;
+		submission: Submission;
+		condensed?: boolean;
+		previousSubmission?: Submission | null;
+	}
+
+	let { problem, submission, condensed = false, previousSubmission = null }: Props = $props();
 
 	let cellsPerRow = condensed ? 20 : 30;
 
 	let previousSubmitResults:
 		| { condensed: true; testCases: TestCaseResultPreview[] }
 		| { condensed: false; testCases: TestCaseResult[] }
-		| null = null;
+		| null = $state(null);
 
 	let currentSubmitResults:
 		| { condensed: true; testCases: TestCaseResultPreview[] }
 		| { condensed: false; testCases: TestCaseResult[] }
-		| null = { condensed, testCases: [] };
+		| null = $state({ condensed, testCases: [] });
 
 	if (condensed) {
 		previousSubmitResults = previousSubmission?.testCaseResults
@@ -86,6 +90,7 @@
 			{@const numCases = currentSubmitResults.testCases.length}
 			{@const numRows = Math.ceil(currentSubmitResults.testCases.length / cellsPerRow)}
 			{@const showRowLabels = !condensed && numRows > 1}
+			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each { length: numRows } as _, rowNum}
 				{@const casesBeforeThisRow = rowNum * cellsPerRow}
 				{@const casesOnRow = Math.min(cellsPerRow, numCases - casesBeforeThisRow)}
@@ -95,6 +100,7 @@
 							{casesBeforeThisRow + 1}-{casesBeforeThisRow + casesOnRow}:
 						</td>
 					{/if}
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 					{#each { length: Math.min(cellsPerRow, currentSubmitResults.testCases.length - rowNum * cellsPerRow) } as _, colNum}
 						{@const currentCaseIndex = rowNum * cellsPerRow + colNum}
 						{@const currentCaseResult = currentSubmitResults.testCases[currentCaseIndex]}
@@ -177,7 +183,7 @@
 		width: 16px;
 	}
 
-	div .test-case-result .changed-from-previous-submit {
+	:global(div .test-case-result .changed-from-previous-submit) {
 		border: 2px solid var(--changed-border-color);
 	}
 

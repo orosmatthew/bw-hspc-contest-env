@@ -1,17 +1,22 @@
 <script lang="ts">
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { theme } from '../stores';
-	import { page } from '$app/stores';
 	import { selectedContest } from './stores';
 	import type { LayoutData } from './$types';
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 
-	export let data: LayoutData;
+	interface Props {
+		data: LayoutData;
+		children?: import('svelte').Snippet;
+	}
+
+	let { data, children }: Props = $props();
 
 	$selectedContest = data.selectedContestId;
 
 	selectedContest.subscribe((id) => {
-		const url = $page.url;
+		const url = page.url;
 		if (typeof id === 'number') {
 			url.searchParams.delete('c');
 			url.searchParams.append('c', id.toString());
@@ -36,7 +41,7 @@
 		}
 	});
 
-	let selectContestValue: string;
+	let selectContestValue: string = $state('null');
 	function onSelectContest() {
 		if (selectContestValue === 'null') {
 			$selectedContest = null;
@@ -57,7 +62,7 @@
 			aria-expanded="false"
 			aria-label="Toggle navigation"
 		>
-			<span class="navbar-toggler-icon" />
+			<span class="navbar-toggler-icon"></span>
 		</button>
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -94,7 +99,7 @@
 		<select
 			class="form-control form-select w-auto"
 			bind:value={selectContestValue}
-			on:change={onSelectContest}
+			onchange={onSelectContest}
 		>
 			{#if $selectedContest === null}
 				<option value={null} selected>Select Contest</option>
@@ -105,15 +110,15 @@
 			{/each}
 		</select>
 		<button
-			on:click={() => {
+			onclick={() => {
 				$theme = $theme === 'light' ? 'dark' : 'light';
 			}}
 			type="button"
 			aria-label="theme"
-			class="btn"><i class={`bi bi-${$theme == 'light' ? 'sun' : 'moon'}`} /></button
+			class="btn"><i class={`bi bi-${$theme == 'light' ? 'sun' : 'moon'}`}></i></button
 		>
 		<button
-			on:click={async () => {
+			onclick={async () => {
 				const res = await fetch('/logout', { method: 'POST' });
 				const data = await res.json();
 				if (data.success) {
@@ -125,7 +130,7 @@
 		>
 	</div>
 </nav>
-<slot />
+{@render children?.()}
 
 <style>
 	.main-nav {

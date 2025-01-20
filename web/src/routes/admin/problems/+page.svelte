@@ -3,14 +3,20 @@
 	import Modal from '$lib/Modal.svelte';
 	import InputSpecDescription from './InputSpecDescription.svelte';
 
-	export let data: PageData;
-	export let form: Actions;
-
-	let inputSpecModal: Modal;
-
-	$: if (form) {
-		inputSpecModal.hide();
+	interface Props {
+		data: PageData;
+		form: Actions;
 	}
+
+	let { data, form }: Props = $props();
+
+	let inputSpecModal: Modal | undefined = $state();
+
+	$effect(() => {
+		if (form) {
+			inputSpecModal?.hide();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -37,9 +43,10 @@
 				<th>Name</th>
 				<th
 					>Input Spec <button
+						aria-label="info"
 						class="btn btn-link btn-sm pt-0 pb-0"
-						on:click={() => {
-							inputSpecModal.show();
+						onclick={() => {
+							inputSpecModal?.show();
 						}}><i class="bi bi-info-circle"></i></button
 					></th
 				>

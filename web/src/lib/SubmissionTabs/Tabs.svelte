@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
 	import { writable } from 'svelte/store';
 	const tabs = [
 		'Inspector',
@@ -13,11 +13,19 @@
 	export const selectedTab = writable<Tab>('Inspector');
 </script>
 
+<script lang="ts">
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
+</script>
+
 <ul class="nav nav-tabs">
 	{#each tabs as tab}
 		<li class="nav-item">
 			<button
-				on:click={() => {
+				onclick={() => {
 					$selectedTab = tab;
 				}}
 				class="nav-link"
@@ -27,4 +35,4 @@
 	{/each}
 </ul>
 
-<slot />
+{@render children?.()}

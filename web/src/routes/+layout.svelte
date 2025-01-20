@@ -12,7 +12,12 @@
 		await import('bootstrap');
 	});
 
-	export let data: LayoutData;
+	interface Props {
+		data: LayoutData;
+		children?: import('svelte').Snippet;
+	}
+
+	let { data, children }: Props = $props();
 
 	$theme = data.theme;
 
@@ -25,7 +30,7 @@
 </script>
 
 <body class="container">
-	<slot />
+	{@render children?.()}
 </body>
 
 <style>

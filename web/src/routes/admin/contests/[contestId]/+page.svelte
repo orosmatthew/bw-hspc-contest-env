@@ -1,23 +1,28 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import ConfirmModal from '$lib/ConfirmModal.svelte';
 	import FormAlert from '$lib/FormAlert.svelte';
 	import Modal from '$lib/Modal.svelte';
 	import type { Actions, PageData } from './$types';
 
-	export let data: PageData;
-	export let form: Actions;
-
-	$: if (form) {
-		repoModal.hide();
+	interface Props {
+		data: PageData;
+		form: Actions;
 	}
 
-	let confirmModal: ConfirmModal;
-	let repoModal: Modal;
+	let { data, form }: Props = $props();
+
+	let confirmModal: ConfirmModal | undefined = $state();
+	let repoModal: Modal | undefined = $state();
 
 	function enhanceConfirm(form: HTMLFormElement, text: string) {
 		enhance(form, async ({ cancel }) => {
+			if (confirmModal == undefined) {
+				console.error('confirmModal is undefined, aborting');
+				cancel();
+				return;
+			}
 			if ((await confirmModal.prompt(text)) !== true) {
 				cancel();
 			}
@@ -38,6 +43,11 @@
 			e.checked = true;
 		});
 	}
+	$effect(() => {
+		if (form) {
+			repoModal?.hide();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -50,10 +60,10 @@
 	<form action="?/repo" method="POST" use:enhance>
 		<div class="modal-body">
 			<div class="d-flex flex-row gap-2 pb-2">
-				<button on:click={repoSelectNone} type="button" class="btn btn-sm btn-outline-secondary"
+				<button onclick={repoSelectNone} type="button" class="btn btn-sm btn-outline-secondary"
 					>Select None</button
 				>
-				<button on:click={repoSelectAll} type="button" class="btn btn-sm btn-outline-secondary"
+				<button onclick={repoSelectAll} type="button" class="btn btn-sm btn-outline-secondary"
 					>Select All</button
 				>
 			</div>
@@ -74,8 +84,8 @@
 			<button
 				type="button"
 				class="btn btn-outline-secondary"
-				on:click={() => {
-					repoModal.hide();
+				onclick={() => {
+					repoModal?.hide();
 				}}>Cancel</button
 			>
 			<button type="submit" class="btn btn-warning">Reset Selected</button>
@@ -108,8 +118,8 @@
 		<button
 			type="button"
 			class="btn btn-outline-warning"
-			on:click={() => {
-				repoModal.show();
+			onclick={() => {
+				repoModal?.show();
 			}}>Reset Repos</button
 		>
 		{#if data.activeTeams === 0}
@@ -146,7 +156,7 @@
 	<div class="col-6">
 		<h4>Teams</h4>
 		<a
-			href={`/admin/contests/${$page.params.contestId}/logins`}
+			href={`/admin/contests/${page.params.contestId}/logins`}
 			class="mb-2 btn btn-outline-secondary">Printable Logins</a
 		>
 		<div class="list-group">

@@ -40,6 +40,7 @@ export const POST = (async ({ request }) => {
 			data: { sessionToken: null, sessionCreatedAt: null }
 		});
 	} catch (error) {
+		console.error(error);
 		return json({
 			success: true,
 			message:

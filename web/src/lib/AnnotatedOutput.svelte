@@ -7,8 +7,12 @@
 	import type { CaseResult } from './outputAnalyzer/analyzerTypes';
 	import { normalizeInputLines } from './outputAnalyzer/analyzerUtils';
 
-	export let problem: Problem;
-	export let output: string | null;
+	interface Props {
+		problem: Problem;
+		output: string | null;
+	}
+
+	let { problem, output }: Props = $props();
 
 	const analysisResults = output != null ? analyzeSubmissionOutput(problem, output) : null;
 

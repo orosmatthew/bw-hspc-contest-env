@@ -96,11 +96,12 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 								attempts: team.submissions.filter((submission) => {
 									const correct = team.submissions
 										.toSorted((a, b) => a.contestId.valueOf() - b.createdAt.valueOf())
-										.find((s) => {
-											s.contestId === contest.id &&
+										.find(
+											(s) =>
+												s.contestId === contest.id &&
 												s.problemId === problem.id &&
-												s.state === 'Correct';
-										});
+												s.state === 'Correct'
+										);
 									if (
 										correct !== undefined &&
 										(submission.state === 'Incorrect' ||

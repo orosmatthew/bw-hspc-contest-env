@@ -4,16 +4,22 @@
 	import type { Actions } from './$types';
 	import { slide, fly } from 'svelte/transition';
 
-	export let form: Actions;
-
-	let dismissed = false;
-
-	$: if (form) {
-		if (form.success) {
-			goto('/admin');
-		}
-		dismissed = false;
+	interface Props {
+		form: Actions;
 	}
+
+	let { form }: Props = $props();
+
+	let dismissed = $state(false);
+
+	$effect(() => {
+		if (form) {
+			if (form.success) {
+				goto('/admin');
+			}
+			dismissed = false;
+		}
+	});
 </script>
 
 <svelte:head>
@@ -27,15 +33,15 @@
 			transition:slide|global
 			class={`mt-4 alert alert-dismissible alert-${form.success ? 'success' : 'danger'}`}
 		>
-			{form.success ? 'Success' : form.message ?? 'Unknown Error'}
+			{form.success ? 'Success' : (form.message ?? 'Unknown Error')}
 			<button
-				on:click={() => {
+				onclick={() => {
 					dismissed = true;
 				}}
 				type="button"
 				class="btn-close"
 				aria-label="Close"
-			/>
+			></button>
 		</div>
 	{/if}
 	<form class="mt-4" action="?/login" method="POST" use:enhance>

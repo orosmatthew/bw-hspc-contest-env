@@ -8,11 +8,15 @@
 		submissionTimestampHoverText
 	} from '$lib/util';
 
-	export let submissions: (Submission & { contest: Contest; team: Team; problem: Problem })[];
-	export let includesAllAttempts = false;
-	export let sortDirection: 'newest first' | 'oldest first';
+	interface Props {
+		submissions: (Submission & { contest: Contest; team: Team; problem: Problem })[];
+		includesAllAttempts?: boolean;
+		sortDirection: 'newest first' | 'oldest first';
+	}
 
-	let showOutputColumns = true;
+	let { submissions, includesAllAttempts = false, sortDirection }: Props = $props();
+
+	let showOutputColumns = $state(true);
 
 	let historyCounts = new Map<string, number>();
 	let attemptNumbers = new Map<Submission, number>();
@@ -25,7 +29,7 @@
 		return `${submission.contestId};${submission.teamId};${submission.problemId}`;
 	}
 
-	$: {
+	$effect(() => {
 		showOutputColumns = submissions.some((s) => s.state != 'Queued');
 
 		submissions.sort(
@@ -60,7 +64,7 @@
 				attemptNumbers.set(submission, h2);
 			}
 		}
-	}
+	});
 </script>
 
 <div class="mt-3 table-responsive">
@@ -85,7 +89,7 @@
 			{#each submissions as submission (submission.id)}
 				<tr
 					class="submissionRow"
-					on:click={() => goto(`/admin/submissions/${submission.id.toString()}`)}
+					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`)}
 				>
 					<td>
 						{#if submission.team.name}

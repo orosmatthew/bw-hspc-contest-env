@@ -3,10 +3,14 @@
 	import type { PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let updateInterval: ReturnType<typeof setInterval>;
-	let updating = false;
+	let updating = $state(false);
 
 	onMount(() => {
 		updateInterval = setInterval(async () => {
@@ -40,7 +44,7 @@
 		<span class="badge bg-info">Frozen</span>
 	{/if}
 	{#if updating}
-		<div class="spinner-border spinner-border-sm text-secondary" />
+		<div class="spinner-border spinner-border-sm text-secondary"></div>
 	{/if}
 	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
 </div>
@@ -48,7 +52,7 @@
 {#if data.contest !== null}
 	<h2 style="text-align:center">{data.contest.name}</h2>
 	<div class="mb-3 row">
-		<div class="text-end" />
+		<div class="text-end"></div>
 	</div>
 
 	<table class="table table-striped table-bordered">

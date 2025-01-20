@@ -3,10 +3,19 @@
 	import type bootstrap from 'bootstrap';
 	import { beforeNavigate } from '$app/navigation';
 
-	export let modalTitle = 'Confirm';
-	export let modalText = 'Are you sure?';
+	interface Props {
+		modalTitle?: string;
+		modalText?: string;
+		children?: import('svelte').Snippet;
+	}
 
-	let confirmModal: HTMLDivElement;
+	let {
+		modalTitle = $bindable('Confirm'),
+		modalText = $bindable('Are you sure?'),
+		children
+	}: Props = $props();
+
+	let confirmModal: HTMLDivElement | undefined = $state();
 	let modal: bootstrap.Modal | undefined;
 
 	let confirmAction: (() => void) | undefined;
@@ -46,7 +55,9 @@
 
 	onMount(async () => {
 		const bootstrap = await import('bootstrap');
-		modal = new bootstrap.Modal(confirmModal);
+		if (confirmModal !== undefined) {
+			modal = new bootstrap.Modal(confirmModal);
+		}
 	});
 
 	beforeNavigate(() => {
@@ -61,15 +72,15 @@
 				<h1 class="modal-title fs-5" id="exampleModalLabel">{modalTitle}</h1>
 			</div>
 			<div class="modal-body">
-				{#if $$slots.default}
-					<slot />
+				{#if children}
+					{@render children?.()}
 				{:else}
 					{modalText}
 				{/if}
 			</div>
 			<div class="modal-footer">
-				<button on:click={cancel} type="button" class="btn btn-secondary">Cancel</button>
-				<button on:click={confirm} type="button" class="btn btn-primary">Confirm</button>
+				<button onclick={cancel} type="button" class="btn btn-secondary">Cancel</button>
+				<button onclick={confirm} type="button" class="btn btn-primary">Confirm</button>
 			</div>
 		</div>
 	</div>

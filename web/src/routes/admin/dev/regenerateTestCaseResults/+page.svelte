@@ -3,32 +3,36 @@
 	import FormAlert from '$lib/FormAlert.svelte';
 	import type { Actions, PageData } from './$types';
 
-	export let form: Actions;
+	let log = $state('');
 
-	let log = '';
-
-	$: if (form) {
-		if (form.success) {
-			log += 'Success.\n';
-			log += 'Count: ' + form.count + '\n';
-			log += 'Problems: ' + form.problemCount + '\n';
-			log += 'Report: \n';
-			log += JSON.parse(form.reportJson?.toString() ?? '[]').join('\n') + '\n\n';
-		} else {
-			log += 'Error.\n';
-			log += 'Message: ' + form.errorMessage + '\n';
-			log += 'Problems: ' + form.problemCount + '\n';
-			log += 'Report: \n';
-			log += form.report + '\n\n';
-		}
+	interface Props {
+		form: Actions;
+		data: PageData;
 	}
 
-	export let data: PageData;
+	let { form, data }: Props = $props();
 
 	const submissionsWithOutput = data.submissions.filter((s) => s.actualOutput != null);
 	const submissionsWithOutputButNoTestCaseResults = submissionsWithOutput.filter(
 		(s) => s.testCaseResults == null
 	);
+	$effect(() => {
+		if (form) {
+			if (form.success) {
+				log += 'Success.\n';
+				log += 'Count: ' + form.count + '\n';
+				log += 'Problems: ' + form.problemCount + '\n';
+				log += 'Report: \n';
+				log += JSON.parse(form.reportJson?.toString() ?? '[]').join('\n') + '\n\n';
+			} else {
+				log += 'Error.\n';
+				log += 'Message: ' + form.errorMessage + '\n';
+				log += 'Problems: ' + form.problemCount + '\n';
+				log += 'Report: \n';
+				log += form.report + '\n\n';
+			}
+		}
+	});
 </script>
 
 <svelte:head>

@@ -4,10 +4,14 @@
 	import { invalidateAll } from '$app/navigation';
 	import SubmissionsList from '$lib/SubmissionsList.svelte';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let updateInterval: ReturnType<typeof setInterval> | undefined;
-	let updating = false;
+	let updating = $state(false);
 
 	onMount(() => {
 		updateInterval = setInterval(async () => {
@@ -31,7 +35,7 @@
 {#if data.reviewList != null}
 	<div class="mb-3 text-end">
 		{#if updating}
-			<div class="spinner-border spinner-border-sm text-secondary" />
+			<div class="spinner-border spinner-border-sm text-secondary"></div>
 		{/if}
 		<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
 	</div>
