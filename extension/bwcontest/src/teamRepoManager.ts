@@ -2,13 +2,13 @@ import * as vscode from 'vscode';
 import * as fs from 'fs-extra';
 import urlJoin from 'url-join';
 import git from 'isomorphic-git';
-import path = require('path');
 import http from 'isomorphic-git/http/node';
 import outputPanelLog from './outputPanelLog';
 import { BWContestSettings } from './extension';
 import { LiteEvent } from './utilities/LiteEvent';
 import { TeamData } from './sharedTypes';
 import * as os from 'os';
+import path from 'path';
 
 let latestRepoState: RepoState = 'No Team';
 
@@ -219,6 +219,7 @@ async function directoryHasGitRepo(path: string): Promise<boolean> {
 		await git.listRemotes({ fs, dir: path });
 		return true;
 	} catch (error) {
+		console.error(error);
 		return false;
 	}
 }

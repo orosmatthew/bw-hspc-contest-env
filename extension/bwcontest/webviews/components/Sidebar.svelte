@@ -1,3 +1,8 @@
+<script lang="ts" module>
+	import type { VSCode } from '../vscode';
+	declare const vscode: VSCode;
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import SidebarProblemStatus from './SidebarProblemStatus.svelte';
@@ -9,17 +14,17 @@
 	} from '../../src/SidebarProvider';
 	import type { RepoState } from '../../src/teamRepoManager';
 
-	let teamname: string;
-	let password: string;
+	let teamname: string = $state('');
+	let password: string = $state('');
 
-	let loggedIn = false;
+	let loggedIn = $state(false);
 
-	let teamData: TeamData | null = null;
-	let teamStatus: SidebarTeamStatus | null = null;
+	let teamData: TeamData | null = $state(null);
+	let teamStatus: SidebarTeamStatus | null = $state(null);
 
-	let repoState: RepoState | null = null;
+	let repoState: RepoState | null = $state(null);
 
-	let totalProblems = 0;
+	let totalProblems = $state(0);
 
 	function postMessage(message: MessageType) {
 		vscode.postMessage(message);
@@ -104,7 +109,7 @@
 	}
 </script>
 
-<svelte:window on:keypress={onKey} />
+<svelte:window onkeypress={onKey} />
 
 {#if !loggedIn}
 	<h1>Contest Login</h1>
@@ -115,7 +120,7 @@
 	<input bind:value={password} id="password" type="password" />
 
 	<div class="buttonContainer">
-		<button on:click={onLogin}>Login</button>
+		<button onclick={onLogin}>Login</button>
 	</div>
 {:else}
 	<h2 class="sidebarSectionHeader">Contest Info</h2>
@@ -136,7 +141,7 @@
 				<span class="infoData">{teamData.language}</span>
 			</p>
 			<div class="buttonContainer">
-				<button on:click={onLogout} class="sidebarButton">Logout</button>
+				<button onclick={onLogout} class="sidebarButton">Logout</button>
 			</div>
 		</div>
 
@@ -146,16 +151,16 @@
 				<span>Team not connected, click Refresh at the top of this panel</span>
 			{:else if repoState == 'No Repo'}
 				<div class="buttonContainer">
-					<button on:click={onCloneOpenRepo} class="sidebarButton">Clone and Open Repo</button>
+					<button onclick={onCloneOpenRepo} class="sidebarButton">Clone and Open Repo</button>
 				</div>
 			{:else if repoState == 'Repo Exists, Not Open'}
 				<div class="buttonContainer">
-					<button on:click={onOpenRepo} class="sidebarButton">Open Repo</button>
+					<button onclick={onOpenRepo} class="sidebarButton">Open Repo</button>
 				</div>
 			{:else if repoState == 'Repo Open'}
 				<div class="buttonContainer">
-					<button on:click={onTestAndSubmit} class="sidebarButton">Test & Submit</button>
-					<button on:click={onCloneRepo} class="sidebarButton">Reset Repo</button>
+					<button onclick={onTestAndSubmit} class="sidebarButton">Test & Submit</button>
+					<button onclick={onCloneRepo} class="sidebarButton">Reset Repo</button>
 				</div>
 			{:else}
 				<span>Checking repo state...</span>

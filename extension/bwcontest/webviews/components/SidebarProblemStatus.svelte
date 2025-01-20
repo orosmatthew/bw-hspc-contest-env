@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
 	export const watSubmissionsImageUrl = new URL(
 		'../../media/SubmissionIcons/TeamPanel/none.png',
 		import.meta.url
@@ -33,8 +33,12 @@
 		SubmissionStateForExtension
 	} from 'bwcontest-shared/types/contestMonitorTypes';
 
-	export let contestState: ContestStateForExtension;
-	export let problem: SidebarProblemWithSubmissions;
+	interface Props {
+		contestState: ContestStateForExtension;
+		problem: SidebarProblemWithSubmissions;
+	}
+
+	let { contestState, problem }: Props = $props();
 
 	const sortedSubmissions = problem.submissions
 		? problem.submissions.sort(
@@ -69,6 +73,7 @@
 			const minutesFromContestStart = Math.ceil(submissionRelativeMillis / 1000 / 60);
 			return `${minutesFromContestStart} min`;
 		} catch (error) {
+			console.error(error);
 			return '???';
 		}
 	}

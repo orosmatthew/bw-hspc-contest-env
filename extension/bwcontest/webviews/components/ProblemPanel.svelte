@@ -1,3 +1,8 @@
+<script lang="ts" module>
+	import type { VSCode } from '../vscode';
+	declare const vscode: VSCode;
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { WebviewMessageType, MessageType, ProblemData } from '../../src/problemPanel';
@@ -8,17 +13,19 @@
 
 	// let savedInputs: Map<number, { input: string; output: string }> = new Map();
 
-	let activeProblemIndex = 0;
-	let problemData: ProblemData | undefined;
+	let activeProblemIndex = $state(0);
+	let problemData: ProblemData | undefined = $state();
 
-	let sampleInputValue: string;
-	let outputValue: string;
+	let sampleInputValue: string = $state('');
+	let outputValue: string = $state('');
 
-	let running = false;
+	let running = $state(false);
 
-	$: if (problemData && problemData.length !== 0) {
-		activeProblemIndex = 0;
-	}
+	$effect(() => {
+		if (problemData && problemData.length !== 0) {
+			activeProblemIndex = 0;
+		}
+	});
 
 	function resetInput() {
 		if (problemData) {
@@ -84,7 +91,7 @@
 	<div class="tab-container">
 		{#each problemData as problem, i}
 			<button
-				on:click={() => {
+				onclick={() => {
 					if (!running) {
 						// savedInputs.set(activeProblem.id, {
 						// 	input: sampleInputText.value,
@@ -107,8 +114,8 @@
 	<div style="display:flex">
 		<div style="flex:1; margin-right:20px">
 			<h3>Sample Input (You can edit this!)</h3>
-			<textarea class="inputOutputArea" bind:value={sampleInputValue} />
-			<button style="margin-top:5px" on:click={resetInput} type="button">Reset Input</button>
+			<textarea class="inputOutputArea" bind:value={sampleInputValue}></textarea>
+			<button style="margin-top:5px" onclick={resetInput} type="button">Reset Input</button>
 		</div>
 		<div style="flex:1">
 			<div style="display:flex">
@@ -117,15 +124,15 @@
 					<span class="loader"></span>
 				{/if}
 			</div>
-			<textarea class="inputOutputArea" bind:value={outputValue} readonly />
+			<textarea class="inputOutputArea" bind:value={outputValue} readonly></textarea>
 			{#if !running}
-				<button style="margin-top:5px" on:click={onRun} type="button">Run</button>
+				<button style="margin-top:5px" onclick={onRun} type="button">Run</button>
 			{:else}
-				<button style="margin-top:5px" on:click={onKill} type="button">Stop</button>
+				<button style="margin-top:5px" onclick={onKill} type="button">Stop</button>
 			{/if}
 		</div>
 	</div>
-	<button on:click={onSubmit} type="button">Submit</button>
+	<button onclick={onSubmit} type="button">Submit</button>
 {/if}
 
 <style>

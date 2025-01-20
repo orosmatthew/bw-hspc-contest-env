@@ -1,11 +1,11 @@
 import { extensionSettings } from './extension';
 import * as fs from 'fs-extra';
 import git from 'isomorphic-git';
-import path = require('path');
 import http from 'isomorphic-git/http/node';
 import urlJoin from 'url-join';
 import outputPanelLog from './outputPanelLog';
 import type { SubmissionForExtension } from 'bwcontest-shared/types/contestMonitorTypes';
+import path from 'path';
 
 export async function submitProblem(
 	sessionToken: string,
@@ -47,6 +47,7 @@ export async function submitProblem(
 			return { success: false, message: 'Push failure' };
 		}
 	} catch (error) {
+		console.error(error);
 		return { success: false, message: 'Unable to push' };
 	}
 
