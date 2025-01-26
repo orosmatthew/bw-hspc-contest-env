@@ -18,7 +18,7 @@ export const actions = {
 		if (name === null || lang === null) {
 			return { success: false, message: 'Incomplete form data' };
 		}
-		if (lang !== 'Java' && lang !== 'CSharp' && lang !== 'CPP') {
+		if (lang !== 'Java' && lang !== 'CSharp' && lang !== 'CPP' && lang !== 'Python') {
 			return { success: false, message: 'Invalid language' };
 		}
 		try {
@@ -53,7 +53,7 @@ export const actions = {
 		if (teamId === null || name === null || lang === null || password === null) {
 			return { success: false, message: 'Incomplete form data' };
 		}
-		if (lang !== 'Java' && lang !== 'CSharp' && lang !== 'CPP') {
+		if (lang !== 'Java' && lang !== 'CSharp' && lang !== 'CPP' && lang !== 'Python') {
 			return { success: false, message: 'Invalid language' };
 		}
 		try {

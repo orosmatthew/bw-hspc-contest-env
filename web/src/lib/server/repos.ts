@@ -13,7 +13,8 @@ import {
 	templateCppProblem,
 	templateCppVscodeLaunch,
 	templateCppVscodeTasks,
-	templateJavaProblem
+	templateJavaProblem,
+	templatePythonProblem
 } from './templates';
 
 type OptsAddProblems = {
@@ -69,6 +70,17 @@ async function addProblemsCPP(opts: OptsAddProblems) {
 	});
 }
 
+async function addProblemsPython(opts: OptsAddProblems) {
+	opts.contest.problems.forEach((problem) => {
+		opts.fs.mkdirSync(join(opts.dir, problem.pascalName));
+		const filledTemplate = templatePythonProblem.replaceAll('%%pascalName%%', problem.pascalName);
+		opts.fs.writeFileSync(
+			join(opts.dir, problem.pascalName, `${problem.pascalName}.py`),
+			filledTemplate
+		);
+	});
+}
+
 export async function createRepos(contestId: number, teamIds: number[]) {
 	const vol = new memfs.Volume();
 	const fs = createFsFromVolume(vol);
@@ -95,6 +107,8 @@ export async function createRepos(contestId: number, teamIds: number[]) {
 			} else if (team.language === 'CPP') {
 				addProblemsCPP({ fs, dir: team.id.toString(), contest });
 				fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCppGitIgnore);
+			} else if (team.language === 'Python') {
+				addProblemsPython({ fs, dir: team.id.toString(), contest });
 			} else {
 				console.error('Language not supported');
 				return;

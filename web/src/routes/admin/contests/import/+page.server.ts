@@ -37,7 +37,7 @@ export type SubmissionImportData = {
 	SubmitTime: number;
 	TeamOutput: string;
 	Code: string | null;
-	Language: 'Java' | 'C#' | 'C++' | null;
+	Language: 'Java' | 'C#' | 'C++' | 'Python' | null;
 };
 
 export const actions = {
@@ -249,6 +249,8 @@ function inferTeamLanguage(
 			return 'CSharp';
 		case 'C++':
 			return 'CPP';
+		case 'Python':
+			return 'Python';
 		default:
 			throw new Error('Unrecognized language: ' + submissionWithCode.Language);
 	}

@@ -12,7 +12,7 @@ ENV NODE_MAJOR=20
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 RUN apt-get update
 
-RUN apt-get install nodejs git openjdk-17-jdk-headless dotnet-sdk-7.0 build-essential cmake -y
+RUN apt-get install nodejs git openjdk-17-jdk-headless dotnet-sdk-7.0 build-essential cmake python3 -y
 
 ENV DOTNET_NOLOGO=true
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true

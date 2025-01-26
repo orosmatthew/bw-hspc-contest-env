@@ -1,4 +1,4 @@
-export type ContestLanguage = 'Java' | 'CSharp' | 'CPP';
+export type ContestLanguage = 'Java' | 'CSharp' | 'CPP' | 'Python';
 
 export type TeamData = {
 	teamId: number;

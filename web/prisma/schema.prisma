@@ -37,34 +37,34 @@ enum SubmissionStateReason {
 }
 
 model Submission {
-  id                 Int                    @id @default(autoincrement())
-  createdAt          DateTime               @default(now())
-  gradedAt           DateTime?
-  state              SubmissionState
-  stateReason        SubmissionStateReason?
-  stateReasonDetails String?
-  actualOutput       String?
-  testCaseResults    String?
-  exitCode           Int?
+  id                  Int                    @id @default(autoincrement())
+  createdAt           DateTime               @default(now())
+  gradedAt            DateTime?
+  state               SubmissionState
+  stateReason         SubmissionStateReason?
+  stateReasonDetails  String?
+  actualOutput        String?
+  testCaseResults     String?
+  exitCode            Int?
   runtimeMilliseconds Int?
-  commitHash         String
-  diff               String?
-  message            String?
-  team               Team                   @relation(fields: [teamId], references: [id])
-  teamId             Int
-  problem            Problem                @relation(fields: [problemId], references: [id])
-  problemId          Int
-  contestId          Int
-  contest            Contest                @relation(fields: [contestId], references: [id])
-  sourceFiles        SubmissionSourceFile[] @relation()
+  commitHash          String
+  diff                String?
+  message             String?
+  team                Team                   @relation(fields: [teamId], references: [id])
+  teamId              Int
+  problem             Problem                @relation(fields: [problemId], references: [id])
+  problemId           Int
+  contestId           Int
+  contest             Contest                @relation(fields: [contestId], references: [id])
+  sourceFiles         SubmissionSourceFile[] @relation()
 }
 
 model SubmissionSourceFile {
-  id                    Int           @id @default(autoincrement())
-  submissionId          Int
-  submission            Submission    @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  pathFromProblemRoot   String
-  content               String
+  id                  Int        @id @default(autoincrement())
+  submissionId        Int
+  submission          Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  pathFromProblemRoot String
+  content             String
 }
 
 model Problem {
@@ -94,6 +94,7 @@ enum Language {
   Java
   CSharp
   CPP
+  Python
 }
 
 model ActiveTeam {

@@ -6,6 +6,7 @@ import { runJava } from 'bwcontest-shared/submission-runner/java.cjs';
 import { join } from 'path';
 import { submitProblem } from './submit';
 import { runCSharp } from 'bwcontest-shared/submission-runner/csharp.cjs';
+import { runPython } from 'bwcontest-shared/submission-runner/python.cjs';
 import { runCpp } from 'bwcontest-shared/submission-runner/cpp.cjs';
 import { TeamData } from './sharedTypes';
 import outputPanelLog from './outputPanelLog';
@@ -268,6 +269,40 @@ export class BWPanel {
 					'BWContest',
 					teamData.contestId.toString(),
 					teamData.teamId.toString()
+				),
+				outputCallback: (data) => {
+					outputBuffer.push(data);
+					this.webviewPostMessage({ msg: 'onRunningOutput', data: outputBuffer.join('') });
+				}
+			});
+			if (res.success === true) {
+				killFunc = res.killFunc;
+				res.runResult.then((runResult) => {
+					if (runResult.kind == 'TimeLimitExceeded') {
+						this.postOutputWithTimeLimitExceededNotice(outputBuffer);
+					}
+					this.runningProgram = undefined;
+					this.webviewPostMessage({ msg: 'onRunningDone' });
+				});
+			} else {
+				this.runningProgram = undefined;
+				this.webviewPostMessage({
+					msg: 'onRunningOutput',
+					data: this.createFailureMessage(res.runResult)
+				});
+				this.webviewPostMessage({ msg: 'onRunningDone' });
+			}
+		} else if (teamData.language === 'Python') {
+			const res = await runPython({
+				input,
+				studentCodeRootForProblem,
+				problemName: problem.pascalName,
+				srcDir: join(
+					repoDir,
+					'BWContest',
+					teamData.contestId.toString(),
+					teamData.teamId.toString(),
+					problem.pascalName
 				),
 				outputCallback: (data) => {
 					outputBuffer.push(data);

@@ -6,7 +6,6 @@
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { theme } from '../stores';
 	import type { LayoutData } from './$types';
-	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 
 	interface Props {

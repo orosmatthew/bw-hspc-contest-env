@@ -8,6 +8,8 @@ import path from 'path';
 import fs from 'fs';
 import css from 'rollup-plugin-css-only';
 
+const __dirname = import.meta.dirname;
+
 const production = !process.env.ROLLUP_WATCH;
 
 export default fs.readdirSync(path.join(__dirname, 'webviews', 'pages')).map((input) => {

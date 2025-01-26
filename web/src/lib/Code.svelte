@@ -17,7 +17,8 @@
 			<pre style="color:#abb2bf; font-family:JetbrainsMono">{@html hljs.highlightAuto(code, [
 					'java',
 					'cpp',
-					'cs'
+					'cs',
+					'python'
 				]).value}</pre>
 		{:else}
 			<pre style="color:#abb2bf; font-family:JetbrainsMono">{code}</pre>

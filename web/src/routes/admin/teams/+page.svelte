@@ -74,6 +74,7 @@
 						<option value="Java">Java</option>
 						<option value="CSharp">C#</option>
 						<option value="CPP">C++</option>
+						<option value="Python">Python</option>
 					</select>
 
 					<label class="mt-1 form-label" for="editTeamPassword">Password</label>
@@ -119,6 +120,7 @@
 				<option value="Java">Java</option>
 				<option value="CSharp">C#</option>
 				<option value="CPP">C++</option>
+				<option value="Python">Python</option>
 			</select>
 		</div>
 		<div class="modal-footer">
@@ -170,6 +172,7 @@
 							class:bg-warning={team.language === 'Java'}
 							class:bg-success={team.language === 'CSharp'}
 							class:bg-info={team.language === 'CPP'}
+							class:bg-primary={team.language === 'Python'}
 						>
 							{team.language}</span
 						></td

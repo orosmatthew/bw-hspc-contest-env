@@ -8,6 +8,7 @@ import { runJava } from 'bwcontest-shared/submission-runner/java.cjs';
 import { runCSharp } from 'bwcontest-shared/submission-runner/csharp.cjs';
 import { runCpp } from 'bwcontest-shared/submission-runner/cpp.cjs';
 import { RunResult, RunResultZod } from 'bwcontest-shared/submission-runner/types.cjs';
+import { runPython } from 'bwcontest-shared/submission-runner/python.cjs';
 import { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,7 +29,7 @@ const submissionGetData = z
 				contestName: z.string(),
 				teamId: z.number(),
 				teamName: z.string(),
-				teamLanguage: z.enum(['Java', 'CSharp', 'CPP']),
+				teamLanguage: z.enum(['Java', 'CSharp', 'CPP', 'Python']),
 				problem: z.object({
 					id: z.number(),
 					pascalName: z.string(),
@@ -128,6 +129,18 @@ async function cloneAndRun(submissionData: SubmissionGetData) {
 				studentCodeRootForProblem,
 				input: submissionData.submission.problem.realInput,
 				cppPlatform: 'GCC',
+				problemName: submissionData.submission.problem.pascalName
+			});
+			if (res.success === true) {
+				runResult = await res.runResult;
+			} else {
+				runResult = res.runResult;
+			}
+		} else if (submissionData.submission.teamLanguage === 'Python') {
+			const res = await runPython({
+				srcDir: join(repoDir, problemName),
+				studentCodeRootForProblem,
+				input: submissionData.submission.problem.realInput,
 				problemName: submissionData.submission.problem.pascalName
 			});
 			if (res.success === true) {

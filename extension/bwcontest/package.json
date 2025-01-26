@@ -12,6 +12,7 @@
 	"activationEvents": [
 		"onStartupFinished"
 	],
+	"type": "commonjs",
 	"main": "./out/main.js",
 	"contributes": {
 		"configuration": {
