@@ -5,7 +5,6 @@ import { scoreboardData } from '$lib/server/scoreboardData';
 
 export const load = (async ({ locals }) => {
 	const selectedContestId = locals.selectedContest;
-
 	if (selectedContestId !== null) {
 		const contest = await db.contest.findUnique({
 			where: { id: selectedContestId },

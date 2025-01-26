@@ -78,6 +78,8 @@ export const handle = (async ({ event, resolve }) => {
 				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
 				event.locals.selectedContest = null;
 			}
+		} else {
+			event.locals.selectedContest = null;
 		}
 	}
 	const res = await resolve(event, {

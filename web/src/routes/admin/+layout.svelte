@@ -41,9 +41,9 @@
 		}
 	});
 
-	let selectContestValue: string = $state('null');
+	let selectContestValue: string | null = $state(null);
 	function onSelectContest() {
-		if (selectContestValue === 'null') {
+		if (selectContestValue === null) {
 			$selectedContest = null;
 		} else {
 			$selectedContest = parseInt(selectContestValue);
