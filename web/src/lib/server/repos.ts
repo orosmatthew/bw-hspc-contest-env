@@ -3,6 +3,7 @@ import memfs, { createFsFromVolume } from 'memfs';
 import { join } from 'path';
 import git from 'isomorphic-git';
 import http from 'isomorphic-git/http/node';
+import { env } from '$env/dynamic/private';
 import {
 	templateCSharpGitIgnore,
 	templateCSharpProblem,
@@ -110,7 +111,7 @@ export async function createRepos(contestId: number, teamIds: number[]) {
 				http,
 				dir: team.id.toString(),
 				url: `http://127.0.0.1:${
-					process.env.GIT_PORT ?? 7006
+					env.GIT_PORT ?? 7006
 				}/${contest.id.toString()}/${team.id.toString()}`
 			});
 		});

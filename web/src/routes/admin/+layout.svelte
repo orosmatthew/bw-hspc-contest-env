@@ -1,7 +1,10 @@
+<script lang="ts" module>
+	export let selectedContest: { id: number | null } = $state({ id: null });
+</script>
+
 <script lang="ts">
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { theme } from '../stores';
-	import { selectedContest } from './stores';
 	import type { LayoutData } from './$types';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
@@ -13,41 +16,40 @@
 
 	let { data, children }: Props = $props();
 
-	$selectedContest = data.selectedContestId;
+	selectedContest.id = data.selectedContestId;
 
-	selectedContest.subscribe((id) => {
-		const url = page.url;
-		if (typeof id === 'number') {
-			url.searchParams.delete('c');
-			url.searchParams.append('c', id.toString());
-		} else {
-			url.searchParams.delete('c');
-		}
-		if (browser) {
-			goto(url, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: true });
-		}
-	});
+	// $effect(() => {
+
+	// });
 
 	beforeNavigate(({ to }) => {
 		if (
-			$selectedContest !== null &&
+			selectedContest.id !== null &&
 			to !== null &&
 			to.url.pathname.startsWith('/admin') &&
-			!isNaN($selectedContest)
+			!isNaN(selectedContest.id)
 		) {
-			to.url.searchParams.set('c', $selectedContest.toString());
+			to.url.searchParams.set('c', selectedContest.id.toString());
 		} else {
-			$selectedContest = null;
+			selectedContest.id = null;
 		}
 	});
 
-	let selectContestValue: string | null = $state(null);
+	let selectContestValue: number | null = $state(selectedContest.id);
 	function onSelectContest() {
 		if (selectContestValue === null) {
-			$selectedContest = null;
+			selectedContest.id = null;
 		} else {
-			$selectedContest = parseInt(selectContestValue);
+			selectedContest.id = selectContestValue;
 		}
+		const url = page.url;
+		if (typeof selectedContest.id === 'number') {
+			url.searchParams.delete('c');
+			url.searchParams.append('c', selectedContest.id.toString());
+		} else {
+			url.searchParams.delete('c');
+		}
+		goto(url, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: true });
 	}
 </script>
 
@@ -101,12 +103,11 @@
 			bind:value={selectContestValue}
 			onchange={onSelectContest}
 		>
-			{#if $selectedContest === null}
-				<option value={null} selected>Select Contest</option>
+			{#if selectedContest.id === null}
+				<option value={null}>Select Contest</option>
 			{/if}
 			{#each data.contests as contest}
-				<option value={contest.id} selected={$selectedContest === contest.id}>{contest.name}</option
-				>
+				<option value={contest.id}>{contest.name}</option>
 			{/each}
 		</select>
 		<button

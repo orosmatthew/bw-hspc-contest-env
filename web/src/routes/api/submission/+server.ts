@@ -5,13 +5,14 @@ import type { RequestHandler } from './$types';
 import * as Diff from 'diff';
 import { analyzeSubmissionOutput, autoJudgeResponse } from '$lib/outputAnalyzer/outputAnalyzer';
 import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
+import { env } from '$env/dynamic/private';
 
 export const GET = (async ({ request }) => {
 	const secret = request.headers.get('secret');
-	if (process.env.WEB_SANDBOX_SECRET === undefined) {
+	if (env.WEB_SANDBOX_SECRET === undefined) {
 		throw new Error('Environment WEB_SANDBOX_SECRET is undefined');
 	}
-	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET) {
+	if (secret === null || secret !== env.WEB_SANDBOX_SECRET) {
 		throw error(401, 'Unauthorized');
 	}
 	const submissions = await db.submission.findMany({
@@ -45,10 +46,10 @@ export const GET = (async ({ request }) => {
 
 export const POST = (async ({ request }) => {
 	const secret = request.headers.get('secret');
-	if (process.env.WEB_SANDBOX_SECRET === undefined) {
+	if (env.WEB_SANDBOX_SECRET === undefined) {
 		throw new Error('Environment WEB_SANDBOX_SECRET is undefined');
 	}
-	if (secret === null || secret !== process.env.WEB_SANDBOX_SECRET) {
+	if (secret === null || secret !== env.WEB_SANDBOX_SECRET) {
 		throw error(401, 'Unauthorized');
 	}
 	const requestJson = await request.json();

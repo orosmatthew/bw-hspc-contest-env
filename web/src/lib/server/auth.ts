@@ -56,7 +56,7 @@ export async function attemptLogin(
 	if (user.passwordHash === hash.hash.toString()) {
 		const session = await db.session.create({ data: { userId: user.id } });
 		cookies.set('session', session.token, {
-			// secure: process.env.NODE_ENV === 'development' ? false : true,
+			// secure: env.NODE_ENV === 'development' ? false : true,
 			path: '/',
 			secure: false,
 			httpOnly: true,

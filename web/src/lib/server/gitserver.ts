@@ -1,5 +1,6 @@
 import { Git } from 'node-git-server';
 import { join } from 'path';
+import { env } from '$env/dynamic/private';
 
 let gitRunning = false;
 
@@ -7,10 +8,7 @@ export let repos: Git;
 
 export function startGitServer() {
 	if (!gitRunning) {
-		const port =
-			!process.env.GIT_PORT || isNaN(parseInt(process.env.GIT_PORT))
-				? 7006
-				: parseInt(process.env.GIT_PORT);
+		const port = !env.GIT_PORT || isNaN(parseInt(env.GIT_PORT)) ? 7006 : parseInt(env.GIT_PORT);
 
 		const repoDir = 'repo';
 
