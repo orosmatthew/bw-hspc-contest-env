@@ -109,7 +109,7 @@
 		</thead>
 		<tbody>
 			{#if analysisResults}
-				{#each analysisResults.testCaseResults as testCaseResult, i}
+				{#each analysisResults.testCaseResults as testCaseResult, i (testCaseResult.caseNum)}
 					<tr>
 						<td class="text-secondary text-center">
 							{#if i < numSampleCases}

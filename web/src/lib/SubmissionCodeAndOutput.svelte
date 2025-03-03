@@ -31,7 +31,7 @@
 				</div>
 			{:else}
 				<div class="pt-2">
-					{#each sourceFiles as sourceFile}
+					{#each sourceFiles as sourceFile (sourceFile.id)}
 						<div>
 							<b class="font-monospace">{sourceFile.pathFromProblemRoot}</b>
 							<Code code={sourceFile.content} highlight={true} />

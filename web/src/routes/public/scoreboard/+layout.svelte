@@ -58,7 +58,7 @@
 				{#if $contestId === null}
 					<option value={null}>None</option>
 				{/if}
-				{#each data.contests as contest}
+				{#each data.contests as contest (contest.id)}
 					<option selected={contest.id === $contestId} value={contest.id}>{contest.name}</option>
 				{/each}
 			</select>

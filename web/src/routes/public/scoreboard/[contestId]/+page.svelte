@@ -87,19 +87,19 @@
 			<th>Team Name</th>
 			<th>Solves</th>
 			<th>Time</th>
-			{#each data.contest.problems as problem}
+			{#each data.contest.problems as problem (problem.id)}
 				<th>{problem.friendlyName}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
-		{#each data.contest.teams as team, i}
+		{#each data.contest.teams as team, i (team.id)}
 			<tr>
 				<td style="text-align:center; font-size:24px;"><strong>{i + 1}</strong></td>
 				<td style="font-size:18px">{team.name}</td>
 				<td style="font-size:18px">{team.solves}</td>
 				<td style="font-size:18px">{team.time.toFixed(0)}</td>
-				{#each data.contest.problems as problem}
+				{#each data.contest.problems as problem (problem.id)}
 					<td>
 						<div class="row">
 							<div class="col-3">

@@ -306,7 +306,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each data.submissionHistory as submission, i}
+			{#each data.submissionHistory as submission, i (submission.id)}
 				<tr
 					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`, { noScroll: true })}
 					class="{submission.id == data.id
@@ -358,7 +358,7 @@
 						>{#if submission.message}
 							{submission.message}
 						{:else}
-							<i>{'<no message>'}</i>
+							<i>&#60no message&#62;</i>
 						{/if}
 					</td></tr
 				>
@@ -389,7 +389,7 @@
 					style="display: inline;"
 				>
 					<option disabled selected>Options...</option>
-					{#each judgeResponseCategories as judgeResponseCategory}
+					{#each judgeResponseCategories as judgeResponseCategory (judgeResponseCategory.title)}
 						<option value={judgeResponseCategory.title}
 							>{judgeResponseCategoryLabel(judgeResponseCategory)}</option
 						>

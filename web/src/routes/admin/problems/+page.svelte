@@ -54,7 +54,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each data.problems as problem}
+			{#each data.problems as problem (problem.id)}
 				<tr>
 					<td>{problem.id}</td>
 					<td>{problem.friendlyName}</td>

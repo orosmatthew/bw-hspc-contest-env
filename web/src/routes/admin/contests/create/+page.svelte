@@ -67,7 +67,7 @@
 					>
 				</div>
 			</div>
-			{#each data.teams as team}
+			{#each data.teams as team (team.id)}
 				<div class="form-check">
 					<input
 						class="team-checkbox form-check-input"
@@ -94,7 +94,7 @@
 					>
 				</div>
 			</div>
-			{#each data.problems as problem}
+			{#each data.problems as problem (problem.id)}
 				<div class="form-check">
 					<input
 						class="problem-checkbox form-check-input"

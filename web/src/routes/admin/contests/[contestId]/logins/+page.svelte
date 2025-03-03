@@ -12,7 +12,7 @@
 	<title>Printable Logins</title>
 </svelte:head>
 
-{#each data.teams as team}
+{#each data.teams as team (team.id)}
 	<table class="table table-bordered">
 		<thead>
 			<tr>
