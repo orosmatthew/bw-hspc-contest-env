@@ -138,7 +138,7 @@
 	},
 	"dependencies": {
 		"@vscode/vsce": "^3.2.2",
-		"axios": "^1.8.1",
+		"axios": "^1.8.2",
 		"bwcontest-shared": "file:../../shared",
 		"fs-extra": "^11.3.0",
 		"isomorphic-git": "^1.29.0",
