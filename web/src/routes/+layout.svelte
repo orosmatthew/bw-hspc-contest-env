@@ -29,13 +29,4 @@
 	}
 </script>
 
-<div class="container">
-	{@render children?.()}
-</div>
-
-<style>
-	@font-face {
-		font-family: JetbrainsMono;
-		src: url('/JetBrainsMono-Regular.woff2');
-	}
-</style>
+{@render children?.()}

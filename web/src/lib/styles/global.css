@@ -1,3 +1,8 @@
+@font-face {
+	font-family: JetbrainsMono;
+	src: url('/JetBrainsMono-Regular.woff2');
+}
+
 .code {
 	font-family: Menlo, Consolas, monospace;
 	white-space: pre;
