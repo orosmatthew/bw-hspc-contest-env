@@ -68,6 +68,12 @@
 			description: 'Problems with output that are unrelated to correctness'
 		},
 		{
+			title: 'Runtime Error',
+			message: 'Runtime Error',
+			correct: false,
+			description: 'Runtime errors such as array out-of-bounds'
+		},
+		{
 			title: 'Compile Error',
 			message: 'Compile Error',
 			correct: false,
