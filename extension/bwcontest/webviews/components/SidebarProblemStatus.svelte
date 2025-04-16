@@ -84,7 +84,7 @@
 </script>
 
 <div class={'problemStatusDiv ' + highlightClasses}>
-	<div class={'problemHeaderDiv'}>
+	<div class="problemHeaderDiv">
 		<img
 			class="overallStatusImage"
 			src={getStatusImageUrl(problem.overallState)}
@@ -115,7 +115,7 @@
 		</div>
 	</div>
 	{#if problem.overallState !== 'Correct'}
-		{#each sortedSubmissions as submission, i}
+		{#each sortedSubmissions as submission, i (submission.id)}
 			<div class="individualSubmissionDiv">
 				<span class="individualSubmissionAttemptNumber">Submit #{i + 1}: </span>
 				<img

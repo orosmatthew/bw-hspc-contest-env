@@ -89,7 +89,7 @@
 
 {#if problemData}
 	<div class="tab-container">
-		{#each problemData as problem, i}
+		{#each problemData as problem, i (problem.id)}
 			<button
 				onclick={() => {
 					if (!running) {

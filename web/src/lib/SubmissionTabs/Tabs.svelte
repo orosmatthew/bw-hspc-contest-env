@@ -22,7 +22,7 @@
 </script>
 
 <ul class="nav nav-tabs">
-	{#each tabs as tab}
+	{#each tabs as tab (tab)}
 		<li class="nav-item">
 			<button
 				onclick={() => {

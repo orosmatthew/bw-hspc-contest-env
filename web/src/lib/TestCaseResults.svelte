@@ -91,7 +91,7 @@
 			{@const numRows = Math.ceil(currentSubmitResults.testCases.length / cellsPerRow)}
 			{@const showRowLabels = !condensed && numRows > 1}
 			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each { length: numRows } as _, rowNum}
+			{#each { length: numRows } as _, rowNum (rowNum)}
 				{@const casesBeforeThisRow = rowNum * cellsPerRow}
 				{@const casesOnRow = Math.min(cellsPerRow, numCases - casesBeforeThisRow)}
 				<tr>
@@ -101,7 +101,7 @@
 						</td>
 					{/if}
 					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-					{#each { length: Math.min(cellsPerRow, currentSubmitResults.testCases.length - rowNum * cellsPerRow) } as _, colNum}
+					{#each { length: Math.min(cellsPerRow, currentSubmitResults.testCases.length - rowNum * cellsPerRow) } as _, colNum (colNum)}
 						{@const currentCaseIndex = rowNum * cellsPerRow + colNum}
 						{@const currentCaseResult = currentSubmitResults.testCases[currentCaseIndex]}
 						<td
@@ -196,7 +196,8 @@
 	}
 
 	div.exception {
-		background: linear-gradient(
+		background:
+			linear-gradient(
 				to top right,
 				rgba(255, 0, 0, 0.15) calc(50% - 1.4px),
 				red,

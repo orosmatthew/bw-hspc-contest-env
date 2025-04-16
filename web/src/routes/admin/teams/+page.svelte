@@ -162,7 +162,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each data.teams as team}
+			{#each data.teams as team (team.id)}
 				<tr>
 					<td>{team.id}</td>
 					<td>{team.name}</td>

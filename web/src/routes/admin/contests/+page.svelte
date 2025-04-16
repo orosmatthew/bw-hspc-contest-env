@@ -33,7 +33,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each data.contests as contest}
+			{#each data.contests as contest (contest.id)}
 				<tr>
 					<td>{contest.id}</td>
 					<td>{contest.name}</td>

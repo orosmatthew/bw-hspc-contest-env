@@ -49,7 +49,7 @@
 			<div class="alert alert-success">No Submission to Review!</div>
 		</ul>
 	{:else}
-		<SubmissionsList submissions={data.reviewList} sortDirection={'oldest first'}></SubmissionsList>
+		<SubmissionsList submissions={data.reviewList} sortDirection="oldest first"></SubmissionsList>
 	{/if}
 
 	<h1 style="text-align:center" class="pb-2">
@@ -61,7 +61,7 @@
 			<div class="alert alert-success">No Queued Submissions!</div>
 		</ul>
 	{:else}
-		<SubmissionsList submissions={data.queueList} sortDirection={'oldest first'}></SubmissionsList>
+		<SubmissionsList submissions={data.queueList} sortDirection="oldest first"></SubmissionsList>
 	{/if}
 {:else}
 	<h2 class="text-center">Select Contest</h2>

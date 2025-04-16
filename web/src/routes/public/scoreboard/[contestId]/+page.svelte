@@ -87,37 +87,38 @@
 			<th>Team Name</th>
 			<th>Solves</th>
 			<th>Time</th>
-			{#each data.contest.problems as problem}
+			{#each data.contest.problems as problem (problem.id)}
 				<th>{problem.friendlyName}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
-		{#each data.contest.teams as team, i}
+		{#each data.contest.teams as team, i (team.id)}
 			<tr>
 				<td style="text-align:center; font-size:24px;"><strong>{i + 1}</strong></td>
 				<td style="font-size:18px">{team.name}</td>
 				<td style="font-size:18px">{team.solves}</td>
 				<td style="font-size:18px">{team.time.toFixed(0)}</td>
-				{#each data.contest.problems as problem}
+				{#each data.contest.problems as problem (problem.id)}
 					<td>
-						<div class="row">
-							<div class="col-3">
-								{#if team.problems.find((p) => {
-									return p.id === problem.id;
-								})?.graphic !== null}
-									<img
-										src={team.problems.find((p) => {
-											return p.id === problem.id;
-										})?.graphic === 'correct'
-											? '/correct.png'
-											: '/incorrect.png'}
-										alt="check or X"
-										width="30px"
-									/>
-								{/if}
-							</div>
-							<div class="col-9">
+						<div class="d-flex flex-row align-items-center gap-3">
+							{#if team.problems.find((p) => {
+								return p.id === problem.id;
+							})?.graphic !== null}
+								<img
+									src={team.problems.find((p) => {
+										return p.id === problem.id;
+									})?.graphic === 'correct'
+										? '/correct.png'
+										: '/incorrect.png'}
+									alt="check or X"
+									width="30px"
+									height="30px"
+								/>
+							{:else}
+								<div class="dummy-status-image"></div>
+							{/if}
+							<div class="d-flex flex-column flex-grow-1 align-items-center">
 								{#if team.problems.find((p) => {
 									return p.id === problem.id;
 								})?.attempts !== 0}
@@ -151,5 +152,10 @@
 	.sticky-header {
 		position: sticky;
 		top: -1px;
+	}
+
+	.dummy-status-image {
+		width: 30px;
+		height: 30px;
 	}
 </style>

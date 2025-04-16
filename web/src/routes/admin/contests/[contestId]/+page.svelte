@@ -67,7 +67,7 @@
 					>Select All</button
 				>
 			</div>
-			{#each data.teams as team}
+			{#each data.teams as team (team.id)}
 				<div class="form-check">
 					<input
 						name={`teamId${team.id}`}
@@ -160,7 +160,7 @@
 			class="mb-2 btn btn-outline-secondary">Printable Logins</a
 		>
 		<div class="list-group">
-			{#each data.teams as team}
+			{#each data.teams as team (team.id)}
 				<div class="list-group-item">{team.name}</div>
 			{/each}
 		</div>
@@ -168,7 +168,7 @@
 	<div class="col-6">
 		<h4>Problems</h4>
 		<div class="list-group">
-			{#each data.problems as problem}
+			{#each data.problems as problem (problem.id)}
 				<a href={`/admin/problems/${problem.id}`} class="list-group-item list-group-item-action"
 					>{problem.name}</a
 				>

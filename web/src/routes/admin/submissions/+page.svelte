@@ -45,7 +45,7 @@
 	<SubmissionsList
 		submissions={data.submissions}
 		includesAllAttempts={true}
-		sortDirection={'newest first'}
+		sortDirection="newest first"
 	></SubmissionsList>
 {:else}
 	<h2 class="text-center">Select Contest</h2>
