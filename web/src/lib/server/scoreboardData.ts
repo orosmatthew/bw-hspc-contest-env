@@ -35,10 +35,180 @@ type ScoreboardDataType = {
 			name: string;
 			solves: number;
 			time: number;
-			problems: { id: number; attempts: number; graphic: string | null; min: number | undefined }[];
+			problems: {
+				id: number;
+				attempts: number;
+				graphic: 'correct' | 'incorrect' | null;
+				min: number | undefined;
+			}[];
 		}[];
 	};
 };
+
+function getTeamCorrectSubmissions(
+	contestId: number,
+	team: ScoreboardContestDataType['teams'][number]
+): ScoreboardContestDataType['teams'][number]['submissions'] {
+	const correctSubmissions = team.submissions.filter(
+		(submission) => submission.contestId === contestId && submission.state === 'Correct'
+	);
+	const dedupedSubmissions: Array<
+		ScoreboardContestDataType['teams'][number]['submissions'][number]
+	> = [];
+	for (const submission of correctSubmissions) {
+		const existingIndex = dedupedSubmissions.findIndex((s) => s.problemId === submission.problemId);
+		if (existingIndex !== -1) {
+			if (submission.createdAt < dedupedSubmissions[existingIndex].createdAt) {
+				dedupedSubmissions[existingIndex] = submission;
+			}
+			continue;
+		}
+		dedupedSubmissions.push(submission);
+	}
+	return dedupedSubmissions;
+}
+
+function getTeamTime(params: {
+	contestId: number;
+	contestStartTime: Date;
+	team: ScoreboardContestDataType['teams'][number];
+}): number {
+	const correctSubmissions = getTeamCorrectSubmissions(params.contestId, params.team);
+	const incorrectSubmissionsBeforeCorrect = params.team.submissions.filter(
+		(submission) =>
+			submission.contestId === params.contestId &&
+			submission.state === 'Incorrect' &&
+			correctSubmissions.find(
+				(correct) =>
+					correct.problemId === submission.problemId && submission.createdAt < correct.createdAt
+			) !== undefined
+	);
+	const penaltyTime = incorrectSubmissionsBeforeCorrect.length * 10;
+	let time = penaltyTime;
+	for (const correct of correctSubmissions) {
+		time += (correct.createdAt.valueOf() - params.contestStartTime.valueOf()) / 60000;
+	}
+	return time;
+}
+
+function getTeamProblemAttempts(params: {
+	contestId: number;
+	teamSubmissions: ScoreboardContestDataType['teams'][number]['submissions'];
+	problem: ScoreboardContestDataType['problems'][number];
+}): ScoreboardContestDataType['teams'][number]['submissions'] {
+	const correct = params.teamSubmissions
+		.toSorted((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf())
+		.find(
+			(s) =>
+				s.contestId === params.contestId &&
+				s.problemId === params.problem.id &&
+				s.state === 'Correct'
+		);
+	const problemSubmissions = params.teamSubmissions.filter(
+		(s) => s.contestId === params.contestId && s.problemId === params.problem.id
+	);
+	return correct !== undefined
+		? problemSubmissions.filter((s) => s.createdAt <= correct.createdAt)
+		: problemSubmissions;
+}
+
+function getTeamProblemGraphic(params: {
+	contestId: number;
+	problemId: number;
+	teamSubmissions: ScoreboardContestDataType['teams'][number]['submissions'];
+}): ScoreboardDataType['contest']['teams'][number]['problems'][number]['graphic'] {
+	const problemSubmissions = params.teamSubmissions.filter(
+		(s) => s.contestId === params.contestId && s.problemId === params.problemId
+	);
+	if (problemSubmissions.find((s) => s.state === 'Correct')) {
+		return 'correct';
+	} else if (problemSubmissions.find((s) => s.state === 'Incorrect')) {
+		return 'incorrect';
+	}
+	return null;
+}
+
+function getTeamProblemMin(params: {
+	contestId: number;
+	contestStartTime: Date;
+	problemId: number;
+	teamSubmissions: ScoreboardContestDataType['teams'][number]['submissions'];
+}): ScoreboardDataType['contest']['teams'][number]['problems'][number]['min'] {
+	const correctSubmission = params.teamSubmissions
+		.toSorted((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf())
+		.find(
+			(s) =>
+				s.contestId === params.contestId &&
+				s.problemId === params.problemId &&
+				s.state === 'Correct'
+		);
+	if (correctSubmission !== undefined) {
+		return (correctSubmission.createdAt.valueOf() - params.contestStartTime.valueOf()) / 60000;
+	}
+	return undefined;
+}
+
+function getTeamProblems(params: {
+	contestId: number;
+	contestStartTime: Date;
+	contestProblems: ScoreboardContestDataType['problems'];
+	teamSubmissions: ScoreboardContestDataType['teams'][number]['submissions'];
+}): ScoreboardDataType['contest']['teams'][number]['problems'] {
+	return params.contestProblems.map((problem) => ({
+		id: problem.id,
+		attempts: getTeamProblemAttempts({
+			contestId: params.contestId,
+			problem,
+			teamSubmissions: params.teamSubmissions
+		}).length,
+		graphic: getTeamProblemGraphic({
+			contestId: params.contestId,
+			problemId: problem.id,
+			teamSubmissions: params.teamSubmissions
+		}),
+		min: getTeamProblemMin({
+			contestId: params.contestId,
+			contestStartTime: params.contestStartTime,
+			problemId: problem.id,
+			teamSubmissions: params.teamSubmissions
+		})
+	}));
+}
+
+function getTeamsData(contest: ScoreboardContestDataType): ScoreboardDataType['contest']['teams'] {
+	const contestStartTime = contest.startTime;
+	if (contestStartTime === null) {
+		throw new Error('Contest start time is null.');
+	}
+	return contest.teams
+		.map((team) => ({
+			id: team.id,
+			name: team.name,
+			solves: getTeamCorrectSubmissions(contest.id, team).length,
+			time: getTeamTime({ contestId: contest.id, contestStartTime, team }),
+			problems: getTeamProblems({
+				contestId: contest.id,
+				contestProblems: contest.problems,
+				contestStartTime,
+				teamSubmissions: team.submissions
+			})
+		}))
+		.sort((a, b) => {
+			if (a.solves > b.solves) {
+				return -1;
+			} else if (a.solves < b.solves) {
+				return 1;
+			} else {
+				if (a.time < b.time) {
+					return -1;
+				} else if (a.time > b.time) {
+					return 1;
+				} else {
+					return 0;
+				}
+			}
+		});
+}
 
 export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDataType {
 	return {
@@ -50,133 +220,7 @@ export function scoreboardData(contest: ScoreboardContestDataType): ScoreboardDa
 			problems: contest.problems.map((problem) => {
 				return { id: problem.id, friendlyName: problem.friendlyName };
 			}),
-			teams: contest.teams
-				.map((team) => {
-					return {
-						id: team.id,
-						name: team.name,
-						solves: team.submissions.filter((submission) => {
-							return submission.contestId === contest.id && submission.state === 'Correct';
-						}).length,
-						time: (() => {
-							const correctSubmissions = team.submissions
-								.filter((submission) => {
-									return submission.contestId === contest.id && submission.state === 'Correct';
-								})
-								.toSorted((a, b) => a.contestId.valueOf() - b.createdAt.valueOf());
-							const penaltyTime =
-								team.submissions.filter((submission) => {
-									return (
-										submission.contestId === contest.id &&
-										submission.state === 'Incorrect' &&
-										correctSubmissions.find((correct) => {
-											return (
-												correct.problemId === submission.problemId &&
-												submission.createdAt < correct.createdAt
-											);
-										})
-									);
-								}).length * 10;
-							let time = penaltyTime;
-							correctSubmissions.forEach((correctSubmission) => {
-								if (correctSubmission.gradedAt === null || contest.startTime === null) {
-									throw new Error(
-										"correctSubmission.gradedAt === null || contest.startTime === null was true when it shouldn't"
-									);
-								}
-								const gradedAt = correctSubmission.gradedAt.valueOf();
-								const min = (gradedAt - contest.startTime.valueOf()) / 60000;
-								time += min;
-							});
-							return time;
-						})(),
-						problems: contest.problems.map((problem) => {
-							return {
-								id: problem.id,
-								attempts: team.submissions.filter((submission) => {
-									const correct = team.submissions
-										.toSorted((a, b) => a.contestId.valueOf() - b.createdAt.valueOf())
-										.find(
-											(s) =>
-												s.contestId === contest.id &&
-												s.problemId === problem.id &&
-												s.state === 'Correct'
-										);
-									if (
-										correct !== undefined &&
-										(submission.state === 'Incorrect' ||
-											submission.state === 'Queued' ||
-											submission.state === 'InReview')
-									) {
-										return (
-											submission.contestId === contest.id &&
-											submission.problemId === problem.id &&
-											submission.createdAt < correct.createdAt
-										);
-									} else {
-										return (
-											submission.contestId === contest.id &&
-											submission.problemId === problem.id &&
-											(submission.state === 'Correct' ||
-												submission.state === 'Incorrect' ||
-												submission.state === 'InReview' ||
-												submission.state === 'Queued')
-										);
-									}
-								}).length,
-								graphic: team.submissions.find((submission) => {
-									return (
-										submission.contestId === contest.id &&
-										submission.problemId === problem.id &&
-										(submission.state === 'Correct' || submission.state === 'Incorrect')
-									);
-								})
-									? team.submissions.find((submission) => {
-											return submission.problemId === problem.id && submission.state === 'Correct';
-										})
-										? 'correct'
-										: 'incorrect'
-									: null,
-								min: (() => {
-									const correctSubmission = team.submissions
-										.toSorted((a, b) => a.contestId.valueOf() - b.createdAt.valueOf())
-										.find((submission) => {
-											return (
-												submission.contestId === contest.id &&
-												submission.problemId === problem.id &&
-												submission.state === 'Correct'
-											);
-										});
-									if (correctSubmission) {
-										if (correctSubmission.gradedAt === null || contest.startTime === null) {
-											throw new Error(
-												"correctSubmission.gradedAt === null || contest.startTime === null is true when it shouldn't"
-											);
-										}
-										const gradedAt = correctSubmission.gradedAt.valueOf();
-										return (gradedAt - contest.startTime.valueOf()) / 60000;
-									}
-									return undefined;
-								})()
-							};
-						})
-					};
-				})
-				.sort((a, b) => {
-					if (a.solves > b.solves) {
-						return -1;
-					} else if (a.solves < b.solves) {
-						return 1;
-					} else {
-						if (a.time < b.time) {
-							return -1;
-						} else if (a.time > b.time) {
-							return 1;
-						} else {
-							return 0;
-						}
-					}
-				})
+			teams: getTeamsData(contest)
 		}
 	};
 }
