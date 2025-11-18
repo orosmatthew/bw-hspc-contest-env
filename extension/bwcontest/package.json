@@ -120,7 +120,7 @@
 		"eslint": "^9.21.0",
 		"eslint-config-prettier": "^10.0.2",
 		"eslint-plugin-svelte": "^3.0.2",
-		"glob": "^11.0.1",
+		"glob": "^11.1.0",
 		"mocha": "^11.1.0",
 		"npm-check-updates": "^17.1.15",
 		"postcss": "^8.5.3",
