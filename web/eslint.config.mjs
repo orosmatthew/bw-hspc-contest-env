@@ -1,33 +1,59 @@
-import js from '@eslint/js';
-import ts from 'typescript-eslint';
-import svelte from 'eslint-plugin-svelte';
 import prettier from 'eslint-config-prettier';
+import { includeIgnoreFile } from '@eslint/compat';
+import js from '@eslint/js';
+import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
+import { fileURLToPath } from 'node:url';
+import ts from 'typescript-eslint';
+import svelteConfig from './svelte.config.js';
+import { defineConfig } from 'eslint/config';
 
-/** @type {import('eslint').Linter.Config[]} */
-export default [
+const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
+
+export default defineConfig(
+	includeIgnoreFile(gitignorePath),
 	js.configs.recommended,
 	...ts.configs.recommended,
-	...svelte.configs['flat/recommended'],
+	...svelte.configs.recommended,
 	prettier,
-	...svelte.configs['flat/prettier'],
+	...svelte.configs.prettier,
 	{
 		languageOptions: {
-			globals: {
-				...globals.browser,
-				...globals.node
-			}
+			globals: { ...globals.browser, ...globals.node }
+		},
+		rules: {
+			// typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
+			// see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
+			'no-undef': 'off'
 		}
 	},
 	{
-		files: ['**/*.svelte'],
+		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
 			parserOptions: {
-				parser: ts.parser
+				projectService: true,
+				extraFileExtensions: ['.svelte'],
+				parser: ts.parser,
+				svelteConfig
 			}
 		}
 	},
 	{
-		ignores: ['build/', '.svelte-kit/', 'dist/']
-	}
-];
+		languageOptions: {
+			parserOptions: { projectService: true, parser: ts.parser }
+		}
+	},
+	{
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off',
+			eqeqeq: 'error',
+			'@typescript-eslint/no-floating-promises': 'error',
+			'@typescript-eslint/strict-boolean-expressions': 'error',
+			'@typescript-eslint/await-thenable': 'error',
+			'@typescript-eslint/no-unnecessary-type-assertion': 'error',
+			'@typescript-eslint/prefer-nullish-coalescing': 'error',
+			'@typescript-eslint/restrict-template-expressions': 'error'
+		}
+	},
+	{ ignores: ['./eslint.config.js', './svelte.config.js'] }
+);

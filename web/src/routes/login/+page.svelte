@@ -15,7 +15,7 @@
 	$effect(() => {
 		if (form) {
 			if (form.success) {
-				goto('/admin');
+				void goto('/admin');
 			}
 			dismissed = false;
 		}

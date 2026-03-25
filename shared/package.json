@@ -1,8 +1,8 @@
 {
 	"name": "bwcontest-shared",
 	"scripts": {
-		"build": "tsc",
-		"watch": "tsc --watch",
+		"build": "rimraf --glob dist/**/* && tsc",
+		"watch": "rimraf --glob dist/**/* && tsc --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"check": "tsc -noEmit",
@@ -12,6 +12,12 @@
 	"files": [
 		"dist"
 	],
+	"exports": {
+		"./*": {
+			"types": "./dist/*.d.ts",
+			"default": "./dist/*.js"
+		}
+	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.3",
 		"@eslint/js": "^10.0.1",
@@ -23,6 +29,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"globals": "^17.4.0",
 		"prettier": "^3.8.1",
+		"rimraf": "^6.1.3",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.57.2"
 	},

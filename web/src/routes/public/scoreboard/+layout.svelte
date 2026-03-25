@@ -17,7 +17,7 @@
 
 	function onContestSelect() {
 		if ($contestId != null) {
-			goto(`/public/scoreboard/${$contestId}`);
+			void goto(`/public/scoreboard/${$contestId}`);
 		}
 	}
 </script>
@@ -36,7 +36,7 @@
 				type="button"
 				aria-label="theme"
 				class="btn btn-outline-secondary"
-				><i class={`bi bi-${$theme == 'light' ? 'sun' : 'moon'}`}></i></button
+				><i class={`bi bi-${$theme === 'light' ? 'sun' : 'moon'}`}></i></button
 			>
 			<div class="form-check form-switch align-self-center">
 				<input

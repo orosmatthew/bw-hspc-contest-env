@@ -11,3 +11,4 @@ vite.config.ts.timestamp-*
 temp
 db
 data.db
+.eslintcache

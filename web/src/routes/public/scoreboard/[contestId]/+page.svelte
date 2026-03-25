@@ -6,7 +6,7 @@
 	import { autoScrollEnabled } from '../+layout.svelte';
 	import { page } from '$app/state';
 
-	$contestId = parseInt(page.params.contestId);
+	$contestId = page.params.contestId === undefined ? null : parseInt(page.params.contestId);
 	interface Props {
 		data: PageData;
 	}
@@ -26,11 +26,11 @@
 			await invalidateAll();
 			updating = false;
 		}, 10000);
-		if ($autoScrollEnabled) {
+		if ($autoScrollEnabled === true) {
 			autoScrollTimeout = setTimeout(autoScroll, scrollInterval);
 		}
 		autoScrollEnabled.subscribe((enabled) => {
-			if (enabled) {
+			if (enabled === true) {
 				autoScroll();
 			}
 		});
@@ -56,10 +56,10 @@
 			autoScrollDir = 'down';
 		}
 		window.scrollTo({
-			top: y + (autoScrollDir == 'down' ? 1 : -1) * scrollOffset,
+			top: y + (autoScrollDir === 'down' ? 1 : -1) * scrollOffset,
 			behavior: 'smooth'
 		});
-		if ($autoScrollEnabled) {
+		if ($autoScrollEnabled === true) {
 			autoScrollTimeout = setTimeout(autoScroll, scrollInterval);
 		}
 	}

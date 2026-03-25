@@ -19,7 +19,7 @@ async function createDefaultAccount(db: PrismaClient) {
 if (!building) {
 	console.log('Runtime initialization...');
 	const db = new PrismaClient();
-	createDefaultAccount(db);
+	await createDefaultAccount(db);
 	startGitServer();
 }
 

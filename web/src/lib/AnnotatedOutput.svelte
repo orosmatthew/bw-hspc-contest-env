@@ -14,7 +14,7 @@
 
 	let { problem, output }: Props = $props();
 
-	const analysisResults = output != null ? analyzeSubmissionOutput(problem, output) : null;
+	const analysisResults = output !== null ? analyzeSubmissionOutput(problem, output) : null;
 
 	const inputLines = normalizeInputLines(problem.realInput);
 	const inputCases = parseProblemInput(problem);
@@ -69,7 +69,7 @@
 	}
 </script>
 
-{#if !inputCases.success}
+{#if inputCases.success !== true}
 	<div class="mb-2">
 		<b>Failed to parse problem input: </b><span>{inputCases.errorMessage}</span>
 	</div>

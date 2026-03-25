@@ -1,11 +1,6 @@
 import { db } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import type {
-	ContestStateForExtension,
-	FullStateForExtension,
-	SubmissionForExtension
-} from 'bwcontest-shared/types/contestMonitorTypes';
 import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
 
 export const GET = (async ({ params }) => {

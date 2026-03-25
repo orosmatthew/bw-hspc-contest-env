@@ -23,7 +23,7 @@
 
 	function drawBestMatchDiff() {
 		localDiff = diff;
-		if (!localDiff && output) {
+		if (localDiff !== null && output) {
 			localDiff = Diff.createPatch(
 				'Judge → Team',
 				trimmedLines(expectedOutput).join(newline),
