@@ -1,61 +1,82 @@
-import { spawn } from 'child_process';
+import { join } from 'path';
+import { exec, spawn } from 'child_process';
+import * as util from 'util';
+import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.js';
+import { timeoutSeconds } from './settings.js';
 import kill from 'tree-kill';
-import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.cjs';
-import { timeoutSeconds } from './settings.cjs';
-import { getSourceFilesWithText } from './sourceScraper.cjs';
+import * as os from 'os';
+import * as fs from 'fs-extra';
+import { getSourceFilesWithText } from './source-scraper.js';
 
-type CSharpBuildResult =
-	| { success: true }
-	| { success: false; exitCode: number | null; errorText: string };
+const execPromise = util.promisify(exec);
 
-export const runCSharp: IRunner = async function (params: IRunnerParams): Promise<IRunnerReturn> {
-	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cs');
+export type CppPlatform = 'VisualStudio' | 'GCC';
 
-	console.log(`- BUILD: ${params.srcDir}`);
-	const buildResult = await new Promise<CSharpBuildResult>((resolve) => {
-		try {
-			let buildOutput = '';
-			const buildProcess = spawn(`dotnet build`, { shell: true, cwd: params.srcDir });
-			buildProcess.stdout.setEncoding('utf8');
-			buildProcess.stdout.on('data', (data) => {
-				buildOutput += data.toString();
-			});
+interface IRunnerParamsCpp extends IRunnerParams {
+	srcDir: string;
+	problemName: string;
+	input: string;
+	cppPlatform: CppPlatform;
+	outputCallback?: (data: string) => void;
+}
 
-			buildProcess.on('error', (error) => {
-				resolve({ success: false, exitCode: null, errorText: error.message });
-			});
+export const runCpp: IRunner<IRunnerParamsCpp> = async function (
+	params: IRunnerParamsCpp
+): Promise<IRunnerReturn> {
+	const sourceFiles = await getSourceFilesWithText(
+		params.studentCodeRootForProblem,
+		'.cpp',
+		'.cc',
+		'.c',
+		'.h',
+		'.hpp'
+	);
 
-			buildProcess.on('close', (exitCode) => {
-				if (exitCode === 0) {
-					resolve({ success: true });
-				} else {
-					resolve({ success: false, exitCode, errorText: buildOutput });
-				}
-			});
-		} catch (e) {
-			const buildErrorText = e?.toString() ?? 'Unknown build errors.';
-			resolve({ success: false, exitCode: null, errorText: buildErrorText });
-		}
-	});
+	const tmpDir = os.tmpdir();
+	const buildDir = join(tmpDir, 'bwcontest-cpp');
+	if (fs.existsSync(buildDir)) {
+		fs.removeSync(buildDir);
+	}
+	fs.mkdirSync(buildDir);
 
-	if (!buildResult.success) {
+	console.log(`- BUILD: ${params.problemName}`);
+
+	const configureCommand = `cmake -S ${params.srcDir} -B ${buildDir}`;
+	try {
+		await execPromise(configureCommand);
+	} catch (e) {
+		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
+		console.log('Build errors: ' + buildErrorText);
 		return {
 			success: false,
-			runResult: {
-				kind: 'CompileFailed',
-				resultKindReason: buildResult.errorText,
-				exitCode: buildResult.exitCode ?? undefined,
-				sourceFiles
-			}
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
 		};
 	}
 
-	console.log(`- RUN: ${params.srcDir}`);
+	const compileCommand = `cmake --build ${buildDir} --target ${params.problemName}`;
 	try {
-		const child = spawn('dotnet run --no-build', { shell: true, cwd: params.srcDir });
+		await execPromise(compileCommand);
+	} catch (e) {
+		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
+		console.log('Build errors: ' + buildErrorText);
+		return {
+			success: false,
+			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
+		};
+	}
 
+	console.log(`- RUN: ${params.problemName}`);
+
+	let runCommand;
+	if (params.cppPlatform === 'VisualStudio') {
+		runCommand = `${join(buildDir, 'Debug', `${params.problemName}.exe`)}`;
+	} else {
+		runCommand = `${join(buildDir, params.problemName)}`;
+	}
+	try {
 		let outputBuffer = '';
 		params.outputCallback?.('');
+		const child = spawn(runCommand, { shell: true });
 		child.stdout.setEncoding('utf8');
 		child.stdout.on('data', (data) => {
 			outputBuffer += data.toString();

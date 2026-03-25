@@ -1,14 +1,25 @@
 {
 	"compilerOptions": {
-		"composite": true,
-		"target": "es2016",
-		"module": "commonjs",
+		"target": "es2024",
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"lib": ["es2024"],
+		"outDir": "./dist",
+		"rootDir": "./src",
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
-		"outDir": "./build",
+		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
 		"esModuleInterop": true,
-		"strict": true
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true,
+		"resolveJsonModule": true
 	},
-	"include": ["**/*.cts", "**/*.ts"]
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
 }

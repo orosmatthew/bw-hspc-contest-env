@@ -1,27 +1,34 @@
 {
 	"name": "bwcontest-shared",
 	"scripts": {
-		"build": "esbuild submission-runner/*.cts --bundle --outdir=build/submission-runner --format=cjs --platform=node --sourcemap",
-		"watch": "esbuild submission-runner/*.cts --bundle --outdir=build/submission-runner --format=cjs --platform=node --sourcemap --watch",
+		"build": "tsc",
+		"watch": "tsc --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"check": "tsc -noEmit",
 		"pre-commit": "npm run format; npm run lint; npm run check"
 	},
+	"type": "module",
+	"files": [
+		"dist"
+	],
 	"devDependencies": {
+		"@eslint/compat": "^2.0.3",
+		"@eslint/js": "^10.0.1",
 		"@types/fs-extra": "^11.0.4",
-		"@types/node": "22.x",
-		"@typescript-eslint/eslint-plugin": "^8.26.0",
-		"@typescript-eslint/parser": "^8.26.0",
-		"esbuild": "^0.25.0",
-		"eslint": "^9.21.0",
-		"eslint-config-prettier": "^10.0.2",
-		"fs-extra": "^11.3.0",
-		"npm-check-updates": "^17.1.15",
-		"prettier": "^3.5.3",
+		"@types/node": "25.x",
+		"@typescript-eslint/eslint-plugin": "^8.57.2",
+		"@typescript-eslint/parser": "^8.57.2",
+		"eslint": "^10.1.0",
+		"eslint-config-prettier": "^10.1.8",
+		"globals": "^17.4.0",
+		"prettier": "^3.8.1",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.57.2"
+	},
+	"dependencies": {
+		"fs-extra": "^11.3.4",
 		"tree-kill": "^1.2.2",
-		"typescript": "^5.8.2",
-		"typescript-eslint": "^8.26.0",
-		"zod": "^3.24.2"
+		"zod": "^4.3.6"
 	}
 }
