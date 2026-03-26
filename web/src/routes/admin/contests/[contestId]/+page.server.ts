@@ -1,164 +1,151 @@
 import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { db } from '$lib/server/prisma';
 import fs from 'fs-extra';
 import { join } from 'path';
-import { createRepos } from '$lib/server/repos';
+import z from 'zod';
+import {
+	activeTeamRepo,
+	contestRepo,
+	problemRepo,
+	submissionRepo,
+	teamRepo
+} from '$lib/server/repos';
+import { stringToJsonSchema } from '$lib/common/utils';
+import { createRepos } from '$lib/server/git-repos';
 
 export const load = (async ({ params }) => {
-	const contestId = parseInt(params.contestId);
-	if (isNaN(contestId)) {
-		error(400, 'Invalid request');
+	const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+	if (!contestIdParse.success) {
+		error(400, 'Invalid contest id');
 	}
-	const contest = await db.contest.findUnique({
-		where: { id: contestId },
-		include: { problems: true, teams: true, activeTeams: true }
-	});
-	if (!contest) {
-		redirect(302, '/admin/contests');
+	const contest = await contestRepo.getById(contestIdParse.data);
+	if (contest === undefined) {
+		redirect(307, '/admin/contests');
 	}
+	const problems = await problemRepo.getInContest(contest.id, { forPublic: false });
+	const teams = await teamRepo.getInContest(contest.id, { forPublic: false });
 	return {
-		name: contest.name,
-		frozen: contest.freezeTime === null ? false : new Date() >= contest.freezeTime,
-		problems: contest.problems.map((problem) => {
-			return { id: problem.id, name: problem.friendlyName };
-		}),
-		teams: contest.teams.map((team) => {
-			return { id: team.id, name: team.name };
-		}),
-		activeTeams: contest.activeTeams.length
+		contest,
+		problems,
+		teams,
+		activeTeamsCount: await activeTeamRepo.getCountInContest(contest.id)
 	};
 }) satisfies PageServerLoad;
 
-export const actions = {
+const repoSchema = z.object({
+	teamIds: stringToJsonSchema.pipe(z.array(z.number().int()))
+});
+
+export const actions: Actions = {
 	delete: async ({ params }) => {
-		if (params.contestId === undefined || isNaN(parseInt(params.contestId))) {
-			return { success: false, message: 'Invalid contest Id' };
+		const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+		if (!contestIdParse.success) {
+			return { success: false, message: 'Invalid contest id' };
 		}
-		try {
-			await db.submission.deleteMany({ where: { contestId: parseInt(params.contestId) } });
-			await db.contest.delete({ where: { id: parseInt(params.contestId) } });
-		} catch (e) {
-			console.error(e);
-			return { success: false, message: `Database error: ${e}` };
+		const submissionDeleteSuccess = await submissionRepo.deleteInContest(contestIdParse.data);
+		if (submissionDeleteSuccess !== true) {
+			return { success: false, message: 'Unable to delete contest submissions' };
 		}
-		redirect(302, '/admin/contests');
+		const contestDeleteSuccess = await contestRepo.deleteById(contestIdParse.data);
+		if (contestDeleteSuccess !== true) {
+			return { success: false, message: 'Unable to delete contest' };
+		}
+		redirect(303, '/admin/contests');
 	},
 	start: async ({ params }) => {
-		if (params.contestId === undefined) {
-			return { success: false };
+		const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+		if (!contestIdParse.success) {
+			return { success: false, message: 'Invalid contest id' };
 		}
-		const contestId = parseInt(params.contestId);
-		if (isNaN(contestId)) {
-			return { success: false };
+		const contest = await contestRepo.getById(contestIdParse.data);
+		if (contest === undefined) {
+			return { success: false, message: 'Contest not found' };
 		}
-		const contest = await db.contest.findUnique({
-			where: { id: contestId },
-			include: { activeTeams: true, teams: { include: { activeTeam: true } } }
-		});
-		if (
-			!contest ||
-			contest.teams.length === 0 ||
-			contest.activeTeams.length !== 0 ||
-			contest.teams.find((team) => {
-				return team.activeTeam;
-			})
-		) {
-			return { success: false };
+		const contestTeams = await teamRepo.getInContest(contest.id, { forPublic: false });
+		const activeTeamsCount = await activeTeamRepo.getCountInContest(contest.id);
+		if (contestTeams.length === 0) {
+			return { success: false, message: 'Contest has no teams' };
 		}
-
-		await db.submission.deleteMany({ where: { contestId: contest.id } });
-
-		contest.teams.forEach(async (team) => {
-			await db.activeTeam.create({ data: { teamId: team.id, contestId: contest.id } });
-		});
-
-		await db.contest.update({ where: { id: contestId }, data: { startTime: new Date() } });
-
+		if (activeTeamsCount !== 0) {
+			return { success: false, message: 'Active teams are associated with this contest' };
+		}
+		if (contestTeams.some((t) => t.hasActiveTeam) === true) {
+			return { success: false, message: 'A team assigned to the contest is already active' };
+		}
+		const submissionDeleteSuccess = await submissionRepo.deleteInContest(contestIdParse.data);
+		if (submissionDeleteSuccess !== true) {
+			return { success: false, message: 'Unable to delete previous submissions' };
+		}
+		const activeTeamCreateResult = await activeTeamRepo.createMany(
+			contestTeams.map((t) => ({ contestId: contestIdParse.data, teamId: t.id }))
+		);
+		if (activeTeamCreateResult !== true) {
+			return { success: false, message: 'Unable to create active teams' };
+		}
+		const updateStartTimeSuccess = await contestRepo.updateStartTime(
+			contestIdParse.data,
+			new Date()
+		);
+		if (updateStartTimeSuccess !== true) {
+			return { success: false, message: 'Unable to update contest start time' };
+		}
 		return { success: true };
 	},
 	stop: async ({ params }) => {
-		if (params.contestId === undefined) {
-			return { success: false };
+		const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+		if (!contestIdParse.success) {
+			return { success: false, message: 'Invalid contest id' };
 		}
-		const contestId = parseInt(params.contestId);
-		if (isNaN(contestId)) {
-			return { success: false };
+		const contest = await contestRepo.getById(contestIdParse.data);
+		if (contest === undefined) {
+			return { success: false, message: 'Contest not found' };
 		}
-		const contest = await db.contest.findUnique({
-			where: { id: contestId },
-			include: { activeTeams: true }
-		});
-		if (!contest || contest.activeTeams.length === 0) {
-			return { success: false };
+		const activeTeamDeleteSuccess = await activeTeamRepo.deleteInContest(contest.id);
+		if (activeTeamDeleteSuccess !== true) {
+			return { success: false, message: 'Unable to delete active teams' };
 		}
-		contest.activeTeams.forEach(async (activeTeam) => {
-			await db.activeTeam.delete({ where: { id: activeTeam.id } });
-		});
 		return { success: true };
 	},
 	repo: async ({ params, request }) => {
-		if (params.contestId === undefined) {
-			return { success: false };
+		const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+		if (!contestIdParse.success) {
+			return { success: false, message: 'Invalid contest id' };
 		}
-		const contestId = parseInt(params.contestId);
-		if (isNaN(contestId)) {
-			return { success: false };
+		const contest = await contestRepo.getById(contestIdParse.data);
+		if (contest === undefined) {
+			return { success: false, message: 'Contest not found' };
 		}
-		const form = await request.formData();
-		const formEntries = Array.from(form.entries());
-		const resetTeamIds = formEntries
-			.filter((e) => e[0].startsWith('teamId'))
-			.map((e) => {
-				return parseInt(e[1].toString());
-			});
-		resetTeamIds.forEach((teamId) => {
-			const repoPath = join('repo', contestId.toString(), `${teamId.toString()}.git`);
-			if (fs.existsSync(repoPath) === true) {
-				fs.removeSync(repoPath);
-			}
-		});
-		await createRepos(contestId, resetTeamIds);
+		const form = repoSchema.safeParse(Object.fromEntries(await request.formData()));
+		if (!form.success) {
+			return { success: false, message: 'Invalid form data' };
+		}
+		for (const teamId of form.data.teamIds) {
+			const repoPath = join('repo', contest.id.toString(), `${teamId.toString()}.git`);
+			await fs.remove(repoPath);
+		}
+		await createRepos(contest.id, form.data.teamIds);
 		return { success: true };
 	},
 	freeze: async ({ params }) => {
-		if (params.contestId === undefined) {
-			return { success: false, message: 'No contest Id specified' };
+		const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+		if (!contestIdParse.success) {
+			return { success: false, message: 'Invalid contest id' };
 		}
-		const contestId = parseInt(params.contestId);
-		if (isNaN(contestId)) {
-			return { success: false, message: 'Invalid contest Id' };
-		}
-		const contest = await db.contest.findUnique({ where: { id: contestId } });
-		if (contest === null) {
-			return { success: false, message: 'Invalid contest' };
-		}
-		try {
-			await db.contest.update({ where: { id: contestId }, data: { freezeTime: new Date() } });
-		} catch (e) {
-			console.error(`Database error: ${e}`);
-			return { success: false, message: `Database error: ${e}` };
+		const updateSuccess = await contestRepo.updateFreezeTime(contestIdParse.data, new Date());
+		if (updateSuccess !== true) {
+			return { success: false, message: 'Unable to update freeze time' };
 		}
 		return { success: true };
 	},
 	unfreeze: async ({ params }) => {
-		if (params.contestId === undefined) {
-			return { success: false, message: 'No contest Id specified' };
+		const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+		if (!contestIdParse.success) {
+			return { success: false, message: 'Invalid contest id' };
 		}
-		const contestId = parseInt(params.contestId);
-		if (isNaN(contestId)) {
-			return { success: false, message: 'Invalid contest Id' };
-		}
-		const contest = await db.contest.findUnique({ where: { id: contestId } });
-		if (contest === null) {
-			return { success: false, message: 'Invalid contest' };
-		}
-		try {
-			await db.contest.update({ where: { id: contestId }, data: { freezeTime: null } });
-		} catch (e) {
-			console.error(`Database error: ${e}`);
-			return { success: false, message: `Database error: ${e}` };
+		const updateSuccess = await contestRepo.updateFreezeTime(contestIdParse.data, null);
+		if (updateSuccess !== true) {
+			return { success: false, message: 'Unable to update freeze time' };
 		}
 		return { success: true };
 	}
-} satisfies Actions;
+};

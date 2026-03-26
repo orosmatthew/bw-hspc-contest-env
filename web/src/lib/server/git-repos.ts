@@ -86,7 +86,7 @@ export async function createRepos(contestId: number, teamIds: number[]) {
 	const vol = new memfs.Volume();
 	const fs = createFsFromVolume(vol);
 
-	const contestTeams = await teamRepo.getInContest(contestId);
+	const contestTeams = await teamRepo.getInContest(contestId, { forPublic: false });
 	const contestProblems = await problemRepo.getInContest(contestId, { forPublic: false });
 
 	contestTeams

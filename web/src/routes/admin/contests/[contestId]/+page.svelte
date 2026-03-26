@@ -4,6 +4,7 @@
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import Modal from '$lib/components/Modal.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import type { ActionData, PageData } from './$types';
 
 	interface Props {
@@ -15,6 +16,7 @@
 
 	let confirmModal: ConfirmModal | undefined = $state();
 	let repoModal: Modal | undefined = $state();
+	let selectedResetRepoTeamIds = new SvelteSet<number>();
 
 	function enhanceConfirm(form: HTMLFormElement, text: string) {
 		enhance(form, async ({ cancel }) => {
@@ -33,15 +35,13 @@
 	}
 
 	function repoSelectNone() {
-		document.querySelectorAll<HTMLInputElement>('.repoCheck').forEach((e) => {
-			e.checked = false;
-		});
+		selectedResetRepoTeamIds.clear();
 	}
 
 	function repoSelectAll() {
-		document.querySelectorAll<HTMLInputElement>('.repoCheck').forEach((e) => {
-			e.checked = true;
-		});
+		for (const team of data.teams) {
+			selectedResetRepoTeamIds.add(team.id);
+		}
 	}
 	$effect(() => {
 		if (form) {
@@ -51,13 +51,14 @@
 </script>
 
 <svelte:head>
-	<title>Contest - {data.name}</title>
+	<title>Contest - {data.contest.name}</title>
 </svelte:head>
 
 <ConfirmModal bind:this={confirmModal} />
 
 <Modal title="Reset Repos" bind:this={repoModal}>
 	<form action="?/repo" method="POST" use:enhance>
+		<input type="hidden" name="teamIds" value={JSON.stringify(Array.from(selectedResetRepoTeamIds))} />
 		<div class="modal-body">
 			<div class="d-flex flex-row gap-2 pb-2">
 				<button onclick={repoSelectNone} type="button" class="btn btn-sm btn-outline-secondary"
@@ -70,13 +71,19 @@
 			{#each data.teams as team (team.id)}
 				<div class="form-check">
 					<input
-						name={`teamId${team.id}`}
-						class="form-check-input repoCheck"
+						class="form-check-input"
 						type="checkbox"
-						value={team.id}
-						id={`repoCheck${team.id}`}
+						checked={selectedResetRepoTeamIds.has(team.id)}
+						id={`repoCheck-${team.id}`}
+						oninput={(e) => {
+							if (e.currentTarget.checked) {
+								selectedResetRepoTeamIds.add(team.id);
+							} else {
+								selectedResetRepoTeamIds.delete(team.id);
+							}
+						}}
 					/>
-					<label class="form-check-label" for={`repoCheck${team.id}`}>{team.name}</label>
+					<label class="form-check-label" for={`repoCheck-${team.id}`}>{team.name}</label>
 				</div>
 			{/each}
 		</div>
@@ -93,11 +100,13 @@
 	</form>
 </Modal>
 
-<h1 style="text-align:center" class="mb-4"><i class="bi bi-flag"></i> Contest - {data.name}</h1>
+<h1 style="text-align:center" class="mb-4">
+	<i class="bi bi-flag"></i> Contest - {data.contest.name}
+</h1>
 
 <FormAlert />
 
-{#if data.activeTeams !== 0}
+{#if data.activeTeamsCount !== 0}
 	<div class="alert alert-success">In Progress</div>
 {/if}
 
@@ -106,7 +115,7 @@
 		<a href="/admin/contests" class="btn btn-outline-primary">All Contests</a>
 	</div>
 	<div class="col-6 text-end">
-		{#if !data.frozen}
+		{#if data.contest.isFrozen !== true}
 			<form class="d-inline" action="?/freeze" method="POST" use:enhance>
 				<button type="submit" class="btn btn-info">Freeze</button>
 			</form>
@@ -122,7 +131,7 @@
 				repoModal?.show();
 			}}>Reset Repos</button
 		>
-		{#if data.activeTeams === 0}
+		{#if data.activeTeamsCount === 0}
 			<form
 				method="POST"
 				action="?/delete"
@@ -170,7 +179,7 @@
 		<div class="list-group">
 			{#each data.problems as problem (problem.id)}
 				<a href={`/admin/problems/${problem.id}`} class="list-group-item list-group-item-action"
-					>{problem.name}</a
+					>{problem.friendlyName}</a
 				>
 			{/each}
 		</div>

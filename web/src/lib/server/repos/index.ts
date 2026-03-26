@@ -4,6 +4,8 @@ import { env } from '$env/dynamic/private';
 import { ContestRepo } from './contest-repo';
 import { TeamRepo } from './team-repo';
 import { ProblemRepo } from './problem-repo';
+import { ActiveTeamRepo } from './active-team-repo';
+import { SubmissionRepo } from './submission-repo';
 
 export const adminSessionRepo = (
 	building
@@ -20,3 +22,7 @@ export const contestRepo = (building ? undefined : new ContestRepo()) as Contest
 export const teamRepo = (building ? undefined : new TeamRepo()) as TeamRepo;
 
 export const problemRepo = (building ? undefined : new ProblemRepo()) as ProblemRepo;
+
+export const activeTeamRepo = (building ? undefined : new ActiveTeamRepo()) as ActiveTeamRepo;
+
+export const submissionRepo = (building ? undefined : new SubmissionRepo()) as SubmissionRepo;

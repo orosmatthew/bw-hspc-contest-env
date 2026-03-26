@@ -7,6 +7,7 @@ export type Contest = {
 	name: string;
 	startTime: Date | null;
 	freezeTime: Date | null;
+	isFrozen: boolean;
 };
 
 export class ContestRepo {
@@ -23,9 +24,48 @@ export class ContestRepo {
 					.from(contestTable)
 					.where(eq(contestTable.id, id))
 			).at(0);
-			return contest;
+			if (contest === undefined) {
+				return undefined;
+			}
+			return {
+				...contest,
+				isFrozen: contest.freezeTime === null ? false : new Date() >= contest.freezeTime
+			};
 		} catch (e) {
 			console.error(e);
+		}
+	}
+
+	async deleteById(contestId: number): Promise<boolean> {
+		try {
+			await db.delete(contestTable).where(eq(contestTable.id, contestId));
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
+		}
+	}
+
+	async updateStartTime(contestId: number, value: Date | null): Promise<boolean> {
+		try {
+			await db.update(contestTable).set({ startTime: value }).where(eq(contestTable.id, contestId));
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
+		}
+	}
+
+	async updateFreezeTime(contestId: number, value: Date | null): Promise<boolean> {
+		try {
+			await db
+				.update(contestTable)
+				.set({ freezeTime: value })
+				.where(eq(contestTable.id, contestId));
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
 		}
 	}
 }

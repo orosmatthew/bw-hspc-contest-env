@@ -36,7 +36,8 @@ export const activeTeamTable = sqliteTable(
 		id: integer('id').notNull().primaryKey({ autoIncrement: true }),
 		teamId: integer('team_id')
 			.notNull()
-			.references(() => teamTable.id, { onDelete: 'restrict' }),
+			.references(() => teamTable.id, { onDelete: 'restrict' })
+			.unique(),
 		sessionToken: text('session_token').unique(),
 		sessionCreatedAt: integer('session_created_at', { mode: 'timestamp' }),
 		contestId: integer('contest_id')

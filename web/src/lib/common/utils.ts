@@ -1,4 +1,5 @@
 import type { Contest, Submission } from '@prisma/client';
+import z, { json } from 'zod';
 
 export function stretchTextarea(textarea: HTMLTextAreaElement) {
 	textarea.style.height = textarea.scrollHeight + 'px';
@@ -32,3 +33,14 @@ export function submissionTimestampHoverText(contest: Contest, submission: Submi
 export function fullTimestampDisplay(date: Date): string {
 	return date.toLocaleDateString() + ' @ ' + date.toLocaleTimeString();
 }
+
+export const stringToJsonSchema = z
+	.string()
+	.transform((str, ctx): z.infer<ReturnType<typeof json>> => {
+		try {
+			return JSON.parse(str);
+		} catch (e) {
+			ctx.addIssue({ code: 'custom', message: `Invalid JSON: ${e}` });
+			return z.NEVER;
+		}
+	});
