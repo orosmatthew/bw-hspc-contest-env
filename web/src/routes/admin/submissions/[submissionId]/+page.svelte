@@ -5,7 +5,7 @@
 		minutesFromContestStart,
 		stretchTextarea,
 		submissionTimestampHoverText
-	} from '$lib/common/util';
+	} from '$lib/common/utils';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import SubmissionCodeAndOutput from '$lib/components/SubmissionCodeAndOutput.svelte';
 	import { goto } from '$app/navigation';

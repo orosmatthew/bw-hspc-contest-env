@@ -6,7 +6,7 @@
 		minutesBetweenTimestamps,
 		minutesFromContestStart,
 		submissionTimestampHoverText
-	} from '$lib/common/util';
+	} from '$lib/common/utils';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {

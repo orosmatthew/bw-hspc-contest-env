@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
-	import { stretchTextarea } from '$lib/common/util';
+	import { stretchTextarea } from '$lib/common/utils';
 	import type { ActionData, PageData } from './$types';
 
 	let editing = $state(false);
