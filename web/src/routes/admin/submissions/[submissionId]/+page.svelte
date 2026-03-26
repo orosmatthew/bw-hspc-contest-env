@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Actions, PageData } from './$types';
+	import type { ActionData, PageData } from './$types';
 	import { enhance } from '$app/forms';
 	import {
 		minutesFromContestStart,
@@ -14,7 +14,7 @@
 
 	interface Props {
 		data: PageData;
-		form: Actions;
+		form: ActionData;
 	}
 
 	let { data, form }: Props = $props();

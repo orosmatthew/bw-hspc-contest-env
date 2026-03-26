@@ -1,22 +1,15 @@
 <script lang="ts">
-	import type { Actions, PageData } from './$types';
+	import type { PageData } from './$types';
 	import Modal from '$lib/components/Modal.svelte';
 	import InputSpecDescription from './InputSpecDescription.svelte';
 
 	interface Props {
 		data: PageData;
-		form: Actions;
 	}
 
-	let { data, form }: Props = $props();
+	let { data }: Props = $props();
 
 	let inputSpecModal: Modal | undefined = $state();
-
-	$effect(() => {
-		if (form) {
-			inputSpecModal?.hide();
-		}
-	});
 </script>
 
 <svelte:head>

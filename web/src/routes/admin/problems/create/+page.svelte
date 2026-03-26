@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import type { Actions } from './$types';
+	import type { ActionData } from './$types';
 
 	interface Props {
-		form: Actions;
+		form: ActionData;
 	}
 
 	let { form }: Props = $props();

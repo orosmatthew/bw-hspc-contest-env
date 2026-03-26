@@ -4,14 +4,14 @@
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
 	import { stretchTextarea } from '$lib/common/util';
-	import type { Actions, PageData } from './$types';
+	import type { ActionData, PageData } from './$types';
 
 	let editing = $state(false);
 	let error = $state(false);
 
 	interface Props {
 		data: PageData;
-		form: Actions;
+		form: ActionData;
 	}
 
 	let { data, form }: Props = $props();

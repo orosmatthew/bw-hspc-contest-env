@@ -2,11 +2,11 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import FormAlert from '$lib/components/FormAlert.svelte';
-	import type { Actions, PageData } from './$types';
+	import type { ActionData, PageData } from './$types';
 
 	interface Props {
 		data: PageData;
-		form: Actions;
+		form: ActionData;
 	}
 
 	let { data, form }: Props = $props();

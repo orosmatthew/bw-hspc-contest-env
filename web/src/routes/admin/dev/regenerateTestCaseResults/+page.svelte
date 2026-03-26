@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import FormAlert from '$lib/components/FormAlert.svelte';
-	import type { Actions, PageData } from './$types';
+	import type { ActionData, PageData } from './$types';
 
 	let log = $state('');
 
 	interface Props {
-		form: Actions;
+		form: ActionData;
 		data: PageData;
 	}
 
@@ -29,7 +29,7 @@
 				log += 'Message: ' + form.errorMessage + '\n';
 				log += 'Problems: ' + form.problemCount + '\n';
 				log += 'Report: \n';
-				log += form.report + '\n\n';
+				log += form.reportJson + '\n\n';
 			}
 		}
 	});

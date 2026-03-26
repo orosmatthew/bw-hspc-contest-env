@@ -1,15 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
 	import FormAlert from '$lib/components/FormAlert.svelte';
-	import type { Actions } from './$types';
 	import type { ContestImportData } from './+page.server';
-
-	interface Props {
-		form: Actions;
-	}
-
-	let { form }: Props = $props();
 
 	let jsonText = $state('');
 	let parsesCorrectly: boolean | null = $state(null);
@@ -37,11 +29,6 @@
 			parsesCorrectly = null;
 		}
 	}
-	$effect(() => {
-		if (form && form.success) {
-			void goto('/admin/contests');
-		}
-	});
 	$effect(() => {
 		if (jsonText) {
 			updateUIFromJson();
