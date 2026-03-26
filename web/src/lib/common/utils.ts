@@ -44,3 +44,8 @@ export const stringToJsonSchema = z
 			return z.NEVER;
 		}
 	});
+
+export const checkboxSchema = z
+	.string()
+	.optional()
+	.transform((value) => value === 'on');
