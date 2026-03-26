@@ -12,9 +12,9 @@
 
 	let { form, data }: Props = $props();
 
-	const submissionsWithOutput = data.submissions.filter((s) => s.actualOutput != null);
-	const submissionsWithOutputButNoTestCaseResults = submissionsWithOutput.filter(
-		(s) => s.testCaseResults == null
+	const submissionsWithOutput = $derived(data.submissions.filter((s) => s.actualOutput !== null));
+	const submissionsWithOutputButNoTestCaseResults = $derived(
+		submissionsWithOutput.filter((s) => s.testCaseResults === null)
 	);
 	$effect(() => {
 		if (form) {

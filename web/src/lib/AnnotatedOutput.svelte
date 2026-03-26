@@ -14,13 +14,15 @@
 
 	let { problem, output }: Props = $props();
 
-	const analysisResults = output !== null ? analyzeSubmissionOutput(problem, output) : null;
+	const analysisResults = $derived(
+		output !== null ? analyzeSubmissionOutput(problem, output) : null
+	);
 
-	const inputLines = normalizeInputLines(problem.realInput);
-	const inputCases = parseProblemInput(problem);
+	const inputLines = $derived(normalizeInputLines(problem.realInput));
+	const inputCases = $derived(parseProblemInput(problem));
 
-	const numCases = Number(numInputCases(problem.realInput));
-	const numSampleCases = Number(numInputCases(problem.sampleInput));
+	const numCases = $derived(Number(numInputCases(problem.realInput)));
+	const numSampleCases = $derived(Number(numInputCases(problem.sampleInput)));
 
 	function caseResultToClassName(caseResult: CaseResult): string {
 		switch (caseResult) {

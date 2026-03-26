@@ -11,7 +11,7 @@
 
 	$effect(() => {
 		if (form && form.success) {
-			goto('/admin/problems');
+			void goto('/admin/problems');
 		}
 	});
 </script>

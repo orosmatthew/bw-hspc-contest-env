@@ -32,7 +32,7 @@
 	<title>Reviews</title>
 </svelte:head>
 
-{#if data.reviewList != null}
+{#if data.reviewList !== null}
 	<div class="mb-3 text-end">
 		{#if updating}
 			<div class="spinner-border spinner-border-sm text-secondary"></div>

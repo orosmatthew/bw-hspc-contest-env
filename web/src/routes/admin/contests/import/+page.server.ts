@@ -49,14 +49,14 @@ export const actions = {
 		try {
 			const formData = await request.formData();
 			const contestJson = formData.get('jsonText')?.toString();
-			if (!contestJson) {
+			if (contestJson === undefined) {
 				return fail(400, { message: 'Could not get json text' });
 			}
 
 			parsedContest = JSON.parse(contestJson);
-			includeSubmissions = formData.get('includeSubmissions')?.toString() == 'on';
+			includeSubmissions = formData.get('includeSubmissions')?.toString() === 'on';
 			createReposAndKeepContestRunning =
-				formData.get('createReposAndKeepContestRunning')?.toString() == 'on';
+				formData.get('createReposAndKeepContestRunning')?.toString() === 'on';
 		} catch (err) {
 			return fail(400, { message: 'Could not parse contest data: ' + err?.toString() });
 		}
@@ -134,14 +134,15 @@ export const actions = {
 														name: submission.TeamName
 													}
 												},
-												sourceFiles: submission.Code
-													? {
-															create: {
-																pathFromProblemRoot: 'importedCode.txt',
-																content: submission.Code
+												sourceFiles:
+													submission.Code !== null
+														? {
+																create: {
+																	pathFromProblemRoot: 'importedCode.txt',
+																	content: submission.Code
+																}
 															}
-														}
-													: {}
+														: {}
 											};
 										})()
 								)
@@ -156,9 +157,9 @@ export const actions = {
 			});
 			for (const problem of contestWithProblems?.problems ?? []) {
 				const importedInputSpec = parsedContest.Problems.find(
-					(p) => p.ShortName == problem.pascalName
+					(p) => p.ShortName === problem.pascalName
 				)?.InputSpec;
-				if (importedInputSpec) {
+				if (importedInputSpec !== undefined) {
 					await db.problem.update({
 						where: { id: problem.id },
 						data: { inputSpec: importedInputSpec }
@@ -172,7 +173,7 @@ export const actions = {
 					include: { problem: true }
 				});
 				for (const insertedSubmission of insertedSubmissions) {
-					if (!insertedSubmission.actualOutput) {
+					if (insertedSubmission.actualOutput === null) {
 						continue;
 					}
 
@@ -236,7 +237,7 @@ function inferTeamLanguage(
 	team: TeamImportData
 ): Language | null {
 	const submissionWithCode = parsedContest.Submissions.find(
-		(s) => s.TeamName == team.TeamName && s.Code != null
+		(s) => s.TeamName === team.TeamName && s.Code !== null
 	);
 	if (!submissionWithCode) {
 		return null;

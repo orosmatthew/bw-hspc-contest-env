@@ -93,17 +93,17 @@ export const POST = (async ({ request }) => {
 	}
 
 	const teamOutput =
-		data.data.result.output != undefined ? normalizeNewlines(data.data.result.output) : null;
+		data.data.result.output !== undefined ? normalizeNewlines(data.data.result.output) : null;
 
 	const testCaseResults =
-		teamOutput != null
+		teamOutput !== null
 			? (analyzeSubmissionOutput(submission.problem, teamOutput)?.databaseString ?? 'Unknown')
 			: null;
 
 	console.log(`Sandbox got response, kind is ${data.data.result.kind}`);
 	switch (data.data.result.kind) {
 		case 'Completed':
-			if (autoJudgeResponse(submission.problem.realOutput, teamOutput ?? '') == 'Correct') {
+			if (autoJudgeResponse(submission.problem.realOutput, teamOutput ?? '') === 'Correct') {
 				await db.submission.update({
 					where: { id: data.data.submissionId },
 					data: {

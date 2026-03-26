@@ -7,6 +7,7 @@
 	import { theme } from '../stores';
 	import type { LayoutData } from './$types';
 	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 
 	interface Props {
 		data: LayoutData;
@@ -15,11 +16,7 @@
 
 	let { data, children }: Props = $props();
 
-	selectedContest.id = data.selectedContestId;
-
-	// $effect(() => {
-
-	// });
+	selectedContest.id = untrack(() => data.selectedContestId);
 
 	beforeNavigate(({ to }) => {
 		if (

@@ -13,7 +13,7 @@
 
 	$effect(() => {
 		if (form && form.success) {
-			goto('/admin/contests');
+			void goto('/admin/contests');
 		}
 	});
 

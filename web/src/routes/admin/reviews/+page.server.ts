@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals }) => {
 	const selectedContestId = locals.selectedContest;
 
-	if (selectedContestId == null) {
+	if (selectedContestId === null) {
 		return {
 			timestamp: new Date(),
 			reviewList: null,

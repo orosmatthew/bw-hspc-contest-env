@@ -33,13 +33,13 @@
 			parsesCorrectly = false;
 		}
 
-		if (jsonText.length == 0) {
+		if (jsonText.length === 0) {
 			parsesCorrectly = null;
 		}
 	}
 	$effect(() => {
 		if (form && form.success) {
-			goto('/admin/contests');
+			void goto('/admin/contests');
 		}
 	});
 	$effect(() => {
@@ -66,7 +66,7 @@
 			class="form-control"
 			rows="10"
 			bind:value={jsonText}
-			style={parsesCorrectly == null
+			style={parsesCorrectly === null
 				? ''
 				: `border: 2px solid ${parsesCorrectly ? 'green' : 'red'}`}
 		></textarea>

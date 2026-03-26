@@ -18,7 +18,7 @@
 
 	function enhanceConfirm(form: HTMLFormElement, text: string) {
 		enhance(form, async ({ cancel }) => {
-			if (confirmModal == undefined) {
+			if (confirmModal === undefined) {
 				console.error('confirmModal is undefined, aborting');
 				cancel();
 				return;

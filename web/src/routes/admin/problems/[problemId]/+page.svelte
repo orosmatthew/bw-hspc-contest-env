@@ -22,13 +22,13 @@
 			return;
 		}
 		const sure = await confirmModal.prompt('Are you sure?');
-		if (!sure) {
+		if (sure !== true) {
 			return;
 		}
 		const res = await fetch(page.url, { method: 'DELETE' });
 		const data = await res.json();
-		if (data.success) {
-			goto('/admin/problems');
+		if (data.success === true) {
+			void goto('/admin/problems');
 		} else {
 			error = true;
 		}
@@ -36,10 +36,10 @@
 
 	let confirmModal: ConfirmModal | undefined = $state();
 
-	const parsedInput = parseProblemInput(data.problemData);
-	let inputSpecStatus = parsedInput.success
-		? '✅ Input Spec matches Real Input'
-		: `❌ ${parsedInput.errorMessage}`;
+	const parsedInput = $derived(parseProblemInput(data.problemData));
+	const inputSpecStatus = $derived(
+		parsedInput.success ? '✅ Input Spec matches Real Input' : `❌ ${parsedInput.errorMessage}`
+	);
 </script>
 
 <svelte:head>

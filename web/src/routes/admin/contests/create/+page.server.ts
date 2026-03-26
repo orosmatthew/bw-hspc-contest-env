@@ -25,7 +25,7 @@ export const actions = {
 		const teams = (await db.team.findMany()).filter((team) => {
 			return data.get('team_' + team.id) !== null;
 		});
-		if (!name) {
+		if (name === null) {
 			return { success: false };
 		}
 		const createdContest = await db.contest.create({

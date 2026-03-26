@@ -16,7 +16,7 @@
 	let { data, children }: Props = $props();
 
 	function onContestSelect() {
-		if ($contestId != null) {
+		if ($contestId !== null) {
 			void goto(`/public/scoreboard/${$contestId}`);
 		}
 	}

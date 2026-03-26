@@ -1,10 +1,6 @@
 <script lang="ts">
 	import type { Problem, Submission } from '@prisma/client';
-	import type {
-		CaseResult,
-		TestCaseResult,
-		TestCaseResultPreview
-	} from './outputAnalyzer/analyzerTypes';
+	import type { CaseResult } from './outputAnalyzer/analyzerTypes';
 	import { theme } from '../routes/stores';
 	import { analyzeSubmissionOutput, rehydrateOutputPreview } from './outputAnalyzer/outputAnalyzer';
 
@@ -17,35 +13,18 @@
 
 	let { problem, submission, condensed = false, previousSubmission = null }: Props = $props();
 
-	let cellsPerRow = condensed ? 20 : 30;
+	const cellsPerRow = $derived(condensed ? 20 : 30);
 
-	let previousSubmitResults:
-		| { condensed: true; testCases: TestCaseResultPreview[] }
-		| { condensed: false; testCases: TestCaseResult[] }
-		| null = $state(null);
-
-	let currentSubmitResults:
-		| { condensed: true; testCases: TestCaseResultPreview[] }
-		| { condensed: false; testCases: TestCaseResult[] }
-		| null = $state({ condensed, testCases: [] });
-
-	if (condensed) {
-		previousSubmitResults = previousSubmission?.testCaseResults
-			? {
-					condensed,
-					testCases: rehydrateOutputPreview(previousSubmission.testCaseResults).testCaseResults
-				}
-			: null;
-
-		currentSubmitResults = submission.testCaseResults
-			? {
-					condensed,
-					testCases: rehydrateOutputPreview(submission.testCaseResults).testCaseResults
-				}
-			: null;
-	} else {
-		previousSubmitResults =
-			previousSubmission?.actualOutput != null
+	const previousSubmitResults = $derived.by(() => {
+		if (condensed) {
+			return previousSubmission?.testCaseResults
+				? {
+						condensed,
+						testCases: rehydrateOutputPreview(previousSubmission.testCaseResults).testCaseResults
+					}
+				: null;
+		} else {
+			return previousSubmission?.actualOutput != null
 				? {
 						condensed,
 						testCases:
@@ -53,16 +32,27 @@
 							[]
 					}
 				: null;
+		}
+	});
 
-		currentSubmitResults =
-			submission.actualOutput != null
+	const currentSubmitResults = $derived.by(() => {
+		if (condensed) {
+			return submission.testCaseResults
+				? {
+						condensed,
+						testCases: rehydrateOutputPreview(submission.testCaseResults).testCaseResults
+					}
+				: null;
+		} else {
+			return submission.actualOutput != null
 				? {
 						condensed,
 						testCases:
 							analyzeSubmissionOutput(problem, submission.actualOutput)?.testCaseResults ?? []
 					}
 				: null;
-	}
+		}
+	});
 
 	function resultKindClassName(caseResult: CaseResult): string {
 		switch (caseResult) {
@@ -90,7 +80,6 @@
 			{@const numCases = currentSubmitResults.testCases.length}
 			{@const numRows = Math.ceil(currentSubmitResults.testCases.length / cellsPerRow)}
 			{@const showRowLabels = !condensed && numRows > 1}
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each { length: numRows } as _, rowNum (rowNum)}
 				{@const casesBeforeThisRow = rowNum * cellsPerRow}
 				{@const casesOnRow = Math.min(cellsPerRow, numCases - casesBeforeThisRow)}
@@ -100,7 +89,6 @@
 							{casesBeforeThisRow + 1}-{casesBeforeThisRow + casesOnRow}:
 						</td>
 					{/if}
-					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 					{#each { length: Math.min(cellsPerRow, currentSubmitResults.testCases.length - rowNum * cellsPerRow) } as _, colNum (colNum)}
 						{@const currentCaseIndex = rowNum * cellsPerRow + colNum}
 						{@const currentCaseResult = currentSubmitResults.testCases[currentCaseIndex]}

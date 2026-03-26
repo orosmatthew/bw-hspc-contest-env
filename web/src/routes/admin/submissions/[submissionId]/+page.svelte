@@ -23,7 +23,7 @@
 
 	$effect(() => {
 		if (form && form.success) {
-			goto('/admin/reviews');
+			void goto('/admin/reviews');
 		}
 	});
 
@@ -107,11 +107,11 @@
 	let correct: boolean | null = $state(null);
 
 	function incorrectClicked() {
-		correct = correct != false ? false : null;
+		correct = correct !== false ? false : null;
 	}
 
 	function correctClicked() {
-		correct = correct != true ? true : null;
+		correct = correct !== true ? true : null;
 	}
 
 	function enhanceConfirmGrading(form: HTMLFormElement) {
@@ -129,7 +129,7 @@
 			const confirmText =
 				correct === true
 					? `Grading as CORRECT. Are you sure?`
-					: judgeResponseTextArea.value.trim().length == 0
+					: judgeResponseTextArea.value.trim().length === 0
 						? `Grading as INCORRECT with NO MESSAGE! Are you sure?`
 						: `Grading as INCORRECT with message '${judgeResponseTextArea.value}'. Are you sure?`;
 
@@ -174,7 +174,7 @@
 			responseTextToResponse.get(judgeResponseTextArea.value) ?? customResponseCategory;
 		judgeResponsePicker.value = chosenJudgeResponse.title;
 
-		if (chosenJudgeResponse.correct != null) {
+		if (chosenJudgeResponse.correct !== null) {
 			correct = chosenJudgeResponse.correct;
 		}
 	}
@@ -264,7 +264,7 @@
 				<button
 					type="submit"
 					class="btn btn-warning m-1"
-					disabled={data.submission.commitHash.trim().length == 0}>Rerun Submission</button
+					disabled={data.submission.commitHash.trim().length === 0}>Rerun Submission</button
 				>
 			</form>
 			<form
@@ -315,7 +315,7 @@
 			{#each data.submissionHistory as submission, i (submission.id)}
 				<tr
 					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`, { noScroll: true })}
-					class="{submission.id == data.id
+					class="{submission.id === data.id
 						? 'specifiedSubmission'
 						: 'otherSubmission'} {submission.state === 'InReview' ? 'inReview' : ''}"
 				>
@@ -347,7 +347,7 @@
 						/>
 					</td>
 					<td>
-						{submission.runtimeMilliseconds ? `${submission.runtimeMilliseconds} ms` : ''}
+						{submission.runtimeMilliseconds !== null ? `${submission.runtimeMilliseconds} ms` : ''}
 					</td>
 					<td>
 						<span title={submissionTimestampHoverText(data.contest, submission)}>
@@ -373,9 +373,9 @@
 	</table>
 </div>
 
-{#if data.state == 'InReview'}
+{#if data.state === 'InReview'}
 	<div
-		class="gradingArea mb-3 col-md-auto {correct == null
+		class="gradingArea mb-3 col-md-auto {correct === null
 			? ''
 			: correct
 				? 'pendingCorrect'
@@ -447,7 +447,7 @@
 	</div>
 {/if}
 
-{#if data.state == 'Incorrect' && (data.stateReason == 'BuildError' || data.stateReason == 'TimeLimitExceeded' || data.stateReason == 'SandboxError')}
+{#if data.state === 'Incorrect' && (data.stateReason === 'BuildError' || data.stateReason === 'TimeLimitExceeded' || data.stateReason === 'SandboxError')}
 	<h3 style="text-align:center">{data.stateReason}</h3>
 	<textarea use:stretchTextarea class="code mb-3 form-control" disabled
 		>{data.stateReasonDetails}</textarea

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import 'bootstrap/dist/css/bootstrap.min.css';
 	import '$lib/styles/global.css';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { theme } from './stores';
 	import { browser } from '$app/environment';
@@ -19,7 +19,7 @@
 
 	let { data, children }: Props = $props();
 
-	$theme = data.theme;
+	$theme = untrack(() => data.theme);
 
 	if (browser) {
 		theme.subscribe((value) => {

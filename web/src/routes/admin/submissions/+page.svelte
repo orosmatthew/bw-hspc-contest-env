@@ -41,7 +41,7 @@
 
 <h1 style="text-align:center" class="mb-4"><i class="bi bi-envelope-paper"></i> Submissions</h1>
 
-{#if data.submissions != null}
+{#if data.submissions !== null}
 	<SubmissionsList
 		submissions={data.submissions}
 		includesAllAttempts={true}

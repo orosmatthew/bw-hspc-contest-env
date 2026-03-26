@@ -29,12 +29,19 @@ export const actions = {
 		const realOutput = data.get('realOutput');
 		const inputSpec = data.get('inputSpec');
 
-		if (!name || !pascalName || !sampleInput || !sampleOutput || !realInput || !realOutput) {
+		if (
+			name === null ||
+			pascalName === null ||
+			sampleInput === null ||
+			sampleOutput === null ||
+			realInput === null ||
+			realOutput === null
+		) {
 			return { success: false };
 		}
 
 		let inputSpecValue = inputSpec?.toString().trim() ?? null;
-		if (inputSpecValue == '') {
+		if (inputSpecValue === '') {
 			inputSpecValue = null;
 		}
 

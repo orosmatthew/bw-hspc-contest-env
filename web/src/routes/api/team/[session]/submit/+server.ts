@@ -2,8 +2,8 @@ import { db } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
-import type { SubmissionForExtension } from 'bwcontest-shared/types/contestMonitorTypes';
 import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
+import type { SubmissionForExtension } from 'bwcontest-shared/types/contest-monitor-types';
 
 const submitPostData = z.object({
 	commitHash: z.string(),
@@ -29,7 +29,7 @@ export const POST = (async ({ params, request }) => {
 
 	if (
 		!activeTeam.contest.problems.find((problem) => {
-			return problem.id == data.data.problemId;
+			return problem.id === data.data.problemId;
 		})
 	) {
 		error(400);

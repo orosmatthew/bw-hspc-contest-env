@@ -76,7 +76,7 @@ export const actions = {
 			}
 
 			const newStateReason =
-				submission.stateReason == 'IncorrectOverriddenAsCorrect' ? null : submission.stateReason;
+				submission.stateReason === 'IncorrectOverriddenAsCorrect' ? null : submission.stateReason;
 
 			await db.submission.update({
 				where: { id: submissionId },
@@ -128,7 +128,7 @@ export const actions = {
 		const data = await request.formData();
 		const correct = data.get('correct');
 		const message = data.get('message');
-		if (!correct) {
+		if (correct === null) {
 			return { success: false };
 		}
 		const correctBool = correct.toString().toLowerCase() === 'true';
@@ -138,7 +138,7 @@ export const actions = {
 			data: {
 				state: correctBool ? 'Correct' : 'Incorrect',
 				stateReason: correctBool ? 'IncorrectOverriddenAsCorrect' : null,
-				message: message ? message.toString() : '',
+				message: message !== null ? message.toString() : '',
 				gradedAt: gradedTime
 			}
 		});

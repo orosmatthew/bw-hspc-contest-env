@@ -198,7 +198,9 @@
 									return;
 								}
 								if (
-									!(await confirmModal.prompt(`Are you sure you want to delete team ${team.name}?`))
+									(await confirmModal.prompt(
+										`Are you sure you want to delete team ${team.name}?`
+									)) !== true
 								) {
 									cancel();
 								}

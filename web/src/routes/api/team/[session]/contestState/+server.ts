@@ -2,6 +2,11 @@ import { db } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
+import type {
+	ContestStateForExtension,
+	FullStateForExtension,
+	SubmissionForExtension
+} from 'bwcontest-shared/types/contest-monitor-types';
 
 export const GET = (async ({ params }) => {
 	const sessionToken = params.session;
@@ -23,7 +28,7 @@ export const GET = (async ({ params }) => {
 	}
 
 	const submissions: SubmissionForExtension[] = activeTeam.team.submissions
-		.filter((s) => s.contestId == activeTeam.contestId)
+		.filter((s) => s.contestId === activeTeam.contestId)
 		.map<SubmissionForExtension>((s) => ({
 			id: s.id,
 			contestId: s.contestId,

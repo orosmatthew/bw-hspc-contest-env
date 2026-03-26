@@ -5,7 +5,7 @@ export const load = (async ({ locals }) => {
 	const selectedContestId = locals.selectedContest;
 
 	const submissions =
-		selectedContestId != null
+		selectedContestId !== null
 			? await db.submission.findMany({
 					include: { problem: true, team: true, contest: true },
 					where: { contestId: selectedContestId }

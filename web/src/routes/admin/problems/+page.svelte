@@ -59,7 +59,7 @@
 					<td>{problem.id}</td>
 					<td>{problem.friendlyName}</td>
 					<td>
-						{#if problem.inputSpec != null}
+						{#if problem.inputSpec !== null}
 							{problem.parsedInput.success ? '✅' : '❌'}
 							<span class="inputSpec">{problem.inputSpec}</span>
 						{:else}

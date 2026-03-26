@@ -85,7 +85,7 @@ async function regenerateTestCaseResultsForSubmissions(
 	logProblem: (text: string) => void
 ) {
 	for (const submission of submissions) {
-		if (submission.actualOutput == null) {
+		if (submission.actualOutput === null) {
 			continue;
 		}
 
@@ -104,7 +104,7 @@ async function regenerateTestCaseResultsForSubmissions(
 		log(`  Test Cases Expected: ${testCasesExpected}`);
 		log(`  Test Cases Included: ${testCasesReported}`);
 
-		if (testCasesExpected != testCasesReported) {
+		if (testCasesExpected !== testCasesReported) {
 			logProblem(`    ERROR: Test case count mismatch!`);
 		}
 

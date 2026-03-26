@@ -33,7 +33,7 @@ export const actions = {
 	delete: async ({ request }) => {
 		const data = await request.formData();
 		const teamId = data.get('teamId');
-		if (!teamId) {
+		if (teamId === null) {
 			return { success: false };
 		}
 		const teamIdNum = parseInt(teamId.toString());

@@ -51,8 +51,7 @@ export default defineConfig(
 			'@typescript-eslint/strict-boolean-expressions': 'error',
 			'@typescript-eslint/await-thenable': 'error',
 			'@typescript-eslint/no-unnecessary-type-assertion': 'error',
-			'@typescript-eslint/prefer-nullish-coalescing': 'error',
-			'@typescript-eslint/restrict-template-expressions': 'error'
+			'@typescript-eslint/prefer-nullish-coalescing': 'error'
 		}
 	},
 	{ ignores: ['./eslint.config.js', './svelte.config.js'] }

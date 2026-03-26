@@ -10,7 +10,14 @@ export const actions = {
 		const sampleOutput = data.get('sampleOutput');
 		const realInput = data.get('realInput');
 		const realOutput = data.get('realOutput');
-		if (!name || !pascalName || !sampleInput || !sampleOutput || !realInput || !realOutput) {
+		if (
+			name === null ||
+			pascalName === null ||
+			sampleInput === null ||
+			sampleOutput === null ||
+			realInput === null ||
+			realOutput === null
+		) {
 			return { success: false };
 		}
 
