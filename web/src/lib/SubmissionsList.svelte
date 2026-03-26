@@ -7,6 +7,7 @@
 		minutesFromContestStart,
 		submissionTimestampHoverText
 	} from '$lib/util';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
 		submissions: (Submission & { contest: Contest; team: Team; problem: Problem })[];
@@ -18,8 +19,8 @@
 
 	let showOutputColumns = $state(true);
 
-	let historyCounts = new Map<string, number>();
-	let attemptNumbers = new Map<Submission, number>();
+	let historyCounts = new SvelteMap<string, number>();
+	let attemptNumbers = new SvelteMap<Submission, number>();
 
 	function getAttemptText(submission: Submission): string {
 		return `${attemptNumbers.get(submission) ?? -1} / ${historyCounts.get(getSubmissionHistoryKey(submission)) ?? -1}`;
@@ -30,12 +31,12 @@
 	}
 
 	$effect(() => {
-		showOutputColumns = submissions.some((s) => s.state != 'Queued');
+		showOutputColumns = submissions.some((s) => s.state !== 'Queued');
 
 		submissions.sort(
 			(s1, s2) =>
 				(s1.createdAt.getTime() - s2.createdAt.getTime()) *
-				(sortDirection == 'oldest first' ? 1 : -1)
+				(sortDirection === 'oldest first' ? 1 : -1)
 		);
 
 		historyCounts.clear();
@@ -132,7 +133,9 @@
 							{/key}
 						</td>
 						<td>
-							{submission.runtimeMilliseconds ? `${submission.runtimeMilliseconds} ms` : ''}
+							{submission.runtimeMilliseconds !== null
+								? `${submission.runtimeMilliseconds} ms`
+								: ''}
 						</td>
 					{/if}
 					<td>

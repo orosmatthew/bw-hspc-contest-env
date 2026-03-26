@@ -45,7 +45,7 @@
 		} else {
 			url.searchParams.delete('c');
 		}
-		goto(url, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: true });
+		void goto(url, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: true });
 	}
 </script>
 
@@ -114,14 +114,14 @@
 				}}
 				type="button"
 				aria-label="theme"
-				class="btn"><i class={`bi bi-${$theme == 'light' ? 'sun' : 'moon'}`}></i></button
+				class="btn"><i class={`bi bi-${$theme === 'light' ? 'sun' : 'moon'}`}></i></button
 			>
 			<button
 				onclick={async () => {
 					const res = await fetch('/logout', { method: 'POST' });
 					const data = await res.json();
-					if (data.success) {
-						goto('/login');
+					if (data.success === true) {
+						void goto('/login');
 					}
 				}}
 				type="button"

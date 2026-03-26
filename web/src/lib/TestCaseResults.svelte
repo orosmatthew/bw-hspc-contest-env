@@ -17,14 +17,14 @@
 
 	const previousSubmitResults = $derived.by(() => {
 		if (condensed) {
-			return previousSubmission?.testCaseResults
+			return previousSubmission !== null && previousSubmission.testCaseResults !== null
 				? {
 						condensed,
 						testCases: rehydrateOutputPreview(previousSubmission.testCaseResults).testCaseResults
 					}
 				: null;
 		} else {
-			return previousSubmission?.actualOutput != null
+			return previousSubmission !== null && previousSubmission.actualOutput !== null
 				? {
 						condensed,
 						testCases:
@@ -37,14 +37,14 @@
 
 	const currentSubmitResults = $derived.by(() => {
 		if (condensed) {
-			return submission.testCaseResults
+			return submission.testCaseResults !== null
 				? {
 						condensed,
 						testCases: rehydrateOutputPreview(submission.testCaseResults).testCaseResults
 					}
 				: null;
 		} else {
-			return submission.actualOutput != null
+			return submission.actualOutput !== null
 				? {
 						condensed,
 						testCases:
@@ -80,6 +80,7 @@
 			{@const numCases = currentSubmitResults.testCases.length}
 			{@const numRows = Math.ceil(currentSubmitResults.testCases.length / cellsPerRow)}
 			{@const showRowLabels = !condensed && numRows > 1}
+			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each { length: numRows } as _, rowNum (rowNum)}
 				{@const casesBeforeThisRow = rowNum * cellsPerRow}
 				{@const casesOnRow = Math.min(cellsPerRow, numCases - casesBeforeThisRow)}
@@ -89,6 +90,7 @@
 							{casesBeforeThisRow + 1}-{casesBeforeThisRow + casesOnRow}:
 						</td>
 					{/if}
+					<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 					{#each { length: Math.min(cellsPerRow, currentSubmitResults.testCases.length - rowNum * cellsPerRow) } as _, colNum (colNum)}
 						{@const currentCaseIndex = rowNum * cellsPerRow + colNum}
 						{@const currentCaseResult = currentSubmitResults.testCases[currentCaseIndex]}
@@ -100,7 +102,8 @@
 								class="test-case-result {resultKindClassName(currentCaseResult.result)}
 							{currentCaseResult.isSampleData ? 'sample-input' : ''}
 							{previousSubmitResults &&
-								previousSubmitResults.testCases[currentCaseIndex].result != currentCaseResult.result
+								previousSubmitResults.testCases[currentCaseIndex].result !==
+									currentCaseResult.result
 									? 'changed-from-previous-submit'
 									: ''}"
 							>

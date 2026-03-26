@@ -33,7 +33,7 @@ function splitOutputWithCaseLabels(
 	const errorIndicator = findErrorIndicator(outputLines);
 
 	let interruptionLines: string[] = [];
-	if (errorIndicator != null) {
+	if (errorIndicator !== null) {
 		interruptionLines = outputLines.slice(errorIndicator.lineIndex);
 		outputLines = outputLines.slice(0, errorIndicator.lineIndex);
 	}
@@ -45,7 +45,7 @@ function splitOutputWithCaseLabels(
 		if (i < outputCaseLineRanges.length) {
 			const startIndex = outputCaseLineRanges[i].startIndex;
 			const endIndexExclusive =
-				i == totalCaseCount - 1
+				i === totalCaseCount - 1
 					? Math.max(outputCaseLineRanges[i].endIndexExclusive, outputLines.length)
 					: outputCaseLineRanges[i].endIndexExclusive;
 
@@ -69,7 +69,7 @@ function splitOutputWithCaseLabels(
 	}
 
 	if (interruptionLines.length > 0) {
-		const lastIndexWithRecordedOutput = outputCases.findLastIndex((c) => c != null);
+		const lastIndexWithRecordedOutput = outputCases.findLastIndex((c) => c !== null);
 		if (lastIndexWithRecordedOutput + 1 < outputCases.length) {
 			outputCases[lastIndexWithRecordedOutput + 1] = {
 				lines: interruptionLines,
@@ -108,7 +108,7 @@ function splitOutputWithoutCaseLabels(
 ): ({ lines: string[]; forcedResult: CaseResult | null } | null)[] {
 	const errorIndicator = findErrorIndicator(teamOutputLines);
 	let interruptionLines: string[] = [];
-	if (errorIndicator != null) {
+	if (errorIndicator !== null) {
 		interruptionLines = teamOutputLines.slice(errorIndicator.lineIndex);
 		teamOutputLines = teamOutputLines.slice(0, errorIndicator.lineIndex);
 	}
@@ -124,7 +124,7 @@ function splitOutputWithoutCaseLabels(
 				forcedResult: CaseResult | null;
 			} | null>((line) => ({ lines: [line], forcedResult: null }))
 			.concat(...Array(missingLineCount).map(() => null));
-	} else if (teamOutputLines.length == totalCaseCount) {
+	} else if (teamOutputLines.length === totalCaseCount) {
 		// Regardless of whether the judge expects multiple lines per case, we assume here
 		// that the team is outputting one case per line.
 		teamOutputCases = teamOutputLines.map<{
@@ -141,7 +141,7 @@ function splitOutputWithoutCaseLabels(
 		for (let i = 0; i < totalCaseCount; i++) {
 			const startIndex = judgeCaseOutputRanges[i].startIndex;
 			const endIndexExclusive =
-				i == totalCaseCount - 1
+				i === totalCaseCount - 1
 					? Math.max(judgeCaseOutputRanges[i].endIndexExclusive, teamOutputLines.length)
 					: judgeCaseOutputRanges[i].endIndexExclusive;
 
@@ -153,7 +153,7 @@ function splitOutputWithoutCaseLabels(
 	}
 
 	if (interruptionLines.length > 0) {
-		const lastIndexWithRecordedOutput = teamOutputCases.findLastIndex((c) => c != null);
+		const lastIndexWithRecordedOutput = teamOutputCases.findLastIndex((c) => c !== null);
 		if (lastIndexWithRecordedOutput + 1 < teamOutputCases.length) {
 			teamOutputCases[lastIndexWithRecordedOutput + 1] = {
 				lines: interruptionLines,
@@ -182,7 +182,7 @@ function caseLabelLineRanges(
 	}
 
 	return lineIndicesWithCaseLabels.map((lineIndex, i) => {
-		const startIndex = i == 0 ? 0 : lineIndex;
+		const startIndex = i === 0 ? 0 : lineIndex;
 		return {
 			startIndex,
 			endIndexExclusive: lineIndicesWithCaseLabels[i + 1] ?? outputLines.length

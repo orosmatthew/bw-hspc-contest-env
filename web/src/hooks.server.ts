@@ -45,7 +45,7 @@ export const handle = (async ({ event, resolve }) => {
 	}
 	if (event.url.pathname.startsWith('/admin')) {
 		if ((await isSessionValid(event.cookies)) !== true) {
-			logout(event.cookies);
+			await logout(event.cookies);
 			redirect(302, '/login');
 		}
 		const contestParam = event.url.searchParams.get('c');

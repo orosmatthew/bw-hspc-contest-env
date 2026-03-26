@@ -100,15 +100,15 @@ export async function createRepos(contestId: number, teamIds: number[]) {
 			fs.mkdirSync(team.id.toString(), { recursive: true });
 			await git.init({ fs: fs, bare: false, defaultBranch: 'master', dir: team.id.toString() });
 			if (team.language === 'Java') {
-				addProblemsJava({ fs, dir: team.id.toString(), contest });
+				await addProblemsJava({ fs, dir: team.id.toString(), contest });
 			} else if (team.language === 'CSharp') {
-				addProblemsCSharp({ fs, dir: team.id.toString(), contest });
+				await addProblemsCSharp({ fs, dir: team.id.toString(), contest });
 				fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCSharpGitIgnore);
 			} else if (team.language === 'CPP') {
-				addProblemsCPP({ fs, dir: team.id.toString(), contest });
+				await addProblemsCPP({ fs, dir: team.id.toString(), contest });
 				fs.writeFileSync(join(team.id.toString(), '.gitignore'), templateCppGitIgnore);
 			} else if (team.language === 'Python') {
-				addProblemsPython({ fs, dir: team.id.toString(), contest });
+				await addProblemsPython({ fs, dir: team.id.toString(), contest });
 			} else {
 				console.error('Language not supported');
 				return;

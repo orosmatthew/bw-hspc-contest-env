@@ -8,7 +8,8 @@ export let repos: Git;
 
 export function startGitServer() {
 	if (!gitRunning) {
-		const port = !env.GIT_PORT || isNaN(parseInt(env.GIT_PORT)) ? 7006 : parseInt(env.GIT_PORT);
+		const port =
+			env.GIT_PORT === undefined || isNaN(parseInt(env.GIT_PORT)) ? 7006 : parseInt(env.GIT_PORT);
 
 		const repoDir = 'repo';
 

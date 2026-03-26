@@ -32,7 +32,7 @@ export const load = (async ({ params }) => {
 
 export const actions = {
 	delete: async ({ params }) => {
-		if (!params.contestId || isNaN(parseInt(params.contestId))) {
+		if (params.contestId === undefined || isNaN(parseInt(params.contestId))) {
 			return { success: false, message: 'Invalid contest Id' };
 		}
 		try {
@@ -45,7 +45,7 @@ export const actions = {
 		redirect(302, '/admin/contests');
 	},
 	start: async ({ params }) => {
-		if (!params.contestId) {
+		if (params.contestId === undefined) {
 			return { success: false };
 		}
 		const contestId = parseInt(params.contestId);
@@ -78,7 +78,7 @@ export const actions = {
 		return { success: true };
 	},
 	stop: async ({ params }) => {
-		if (!params.contestId) {
+		if (params.contestId === undefined) {
 			return { success: false };
 		}
 		const contestId = parseInt(params.contestId);
@@ -98,7 +98,7 @@ export const actions = {
 		return { success: true };
 	},
 	repo: async ({ params, request }) => {
-		if (!params.contestId) {
+		if (params.contestId === undefined) {
 			return { success: false };
 		}
 		const contestId = parseInt(params.contestId);
@@ -122,7 +122,7 @@ export const actions = {
 		return { success: true };
 	},
 	freeze: async ({ params }) => {
-		if (!params.contestId) {
+		if (params.contestId === undefined) {
 			return { success: false, message: 'No contest Id specified' };
 		}
 		const contestId = parseInt(params.contestId);
@@ -142,7 +142,7 @@ export const actions = {
 		return { success: true };
 	},
 	unfreeze: async ({ params }) => {
-		if (!params.contestId) {
+		if (params.contestId === undefined) {
 			return { success: false, message: 'No contest Id specified' };
 		}
 		const contestId = parseInt(params.contestId);

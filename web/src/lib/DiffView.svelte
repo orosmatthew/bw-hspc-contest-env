@@ -23,7 +23,7 @@
 
 	function drawBestMatchDiff() {
 		localDiff = diff;
-		if (localDiff !== null && output) {
+		if (localDiff !== null && output !== null) {
 			localDiff = Diff.createPatch(
 				'Judge → Team',
 				trimmedLines(expectedOutput).join(newline),
@@ -31,7 +31,7 @@
 			);
 		}
 
-		if (localDiff) {
+		if (localDiff !== null) {
 			const e = document.getElementById(`diff_${kind}`);
 			if (e === null) {
 				throw new Error('Cannot find diff element');
@@ -62,11 +62,11 @@
 		for (let i = 0; i < Math.max(cleanJudgeOutputLines.length, cleanTeamOutputLines.length); i++) {
 			const judgeLine = cleanJudgeOutputLines[i] ?? null;
 			const teamLine = cleanTeamOutputLines[i] ?? null;
-			if (teamLine == null) {
+			if (teamLine === null) {
 				localDiff += `-${judgeLine}\n`;
-			} else if (judgeLine == null) {
+			} else if (judgeLine === null) {
 				localDiff += `+${teamLine}\n`;
-			} else if (judgeLine == teamLine) {
+			} else if (judgeLine === teamLine) {
 				localDiff += ` ${teamLine}\n`;
 			} else {
 				localDiff += `-${judgeLine}\n`;
@@ -117,7 +117,7 @@
 					caseLineIndex++
 				) {
 					if (caseLineIndex < judgeCaseLines.length && caseLineIndex < teamCaseLines.length) {
-						if (judgeCaseLines[caseLineIndex] == teamCaseLines[caseLineIndex]) {
+						if (judgeCaseLines[caseLineIndex] === teamCaseLines[caseLineIndex]) {
 							localDiff += ` ${judgeCaseLines[caseLineIndex]}\n`;
 							continue;
 						}

@@ -8,9 +8,7 @@ export async function hashPassword(
 	password: string,
 	salt?: string
 ): Promise<{ salt: string; hash: string }> {
-	if (salt === undefined) {
-		salt = await bcrypt.genSalt();
-	}
+	salt ??= await bcrypt.genSalt();
 	const hash = await bcrypt.hash(password, salt);
 	return { salt: salt, hash: hash };
 }
@@ -51,7 +49,7 @@ export async function attemptLogin(
 	if (!user) {
 		return false;
 	}
-	deleteExpiredSessions(user.id);
+	await deleteExpiredSessions(user.id);
 	const hash = await hashPassword(password, user.passwordSalt);
 	if (user.passwordHash === hash.hash.toString()) {
 		const session = await db.session.create({ data: { userId: user.id } });

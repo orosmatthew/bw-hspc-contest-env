@@ -6,7 +6,7 @@ export function parseProblemInput(
 ):
 	| { success: true; caseStartIndexes: number[] }
 	| { success: false; caseStartIndexes: number[]; errorMessage: string } {
-	if (problem.inputSpec) {
+	if (problem.inputSpec !== null) {
 		return parseProblemInputFromText(problem.realInput, problem.inputSpec);
 	}
 
@@ -61,8 +61,8 @@ export function parseProblemInputFromText(
 	}
 
 	const numCases = Number(inputLines[0]);
-	const correctCaseCount = result.length == numCases;
-	const correctLinesConsumed = lineIndex == inputLines.length;
+	const correctCaseCount = result.length === numCases;
+	const correctLinesConsumed = lineIndex === inputLines.length;
 
 	if (correctCaseCount && correctLinesConsumed) {
 		return { success: true, caseStartIndexes: result };

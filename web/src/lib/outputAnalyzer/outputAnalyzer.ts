@@ -115,14 +115,14 @@ function compareSingleCaseOutput(
 	judgeCaseOutputLines: string[],
 	teamCaseOutputLines: string[] | null
 ): CaseResult {
-	if (teamCaseOutputLines == null) {
+	if (teamCaseOutputLines === null) {
 		return 'NoOutput';
 	}
 
-	if (judgeCaseOutputLines.length == teamCaseOutputLines.length) {
+	if (judgeCaseOutputLines.length === teamCaseOutputLines.length) {
 		let allMatch = true;
 		for (let i = 0; i < judgeCaseOutputLines.length; i++) {
-			if (judgeCaseOutputLines[i] != teamCaseOutputLines[i]) {
+			if (judgeCaseOutputLines[i] !== teamCaseOutputLines[i]) {
 				allMatch = false;
 				break;
 			}
@@ -140,7 +140,7 @@ function compareSingleCaseOutput(
 		.join(' ')
 		.replace(/\s+/g, ' ');
 
-	if (judgeOutputAsSingleLineWithNormalizedSpace == teamOutputAsSingleLineWithNormalizedSpace) {
+	if (judgeOutputAsSingleLineWithNormalizedSpace === teamOutputAsSingleLineWithNormalizedSpace) {
 		return 'FormattingIssue';
 	}
 
@@ -160,7 +160,7 @@ function compareSingleCaseOutput(
 		);
 
 		if (
-			reassembledJudgeOutputWithoutExactCaseLabel.trim() ==
+			reassembledJudgeOutputWithoutExactCaseLabel.trim() ===
 			reassembledTeamOutputWithoutExactCaseLabel.trim()
 		) {
 			return 'FormattingIssue';
@@ -177,7 +177,7 @@ function compareSingleCaseOutput(
 		.substring(teamOutputCaseStr.length)
 		.trim();
 
-	if (reassembledJudgeOutputWithoutLabel == reassembledTeamOutputWithoutLabel) {
+	if (reassembledJudgeOutputWithoutLabel === reassembledTeamOutputWithoutLabel) {
 		return 'LabellingIssue';
 	}
 
@@ -191,5 +191,5 @@ export function autoJudgeResponse(
 	const judgeLines = trimmedNonemptyLines(judgeOutput);
 	const teamLines = trimmedNonemptyLines(teamOutput);
 
-	return judgeLines.join(newline) == teamLines.join(newline) ? 'Correct' : 'NeedsReview';
+	return judgeLines.join(newline) === teamLines.join(newline) ? 'Correct' : 'NeedsReview';
 }

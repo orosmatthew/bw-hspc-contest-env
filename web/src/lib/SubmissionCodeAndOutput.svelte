@@ -25,7 +25,7 @@
 			</div>
 		</Tab>
 		<Tab tab="Team Code">
-			{#if sourceFiles.length == 0}
+			{#if sourceFiles.length === 0}
 				<div class="pt-2">
 					<span style="font-weight: bold">No Code Recorded</span>
 				</div>
