@@ -6,9 +6,10 @@ node_modules
 .env
 .env.*
 !.env.example
-/db
+./db
 
 # Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+./drizzle

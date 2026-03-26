@@ -1,0 +1,863 @@
+{
+	"version": "7",
+	"dialect": "sqlite",
+	"id": "72bde1f4-7e2f-4e9e-815c-fcfa09ee8c20",
+	"prevIds": ["00000000-0000-0000-0000-000000000000"],
+	"ddl": [
+		{
+			"name": "active_team",
+			"entityType": "tables"
+		},
+		{
+			"name": "admin_session",
+			"entityType": "tables"
+		},
+		{
+			"name": "contest_problem",
+			"entityType": "tables"
+		},
+		{
+			"name": "contest",
+			"entityType": "tables"
+		},
+		{
+			"name": "contest_team",
+			"entityType": "tables"
+		},
+		{
+			"name": "problem",
+			"entityType": "tables"
+		},
+		{
+			"name": "submission_source_file",
+			"entityType": "tables"
+		},
+		{
+			"name": "submission",
+			"entityType": "tables"
+		},
+		{
+			"name": "team",
+			"entityType": "tables"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "active_team"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "team_id",
+			"entityType": "columns",
+			"table": "active_team"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "session_token",
+			"entityType": "columns",
+			"table": "active_team"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "session_created_at",
+			"entityType": "columns",
+			"table": "active_team"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "contest_id",
+			"entityType": "columns",
+			"table": "active_team"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "token",
+			"entityType": "columns",
+			"table": "admin_session"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "created_at",
+			"entityType": "columns",
+			"table": "admin_session"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "contest_id",
+			"entityType": "columns",
+			"table": "contest_problem"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "problem_id",
+			"entityType": "columns",
+			"table": "contest_problem"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "contest"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "name",
+			"entityType": "columns",
+			"table": "contest"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "start_time",
+			"entityType": "columns",
+			"table": "contest"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "freeze_time",
+			"entityType": "columns",
+			"table": "contest"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "contest_id",
+			"entityType": "columns",
+			"table": "contest_team"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "team_id",
+			"entityType": "columns",
+			"table": "contest_team"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "problem"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "friendly_name",
+			"entityType": "columns",
+			"table": "problem"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "pascal_name",
+			"entityType": "columns",
+			"table": "problem"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "sample_input",
+			"entityType": "columns",
+			"table": "problem"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "sample_output",
+			"entityType": "columns",
+			"table": "problem"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "real_input",
+			"entityType": "columns",
+			"table": "problem"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "real_output",
+			"entityType": "columns",
+			"table": "problem"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "input_spec",
+			"entityType": "columns",
+			"table": "problem"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "submission_source_file"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "submission_id",
+			"entityType": "columns",
+			"table": "submission_source_file"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "path_from_problem_root",
+			"entityType": "columns",
+			"table": "submission_source_file"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "content",
+			"entityType": "columns",
+			"table": "submission_source_file"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "created_at",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "graded_at",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "state",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "state_reason",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "state_reason_details",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "actual_output",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "test_case_results",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "exit_code",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "runtime_milliseconds",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "commit_hash",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "diff",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "text",
+			"notNull": false,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "message",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "team_id",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "problem_id",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "integer",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "contest_id",
+			"entityType": "columns",
+			"table": "submission"
+		},
+		{
+			"type": "integer",
+			"notNull": false,
+			"autoincrement": true,
+			"default": null,
+			"generated": null,
+			"name": "id",
+			"entityType": "columns",
+			"table": "team"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "name",
+			"entityType": "columns",
+			"table": "team"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "password",
+			"entityType": "columns",
+			"table": "team"
+		},
+		{
+			"type": "text",
+			"notNull": true,
+			"autoincrement": false,
+			"default": null,
+			"generated": null,
+			"name": "language",
+			"entityType": "columns",
+			"table": "team"
+		},
+		{
+			"columns": ["team_id"],
+			"tableTo": "team",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_active_team_team_id_team_id_fk",
+			"entityType": "fks",
+			"table": "active_team"
+		},
+		{
+			"columns": ["contest_id"],
+			"tableTo": "contest",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_active_team_contest_id_contest_id_fk",
+			"entityType": "fks",
+			"table": "active_team"
+		},
+		{
+			"columns": ["contest_id"],
+			"tableTo": "contest",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_contest_problem_contest_id_contest_id_fk",
+			"entityType": "fks",
+			"table": "contest_problem"
+		},
+		{
+			"columns": ["problem_id"],
+			"tableTo": "problem",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_contest_problem_problem_id_problem_id_fk",
+			"entityType": "fks",
+			"table": "contest_problem"
+		},
+		{
+			"columns": ["contest_id"],
+			"tableTo": "contest",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_contest_team_contest_id_contest_id_fk",
+			"entityType": "fks",
+			"table": "contest_team"
+		},
+		{
+			"columns": ["team_id"],
+			"tableTo": "team",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_contest_team_team_id_team_id_fk",
+			"entityType": "fks",
+			"table": "contest_team"
+		},
+		{
+			"columns": ["submission_id"],
+			"tableTo": "submission",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "CASCADE",
+			"nameExplicit": false,
+			"name": "fk_submission_source_file_submission_id_submission_id_fk",
+			"entityType": "fks",
+			"table": "submission_source_file"
+		},
+		{
+			"columns": ["team_id"],
+			"tableTo": "team",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_submission_team_id_team_id_fk",
+			"entityType": "fks",
+			"table": "submission"
+		},
+		{
+			"columns": ["problem_id"],
+			"tableTo": "problem",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_submission_problem_id_problem_id_fk",
+			"entityType": "fks",
+			"table": "submission"
+		},
+		{
+			"columns": ["contest_id"],
+			"tableTo": "contest",
+			"columnsTo": ["id"],
+			"onUpdate": "NO ACTION",
+			"onDelete": "RESTRICT",
+			"nameExplicit": false,
+			"name": "fk_submission_contest_id_contest_id_fk",
+			"entityType": "fks",
+			"table": "submission"
+		},
+		{
+			"columns": ["contest_id", "problem_id"],
+			"nameExplicit": false,
+			"name": "contest_problem_pk",
+			"entityType": "pks",
+			"table": "contest_problem"
+		},
+		{
+			"columns": ["contest_id", "team_id"],
+			"nameExplicit": false,
+			"name": "contest_team_pk",
+			"entityType": "pks",
+			"table": "contest_team"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "active_team_pk",
+			"table": "active_team",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["token"],
+			"nameExplicit": false,
+			"name": "admin_session_pk",
+			"table": "admin_session",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "contest_pk",
+			"table": "contest",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "problem_pk",
+			"table": "problem",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "submission_source_file_pk",
+			"table": "submission_source_file",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "submission_pk",
+			"table": "submission",
+			"entityType": "pks"
+		},
+		{
+			"columns": ["id"],
+			"nameExplicit": false,
+			"name": "team_pk",
+			"table": "team",
+			"entityType": "pks"
+		},
+		{
+			"columns": [
+				{
+					"value": "team_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_active_team_team_id",
+			"entityType": "indexes",
+			"table": "active_team"
+		},
+		{
+			"columns": [
+				{
+					"value": "contest_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_active_team_contest_id",
+			"entityType": "indexes",
+			"table": "active_team"
+		},
+		{
+			"columns": [
+				{
+					"value": "contest_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_contest_problem_contest_id",
+			"entityType": "indexes",
+			"table": "contest_problem"
+		},
+		{
+			"columns": [
+				{
+					"value": "problem_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_contest_problem_problem_id",
+			"entityType": "indexes",
+			"table": "contest_problem"
+		},
+		{
+			"columns": [
+				{
+					"value": "contest_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_contest_team_contest_id",
+			"entityType": "indexes",
+			"table": "contest_team"
+		},
+		{
+			"columns": [
+				{
+					"value": "team_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_contest_team_team_id",
+			"entityType": "indexes",
+			"table": "contest_team"
+		},
+		{
+			"columns": [
+				{
+					"value": "submission_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_submission_source_file_submission_id",
+			"entityType": "indexes",
+			"table": "submission_source_file"
+		},
+		{
+			"columns": [
+				{
+					"value": "team_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_submission_team_id",
+			"entityType": "indexes",
+			"table": "submission"
+		},
+		{
+			"columns": [
+				{
+					"value": "problem_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_submission_problem_id",
+			"entityType": "indexes",
+			"table": "submission"
+		},
+		{
+			"columns": [
+				{
+					"value": "contest_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "idx_submission_contest_id",
+			"entityType": "indexes",
+			"table": "submission"
+		},
+		{
+			"columns": ["session_token"],
+			"nameExplicit": false,
+			"name": "active_team_session_token_unique",
+			"entityType": "uniques",
+			"table": "active_team"
+		},
+		{
+			"columns": ["name"],
+			"nameExplicit": false,
+			"name": "contest_name_unique",
+			"entityType": "uniques",
+			"table": "contest"
+		},
+		{
+			"columns": ["friendly_name"],
+			"nameExplicit": false,
+			"name": "problem_friendly_name_unique",
+			"entityType": "uniques",
+			"table": "problem"
+		},
+		{
+			"columns": ["pascal_name"],
+			"nameExplicit": false,
+			"name": "problem_pascal_name_unique",
+			"entityType": "uniques",
+			"table": "problem"
+		},
+		{
+			"columns": ["name"],
+			"nameExplicit": false,
+			"name": "team_name_unique",
+			"entityType": "uniques",
+			"table": "team"
+		}
+	],
+	"renames": []
+}

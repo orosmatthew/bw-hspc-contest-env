@@ -54,5 +54,13 @@ export default defineConfig(
 			'@typescript-eslint/prefer-nullish-coalescing': 'error'
 		}
 	},
-	{ ignores: ['./eslint.config.mjs', './svelte.config.js', './prisma.config.ts'] }
+	{
+		ignores: [
+			'./eslint.config.mjs',
+			'./svelte.config.js',
+			'./prisma.config.ts',
+			'./drizzle.config.ts',
+			'./drizzle/**/*'
+		]
+	}
 );
