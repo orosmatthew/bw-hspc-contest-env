@@ -11,20 +11,21 @@ export type Contest = {
 };
 
 export class ContestRepo {
-	async create(values: { name: string }): Promise<Contest | undefined> {
+	async create(values: {
+		name: string;
+		startTime: Date | null;
+		freezeTime: Date | null;
+	}): Promise<number | undefined> {
 		try {
 			const contest = (
-				await db.insert(contestTable).values({ name: values.name }).returning({
-					id: contestTable.id,
-					name: contestTable.name,
-					startTime: contestTable.startTime,
-					freezeTime: contestTable.freezeTime
-				})
+				await db
+					.insert(contestTable)
+					.values({ name: values.name, startTime: values.startTime, freezeTime: values.freezeTime })
+					.returning({
+						id: contestTable.id
+					})
 			).at(0);
-			if (contest === undefined) {
-				return undefined;
-			}
-			return { ...contest, isFrozen: this._calcIsFrozen(contest.freezeTime) };
+			return contest?.id;
 		} catch (e) {
 			console.error(e);
 			return undefined;
@@ -112,7 +113,7 @@ export class ContestRepo {
 					tx.insert(contestTeamTable).values({ contestId, teamId });
 				}
 			});
-            return true;
+			return true;
 		} catch (e) {
 			console.error(e);
 			return false;

@@ -19,7 +19,7 @@ export class AdminSessionRepo {
 		this._expiresMinutes = params.expiresMinutes;
 	}
 
-	async login(params: { username: string; password: string }): Promise<AdminSession | undefined> {
+	async login(params: { username: string; password: string }): Promise<string | undefined> {
 		if (params.username.trim() !== this._adminUsername || params.password !== this._adminPassword) {
 			return undefined;
 		}
@@ -28,9 +28,9 @@ export class AdminSessionRepo {
 				await db
 					.insert(adminSessionTable)
 					.values({ token: randomUUID(), createdAt: new Date() })
-					.returning({ token: adminSessionTable.token, createdAt: adminSessionTable.createdAt })
+					.returning({ token: adminSessionTable.token })
 			).at(0);
-			return session;
+			return session?.token;
 		} catch (e) {
 			console.error(e);
 		}

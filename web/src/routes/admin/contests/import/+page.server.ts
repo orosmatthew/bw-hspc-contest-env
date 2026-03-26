@@ -1,11 +1,20 @@
-import type { Language, SubmissionState } from '@prisma/client';
-import type { Actions, PageServerLoad } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { genPassword } from '../../teams/util';
 import { normalizeNewlines } from '$lib/common/output-analyzer/analyzer-utils';
 import { analyzeSubmissionOutput } from '$lib/common/output-analyzer/output-analyzer';
 import z from 'zod';
 import { checkboxSchema, stringToJsonSchema } from '$lib/common/utils';
+import { createRepos } from '$lib/server/git-repos';
+import {
+	contestRepo,
+	problemRepo,
+	submissionRepo,
+	submissionSourceFileRepo,
+	teamRepo
+} from '$lib/server/repos';
+import type { TeamLanguage } from '$lib/server/repos/team-repo';
+import type { SubmissionState } from '$lib/server/repos/submission-repo';
 
 export const load: PageServerLoad = async () => {};
 
@@ -48,189 +57,207 @@ const defaultSchema = z.object({
 	createReposAndKeepContestRunning: checkboxSchema
 });
 
-export const actions = {
+export const actions: Actions = {
 	default: async ({ request }) => {
 		const form = defaultSchema.safeParse(Object.fromEntries(await request.formData()));
 		if (!form.success) {
 			return fail(400, { message: `Invalid form data: ${form.error}` });
 		}
 
-		try {
-			let contestStart: Date | null = null;
-			let hasSubmissions = false;
-
-			if (form.data.includeSubmissions && form.data.jsonText.Submissions.length > 0) {
-				hasSubmissions = true;
-
-				const maxSubmitTimeMinutes = Math.max(
-					...form.data.jsonText.Submissions.map((s) => s.SubmitTime)
-				);
-				const now = new Date();
-				contestStart = new Date(now.getTime() - maxSubmitTimeMinutes * 60 * 1000);
-			}
-
-			// Single transaction
-			const contest = await db.contest.create({
-				data: {
-					name: parsedContest.Name,
-					startTime: contestStart,
-					teams: {
-						connectOrCreate: parsedContest.Teams.map((team) => ({
-							where: { name: team.TeamName },
-							create: {
-								name: team.TeamName,
-								password: genPassword(),
-								language: inferTeamLanguage(parsedContest, team) ?? 'Java'
-							}
-						}))
-					},
-					problems: {
-						connectOrCreate: parsedContest.Problems.map((problem) => ({
-							where: {
-								friendlyName: problem.ProblemName,
-								pascalName: problem.ShortName,
-								sampleInput: normalizeNewlines(problem.SampleInput),
-								sampleOutput: normalizeNewlines(problem.SampleOutput),
-								realInput: normalizeNewlines(problem.RealInput),
-								realOutput: normalizeNewlines(problem.RealOutput)
-							},
-							create: {
-								friendlyName: problem.ProblemName,
-								pascalName: problem.ShortName,
-								sampleInput: normalizeNewlines(problem.SampleInput),
-								sampleOutput: normalizeNewlines(problem.SampleOutput),
-								realInput: normalizeNewlines(problem.RealInput),
-								realOutput: normalizeNewlines(problem.RealOutput)
-							}
-						}))
-					},
-					submissions: {
-						create: hasSubmissions
-							? parsedContest.Submissions.toSorted((a, b) => a.SubmitTime - b.SubmitTime).map(
-									(submission) =>
-										(() => {
-											if (contestStart === null) {
-												throw new Error("contestStart is null when it shouldn't");
-											}
-											return {
-												createdAt: dateFromContestMinutes(contestStart, submission.SubmitTime),
-												gradedAt: dateFromContestMinutes(contestStart, submission.SubmitTime + 1),
-												state: convertSubmissionState(submission),
-												actualOutput: submission.TeamOutput,
-												commitHash: '',
-												problem: {
-													connect: {
-														pascalName: submission.ProblemShortName
-													}
-												},
-												team: {
-													connect: {
-														name: submission.TeamName
-													}
-												},
-												sourceFiles:
-													submission.Code !== null
-														? {
-																create: {
-																	pathFromProblemRoot: 'importedCode.txt',
-																	content: submission.Code
-																}
-															}
-														: {}
-											};
-										})()
-								)
-							: []
-					}
-				}
-			});
-
-			const contestWithProblems = await db.contest.findUnique({
-				where: { id: contest.id },
-				include: { problems: true }
-			});
-			for (const problem of contestWithProblems?.problems ?? []) {
-				const importedInputSpec = form.data.jsonText.Problems.find(
-					(p) => p.ShortName === problem.pascalName
-				)?.InputSpec;
-				if (importedInputSpec !== undefined) {
-					await db.problem.update({
-						where: { id: problem.id },
-						data: { inputSpec: importedInputSpec }
-					});
-				}
-			}
-
-			if (form.data.includeSubmissions) {
-				const insertedSubmissions = await db.submission.findMany({
-					where: { contestId: contest.id },
-					include: { problem: true }
-				});
-				for (const insertedSubmission of insertedSubmissions) {
-					if (insertedSubmission.actualOutput === null) {
-						continue;
-					}
-
-					const testCaseResultString =
-						analyzeSubmissionOutput(insertedSubmission.problem, insertedSubmission.actualOutput)
-							?.databaseString ?? 'Unknown';
-					await db.submission.update({
-						where: { id: insertedSubmission.id },
-						data: { testCaseResults: testCaseResultString }
-					});
-				}
-			}
-
-			if (form.data.createReposAndKeepContestRunning) {
-				const fullContest = await db.contest.findUnique({
-					where: { id: contest.id },
-					include: { teams: { include: { activeTeam: true } } }
-				});
-
-				if (
-					fullContest &&
-					form.data.jsonText.Problems.length > 0 &&
-					form.data.jsonText.Teams.length > 0
-				) {
-					if (!fullContest.startTime) {
-						await db.contest.update({
-							where: { id: fullContest.id },
-							data: {
-								startTime: new Date()
-							}
-						});
-					}
-
-					fullContest.teams.forEach(async (team) => {
-						await db.activeTeam.create({ data: { teamId: team.id, contestId: contest.id } });
-					});
-
-					await createRepos({ contestId: contest.id, teamIds: fullContest.teams.map((t) => t.id) });
-				}
-			}
-		} catch (err) {
-			return fail(400, { message: 'Error updating database: ' + err?.toString() });
+		let contestStart: Date | null = null;
+		if (form.data.includeSubmissions && form.data.jsonText.Submissions.length > 0) {
+			const maxSubmitTimeMinutes = Math.max(
+				...form.data.jsonText.Submissions.map((s) => s.SubmitTime)
+			);
+			const now = new Date();
+			contestStart = new Date(now.getTime() - maxSubmitTimeMinutes * 60 * 1000);
 		}
 
-		return redirect(303, '/admin/contests');
+		const contestId = await contestRepo.create({
+			name: form.data.jsonText.Name,
+			startTime: contestStart,
+			freezeTime: null
+		});
+		if (contestId === undefined) {
+			return fail(500, { message: 'Unable to create contest' });
+		}
+
+		const teamIds: Array<number> = [];
+		for (const team of form.data.jsonText.Teams) {
+			const existing = await teamRepo.getByName(team.TeamName, { forPublic: false });
+			if (existing !== undefined) {
+				teamIds.push(existing.id);
+			} else {
+				const id = await teamRepo.create({
+					name: team.TeamName,
+					password: genPassword(),
+					language: inferTeamLanguage(form.data.jsonText, team) ?? 'java'
+				});
+				if (id === undefined) {
+					return fail(500, { message: `Unable to create team: ${team.TeamName}` });
+				}
+				teamIds.push(id);
+			}
+		}
+		const assignTeamsSuccess = await contestRepo.assignTeamIds(contestId, teamIds);
+		if (assignTeamsSuccess !== true) {
+			return fail(500, { message: 'Unable to assign teams to contest' });
+		}
+
+		const problemIds: Array<number> = [];
+		for (const problem of form.data.jsonText.Problems) {
+			const existing = await problemRepo.getByPascalName(problem.ShortName, { forPublic: false });
+			if (existing !== undefined) {
+				problemIds.push(existing.id);
+			} else {
+				const id = await problemRepo.create({
+					friendlyName: problem.ProblemName,
+					pascalName: problem.ShortName,
+					sampleInput: normalizeNewlines(problem.SampleInput),
+					sampleOutput: normalizeNewlines(problem.SampleOutput),
+					realInput: normalizeNewlines(problem.RealInput),
+					realOutput: normalizeNewlines(problem.RealOutput),
+					inputSpec: null
+				});
+				if (id === undefined) {
+					return fail(500, { message: `Unable to create problem: ${problem.ProblemName}` });
+				}
+				problemIds.push(id);
+			}
+		}
+		const assignProblemsSuccess = await contestRepo.assignProblemIds(contestId, problemIds);
+		if (assignProblemsSuccess !== true) {
+			return fail(500, { message: 'Unable to assign problems to contest' });
+		}
+
+		const sortedSubmissions = form.data.jsonText.Submissions.toSorted(
+			(a, b) => a.SubmitTime - b.SubmitTime
+		);
+		for (const submission of sortedSubmissions) {
+			if (contestStart === null) {
+				return fail(500, { message: 'contestStart is unexpectedly null' });
+			}
+			const problem = await problemRepo.getByPascalName(submission.ProblemShortName, {
+				forPublic: false
+			});
+			if (problem === undefined) {
+				return fail(500, {
+					message: `Problem not found for submission: ${submission.ProblemShortName}`
+				});
+			}
+			const team = await teamRepo.getByName(submission.TeamName, { forPublic: false });
+			if (team === undefined) {
+				return fail(500, { message: `Team not found for submission: ${submission.TeamName}` });
+			}
+			const submissionId = await submissionRepo.create({
+				createdAt: dateFromContestMinutes(contestStart, submission.SubmitTime),
+				gradedAt: dateFromContestMinutes(contestStart, submission.SubmitTime + 1),
+				state: convertSubmissionState(submission),
+				stateReason: null,
+				stateReasonDetails: null,
+				actualOutput: submission.TeamOutput,
+				testCaseResults: null,
+				exitCode: null,
+				runtimeMilliseconds: null,
+				commitHash: '',
+				diff: null,
+				message: null,
+				teamId: team.id,
+				problemId: problem.id,
+				contestId: contestId
+			});
+			if (submissionId === undefined) {
+				return fail(500, { message: 'Unable to create a submission' });
+			}
+			if (submission.Code !== null) {
+				const submissionSourceFileId = await submissionSourceFileRepo.create({
+					submissionId: submissionId,
+					pathFromRootProblem: 'importedCode.txt',
+					content: submission.Code
+				});
+				if (submissionSourceFileId === undefined) {
+					return fail(500, { message: 'Unable to create a submission source file' });
+				}
+			}
+		}
+
+		const contestProblems = await problemRepo.getInContest(contestId, { forPublic: false });
+		for (const problem of contestProblems) {
+			const importedInputSpec = form.data.jsonText.Problems.find(
+				(p) => p.ShortName === problem.pascalName
+			)?.InputSpec;
+			if (importedInputSpec !== undefined) {
+				await problemRepo.updateInputSpec(problem.id, importedInputSpec);
+			}
+		}
+
+		if (form.data.includeSubmissions) {
+			const insertedSubmissions = await db.submission.findMany({
+				where: { contestId: contest.id },
+				include: { problem: true }
+			});
+			for (const insertedSubmission of insertedSubmissions) {
+				if (insertedSubmission.actualOutput === null) {
+					continue;
+				}
+
+				const testCaseResultString =
+					analyzeSubmissionOutput(insertedSubmission.problem, insertedSubmission.actualOutput)
+						?.databaseString ?? 'Unknown';
+				await db.submission.update({
+					where: { id: insertedSubmission.id },
+					data: { testCaseResults: testCaseResultString }
+				});
+			}
+		}
+
+		if (form.data.createReposAndKeepContestRunning) {
+			const fullContest = await db.contest.findUnique({
+				where: { id: contest.id },
+				include: { teams: { include: { activeTeam: true } } }
+			});
+
+			if (
+				fullContest &&
+				form.data.jsonText.Problems.length > 0 &&
+				form.data.jsonText.Teams.length > 0
+			) {
+				if (!fullContest.startTime) {
+					await db.contest.update({
+						where: { id: fullContest.id },
+						data: {
+							startTime: new Date()
+						}
+					});
+				}
+
+				fullContest.teams.forEach(async (team) => {
+					await db.activeTeam.create({ data: { teamId: team.id, contestId: contest.id } });
+				});
+
+				await createRepos({ contestId: contest.id, teamIds: fullContest.teams.map((t) => t.id) });
+			}
+
+			return redirect(303, '/admin/contests');
+		}
 	}
-} satisfies Actions;
+};
 
 function convertSubmissionState(submission: SubmissionImportData): SubmissionState {
 	switch (submission.State) {
 		case 'Correct':
-			return 'Correct';
+			return 'correct';
 		case 'Incorrect':
-			return 'Incorrect';
+			return 'incorrect';
 		default:
-			return 'InReview';
+			return 'in_review';
 	}
 }
 
 function inferTeamLanguage(
 	parsedContest: ContestImportData,
 	team: TeamImportData
-): Language | null {
+): TeamLanguage | null {
 	const submissionWithCode = parsedContest.Submissions.find(
 		(s) => s.TeamName === team.TeamName && s.Code !== null
 	);
@@ -240,13 +267,13 @@ function inferTeamLanguage(
 
 	switch (submissionWithCode.Language) {
 		case 'Java':
-			return 'Java';
+			return 'java';
 		case 'C#':
-			return 'CSharp';
+			return 'csharp';
 		case 'C++':
-			return 'CPP';
+			return 'cpp';
 		case 'Python':
-			return 'Python';
+			return 'python';
 		default:
 			throw new Error('Unrecognized language: ' + submissionWithCode.Language);
 	}

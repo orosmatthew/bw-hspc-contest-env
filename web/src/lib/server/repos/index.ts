@@ -6,6 +6,7 @@ import { TeamRepo } from './team-repo';
 import { ProblemRepo } from './problem-repo';
 import { ActiveTeamRepo } from './active-team-repo';
 import { SubmissionRepo } from './submission-repo';
+import { SubmissionSourceFileRepo } from './submission-source-file-repo';
 
 export const adminSessionRepo = (
 	building
@@ -26,3 +27,7 @@ export const problemRepo = (building ? undefined : new ProblemRepo()) as Problem
 export const activeTeamRepo = (building ? undefined : new ActiveTeamRepo()) as ActiveTeamRepo;
 
 export const submissionRepo = (building ? undefined : new SubmissionRepo()) as SubmissionRepo;
+
+export const submissionSourceFileRepo = (
+	building ? undefined : new SubmissionSourceFileRepo()
+) as SubmissionSourceFileRepo;

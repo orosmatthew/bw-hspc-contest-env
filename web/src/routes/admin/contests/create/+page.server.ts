@@ -22,22 +22,26 @@ export const actions: Actions = {
 		if (!form.success) {
 			return { success: false, message: 'Invalid form data' };
 		}
-		const contest = await contestRepo.create({ name: form.data.name });
-		if (contest === undefined) {
+		const contestId = await contestRepo.create({
+			name: form.data.name,
+			startTime: null,
+			freezeTime: null
+		});
+		if (contestId === undefined) {
 			return { success: false, message: 'Unable to create contest' };
 		}
-		const assignTeamsSuccess = await contestRepo.assignTeamIds(contest.id, form.data.teamIds);
+		const assignTeamsSuccess = await contestRepo.assignTeamIds(contestId, form.data.teamIds);
 		if (assignTeamsSuccess !== true) {
 			return { success: false, message: 'Unable to assign teams to contest' };
 		}
 		const assignProblemsSuccess = await contestRepo.assignProblemIds(
-			contest.id,
+			contestId,
 			form.data.problemIds
 		);
 		if (assignProblemsSuccess !== true) {
 			return { success: false, message: 'Unable to assign problems to contest' };
 		}
-		await createRepos({ contestId: contest.id, teamIds: form.data.teamIds });
+		await createRepos({ contestId: contestId, teamIds: form.data.teamIds });
 		return { success: true };
 	}
 };
