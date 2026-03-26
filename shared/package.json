@@ -8,10 +8,7 @@
 		"check": "tsc -noEmit",
 		"pre-commit": "npm run format; npm run lint; npm run check"
 	},
-	"type": "module",
-	"files": [
-		"dist"
-	],
+	"type": "commonjs",
 	"exports": {
 		"./*": {
 			"types": "./dist/*.d.ts",

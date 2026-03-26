@@ -1,24 +1,13 @@
 {
 	"compilerOptions": {
-		"target": "es2024",
-		"module": "nodenext",
-		"moduleResolution": "nodenext",
-		"lib": ["es2024"],
+		"target": "ES2024",
+		"module": "commonjs",
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"declaration": true,
-		"declarationMap": true,
-		"sourceMap": true,
 		"strict": true,
-		"noImplicitAny": true,
-		"strictNullChecks": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		"noFallthroughCasesInSwitch": true,
 		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"skipLibCheck": true,
-		"resolveJsonModule": true
+		"skipLibCheck": true
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"]
