@@ -38,3 +38,12 @@ export type RunnerResult =
 	| { success: false; runResult: RunResult };
 
 export type Runner<T extends RunnerParams = RunnerParams> = (params: T) => Promise<RunnerResult>;
+
+export function formatExecError(e: unknown): string {
+	if (e instanceof Error) {
+		const execError = e as Error & { stderr?: string; stdout?: string };
+		const detail = execError.stderr?.trim() ?? execError.stdout?.trim();
+		return detail ?? execError.message ?? 'Unknown error.';
+	}
+	return String(e) || 'Unknown error.';
+}

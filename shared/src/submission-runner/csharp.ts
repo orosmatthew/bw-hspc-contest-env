@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import kill from 'tree-kill';
-import type { Runner, RunnerParams, RunnerResult, RunResult } from './types';
+import type { Runner, RunnerParams, RunnerResult, RunResult, SourceFileWithText } from './common';
 import { timeoutSeconds } from './config';
 import { getSourceFilesWithText } from './source-scraper';
 
@@ -9,33 +9,40 @@ type CSharpBuildResult =
 	| { success: false; exitCode: number | null; errorText: string };
 
 export const runCSharp: Runner = async function (params: RunnerParams): Promise<RunnerResult> {
-	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cs');
+	let sourceFiles: Array<SourceFileWithText> | undefined;
+	try {
+		sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cs');
+	} catch {
+		sourceFiles = undefined;
+	}
 
 	console.log(`- BUILD: ${params.srcDir}`);
 	const buildResult = await new Promise<CSharpBuildResult>((resolve) => {
-		try {
-			let buildOutput = '';
-			const buildProcess = spawn(`dotnet build`, { shell: true, cwd: params.srcDir });
-			buildProcess.stdout.setEncoding('utf8');
-			buildProcess.stdout.on('data', (data) => {
-				buildOutput += data.toString();
-			});
+		let buildOutput = '';
 
-			buildProcess.on('error', (error) => {
-				resolve({ success: false, exitCode: null, errorText: error.message });
-			});
+		const buildProcess = spawn('dotnet', ['build'], { cwd: params.srcDir });
 
-			buildProcess.on('close', (exitCode) => {
-				if (exitCode === 0) {
-					resolve({ success: true });
-				} else {
-					resolve({ success: false, exitCode, errorText: buildOutput });
-				}
-			});
-		} catch (e) {
-			const buildErrorText = e?.toString() ?? 'Unknown build errors.';
-			resolve({ success: false, exitCode: null, errorText: buildErrorText });
-		}
+		buildProcess.stdout.setEncoding('utf8');
+		buildProcess.stdout.on('data', (data: string) => {
+			buildOutput += data;
+		});
+
+		buildProcess.stderr.setEncoding('utf8');
+		buildProcess.stderr.on('data', (data: string) => {
+			buildOutput += data;
+		});
+
+		buildProcess.on('error', (error) => {
+			resolve({ success: false, exitCode: null, errorText: error.message });
+		});
+
+		buildProcess.on('close', (exitCode) => {
+			if (exitCode === 0) {
+				resolve({ success: true });
+			} else {
+				resolve({ success: false, exitCode, errorText: buildOutput });
+			}
+		});
 	});
 
 	if (!buildResult.success) {
@@ -52,43 +59,50 @@ export const runCSharp: Runner = async function (params: RunnerParams): Promise<
 
 	console.log(`- RUN: ${params.srcDir}`);
 	try {
-		const child = spawn('dotnet run --no-build', { shell: true, cwd: params.srcDir });
+		const child = spawn('dotnet', ['run', '--no-build'], { cwd: params.srcDir });
 
 		let outputBuffer = '';
 		params.outputCallback?.('');
+
 		child.stdout.setEncoding('utf8');
-		child.stdout.on('data', (data) => {
-			outputBuffer += data.toString();
-			params.outputCallback?.(data.toString());
+		child.stdout.on('data', (data: string) => {
+			outputBuffer += data;
+			params.outputCallback?.(data);
 		});
+
 		child.stderr.setEncoding('utf8');
-		child.stderr.on('data', (data) => {
-			outputBuffer += data.toString();
-			params.outputCallback?.(data.toString());
+		child.stderr.on('data', (data: string) => {
+			outputBuffer += data;
+			params.outputCallback?.(data);
 		});
+
+		child.stdin.on('error', (err: NodeJS.ErrnoException) => {
+			if (err.code !== 'EPIPE') {
+				console.error('Unexpected stdin error:', err);
+			}
+		});
+
+		let timeLimitExceeded = false;
+		let completedNormally = false;
+		let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
 		const runStartTime = performance.now();
 		child.stdin.write(params.input);
 		child.stdin.end();
-
-		let timeLimitExceeded = false;
-		let completedNormally = false;
 
 		return {
 			success: true,
 			runResult: new Promise<RunResult>((resolve) => {
 				child.on('close', () => {
 					completedNormally = !timeLimitExceeded;
-
-					const runEndTime = performance.now();
-					const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
+					const runtimeMilliseconds = Math.floor(performance.now() - runStartTime);
 
 					if (completedNormally) {
 						clearTimeout(timeoutHandle);
 						resolve({
 							kind: 'Completed',
 							output: outputBuffer,
-							exitCode: child.exitCode!,
+							exitCode: child.exitCode ?? undefined,
 							runtimeMilliseconds,
 							sourceFiles
 						});
@@ -103,15 +117,12 @@ export const runCSharp: Runner = async function (params: RunnerParams): Promise<
 					}
 				});
 
-				const timeoutHandle = setTimeout(() => {
-					if (completedNormally) {
-						return;
-					}
+				timeoutHandle = setTimeout(() => {
+					if (completedNormally) return;
 
 					console.log(`Run timed out after ${timeoutSeconds} seconds, killing process...`);
 					timeLimitExceeded = true;
 
-					child.stdin.end();
 					child.stdin.destroy();
 					child.stdout.destroy();
 					child.stderr.destroy();
@@ -121,11 +132,10 @@ export const runCSharp: Runner = async function (params: RunnerParams): Promise<
 				}, timeoutSeconds * 1000);
 			}),
 			killFunc() {
-				if (child.pid !== undefined) {
-					if (!completedNormally && !timeLimitExceeded) {
-						kill(child.pid);
-						params.outputCallback?.('\n[Manually stopped]');
-					}
+				if (child.pid !== undefined && !completedNormally && !timeLimitExceeded) {
+					timeLimitExceeded = true;
+					kill(child.pid);
+					params.outputCallback?.('\n[Manually stopped]');
 				}
 			}
 		};

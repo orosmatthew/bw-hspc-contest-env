@@ -1,7 +1,14 @@
 import { join } from 'path';
 import { exec, spawn } from 'child_process';
 import * as util from 'util';
-import type { Runner, RunnerParams, RunnerResult, RunResult } from './types';
+import {
+	formatExecError,
+	SourceFileWithText,
+	type Runner,
+	type RunnerParams,
+	type RunnerResult,
+	type RunResult
+} from './common';
 import { timeoutSeconds } from './config';
 import kill from 'tree-kill';
 import * as os from 'os';
@@ -23,91 +30,101 @@ interface RunnerParamsCpp extends RunnerParams {
 export const runCpp: Runner<RunnerParamsCpp> = async function (
 	params: RunnerParamsCpp
 ): Promise<RunnerResult> {
-	const sourceFiles = await getSourceFilesWithText(
-		params.studentCodeRootForProblem,
-		'.cpp',
-		'.cc',
-		'.c',
-		'.h',
-		'.hpp'
-	);
+	let sourceFiles: Array<SourceFileWithText> | undefined;
+	try {
+		sourceFiles = await getSourceFilesWithText(
+			params.studentCodeRootForProblem,
+			'.cpp',
+			'.cc',
+			'.c',
+			'.h',
+			'.hpp'
+		);
+	} catch {
+		sourceFiles = undefined;
+	}
 
-	const tmpDir = os.tmpdir();
-	const buildDir = join(tmpDir, 'bwcontest-cpp');
+	const buildDir = join(os.tmpdir(), 'bwcontest-cpp');
 	await fs.remove(buildDir);
 	await fs.ensureDir(buildDir);
 
 	console.log(`- BUILD: ${params.problemName}`);
 
-	const configureCommand = `cmake -S ${params.srcDir} -B ${buildDir}`;
+	// Configure
 	try {
-		await execPromise(configureCommand);
+		await execPromise(`cmake -S ${params.srcDir} -B ${buildDir}`);
 	} catch (e) {
-		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
-		console.log('Build errors: ' + buildErrorText);
+		const reason = formatExecError(e);
+		console.log('Configure errors: ' + reason);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
+			runResult: { kind: 'CompileFailed', resultKindReason: reason, sourceFiles }
 		};
 	}
 
-	const compileCommand = `cmake --build ${buildDir} --target ${params.problemName}`;
+	// Compile
 	try {
-		await execPromise(compileCommand);
+		await execPromise(`cmake --build ${buildDir} --target ${params.problemName}`);
 	} catch (e) {
-		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
-		console.log('Build errors: ' + buildErrorText);
+		const reason = formatExecError(e);
+		console.log('Build errors: ' + reason);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
+			runResult: { kind: 'CompileFailed', resultKindReason: reason, sourceFiles }
 		};
 	}
 
 	console.log(`- RUN: ${params.problemName}`);
 
-	let runCommand;
-	if (params.cppPlatform === 'VisualStudio') {
-		runCommand = `${join(buildDir, 'Debug', `${params.problemName}.exe`)}`;
-	} else {
-		runCommand = `${join(buildDir, params.problemName)}`;
-	}
+	const runCommand =
+		params.cppPlatform === 'VisualStudio'
+			? join(buildDir, 'Debug', `${params.problemName}.exe`)
+			: join(buildDir, params.problemName);
+
 	try {
 		let outputBuffer = '';
 		params.outputCallback?.('');
+
 		const child = spawn(runCommand, { shell: true });
+
 		child.stdout.setEncoding('utf8');
-		child.stdout.on('data', (data) => {
-			outputBuffer += data.toString();
-			params.outputCallback?.(data.toString());
+		child.stdout.on('data', (data: string) => {
+			outputBuffer += data;
+			params.outputCallback?.(data);
 		});
+
 		child.stderr.setEncoding('utf8');
-		child.stderr.on('data', (data) => {
-			outputBuffer += data.toString();
-			params.outputCallback?.(data.toString());
+		child.stderr.on('data', (data: string) => {
+			outputBuffer += data;
+			params.outputCallback?.(data);
 		});
+
+		child.stdin.on('error', (err: NodeJS.ErrnoException) => {
+			if (err.code !== 'EPIPE') {
+				console.error('Unexpected stdin error:', err);
+			}
+		});
+
+		let timeLimitExceeded = false;
+		let completedNormally = false;
+		let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
 		const runStartTime = performance.now();
 		child.stdin.write(params.input);
 		child.stdin.end();
 
-		let timeLimitExceeded = false;
-		let completedNormally = false;
-
 		return {
 			success: true,
 			runResult: new Promise<RunResult>((resolve) => {
-				child.on('close', () => {
+				child.on('close', async () => {
 					completedNormally = !timeLimitExceeded;
-
-					const runEndTime = performance.now();
-					const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
-
+					const runtimeMilliseconds = Math.floor(performance.now() - runStartTime);
 					if (completedNormally) {
 						clearTimeout(timeoutHandle);
 						resolve({
 							kind: 'Completed',
 							output: outputBuffer,
-							exitCode: child.exitCode!,
+							exitCode: child.exitCode ?? undefined,
 							runtimeMilliseconds,
 							sourceFiles
 						});
@@ -122,7 +139,7 @@ export const runCpp: Runner<RunnerParamsCpp> = async function (
 					}
 				});
 
-				const timeoutHandle = setTimeout(() => {
+				timeoutHandle = setTimeout(() => {
 					if (completedNormally) {
 						return;
 					}
@@ -130,7 +147,6 @@ export const runCpp: Runner<RunnerParamsCpp> = async function (
 					console.log(`Run timed out after ${timeoutSeconds} seconds, killing process...`);
 					timeLimitExceeded = true;
 
-					child.stdin.end();
 					child.stdin.destroy();
 					child.stdout.destroy();
 					child.stderr.destroy();
@@ -140,11 +156,10 @@ export const runCpp: Runner<RunnerParamsCpp> = async function (
 				}, timeoutSeconds * 1000);
 			}),
 			killFunc() {
-				if (child.pid !== undefined) {
-					if (!completedNormally && !timeLimitExceeded) {
-						kill(child.pid);
-						params.outputCallback?.('\n[Manually stopped]');
-					}
+				if (child.pid !== undefined && !completedNormally && !timeLimitExceeded) {
+					timeLimitExceeded = true;
+					kill(child.pid);
+					params.outputCallback?.('\n[Manually stopped]');
 				}
 			}
 		};

@@ -1,7 +1,15 @@
 import { join } from 'path';
 import { exec, spawn } from 'child_process';
 import * as util from 'util';
-import type { Runner, RunnerParams, RunnerResult, RunResult } from './types';
+import * as fs from 'fs-extra';
+import {
+	formatExecError,
+	SourceFileWithText,
+	type Runner,
+	type RunnerParams,
+	type RunnerResult,
+	type RunResult
+} from './common';
 import { timeoutSeconds } from './config';
 import kill from 'tree-kill';
 import { getSourceFilesWithText } from './source-scraper';
@@ -19,62 +27,79 @@ interface RunnerParamsJava extends RunnerParams {
 export const runJava: Runner<RunnerParamsJava> = async function (
 	params: RunnerParamsJava
 ): Promise<RunnerResult> {
-	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.java');
+	let sourceFiles: Array<SourceFileWithText> | undefined;
+	try {
+		sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.java');
+	} catch {
+		sourceFiles = undefined;
+	}
+
+	const buildDir = join(params.srcDir, 'build');
+	await fs.remove(buildDir);
+	await fs.ensureDir(buildDir);
 
 	console.log(`- BUILD: ${params.mainFile}`);
-	const compileCommand = `javac -cp ${join(params.srcDir, 'src')} ${params.mainFile} -d ${join(params.srcDir, 'build')}`;
+
+	const compileCommand = `javac -cp "${join(params.srcDir, 'src')}" "${params.mainFile}" -d "${buildDir}"`;
 
 	try {
 		await execPromise(compileCommand);
 	} catch (e) {
-		const buildErrorText = e?.toString() ?? 'Unknown build errors.';
-		console.log('Build errors: ' + buildErrorText);
+		const reason = formatExecError(e);
+		console.log('Build errors: ' + reason);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: buildErrorText, sourceFiles }
+			runResult: { kind: 'CompileFailed', resultKindReason: reason, sourceFiles }
 		};
 	}
 
 	console.log(`- RUN: ${params.mainClass}`);
-	const runCommand = `java -cp "${join(params.srcDir, 'build')}" ${params.mainClass}`;
 
 	try {
 		let outputBuffer = '';
 		params.outputCallback?.('');
-		const child = spawn(runCommand, { shell: true });
+
+		const child = spawn('java', ['-cp', buildDir, params.mainClass]);
+
 		child.stdout.setEncoding('utf8');
-		child.stdout.on('data', (data) => {
-			outputBuffer += data.toString();
-			params.outputCallback?.(data.toString());
+		child.stdout.on('data', (data: string) => {
+			outputBuffer += data;
+			params.outputCallback?.(data);
 		});
+
 		child.stderr.setEncoding('utf8');
-		child.stderr.on('data', (data) => {
-			outputBuffer += data.toString();
-			params.outputCallback?.(data.toString());
+		child.stderr.on('data', (data: string) => {
+			outputBuffer += data;
+			params.outputCallback?.(data);
 		});
+
+		child.stdin.on('error', (err: NodeJS.ErrnoException) => {
+			if (err.code !== 'EPIPE') {
+				console.error('Unexpected stdin error:', err);
+			}
+		});
+
+		let timeLimitExceeded = false;
+		let completedNormally = false;
+		let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
 		const runStartTime = performance.now();
 		child.stdin.write(params.input);
 		child.stdin.end();
-
-		let timeLimitExceeded = false;
-		let completedNormally = false;
 
 		return {
 			success: true,
 			runResult: new Promise<RunResult>((resolve) => {
 				child.on('close', () => {
 					completedNormally = !timeLimitExceeded;
-
-					const runEndTime = performance.now();
-					const runtimeMilliseconds = Math.floor(runEndTime - runStartTime);
+					const runtimeMilliseconds = Math.floor(performance.now() - runStartTime);
 
 					if (completedNormally) {
 						clearTimeout(timeoutHandle);
 						resolve({
 							kind: 'Completed',
 							output: outputBuffer,
-							exitCode: child.exitCode!,
+							exitCode: child.exitCode ?? undefined,
 							runtimeMilliseconds,
 							sourceFiles
 						});
@@ -89,15 +114,12 @@ export const runJava: Runner<RunnerParamsJava> = async function (
 					}
 				});
 
-				const timeoutHandle = setTimeout(() => {
-					if (completedNormally) {
-						return;
-					}
+				timeoutHandle = setTimeout(() => {
+					if (completedNormally) return;
 
 					console.log(`Run timed out after ${timeoutSeconds} seconds, killing process...`);
 					timeLimitExceeded = true;
 
-					child.stdin.end();
 					child.stdin.destroy();
 					child.stdout.destroy();
 					child.stderr.destroy();
@@ -107,11 +129,10 @@ export const runJava: Runner<RunnerParamsJava> = async function (
 				}, timeoutSeconds * 1000);
 			}),
 			killFunc() {
-				if (child.pid !== undefined) {
-					if (!completedNormally && !timeLimitExceeded) {
-						kill(child.pid);
-						params.outputCallback?.('\n[Manually stopped]');
-					}
+				if (child.pid !== undefined && !completedNormally && !timeLimitExceeded) {
+					timeLimitExceeded = true;
+					kill(child.pid);
+					params.outputCallback?.('\n[Manually stopped]');
 				}
 			}
 		};
