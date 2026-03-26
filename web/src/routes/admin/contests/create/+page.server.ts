@@ -1,55 +1,43 @@
-import { db } from '$lib/server/prisma';
-import { createRepos } from '$lib/server/repos';
+import { contestRepo, problemRepo, teamRepo } from '$lib/server/repos';
+import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
+import { stringToJsonSchema } from '$lib/common/utils';
+import { createRepos } from '$lib/server/git-repos';
 
-export const load = (async () => {
-	const teams = await db.team.findMany();
-	const problems = await db.problem.findMany();
-	return {
-		teams: teams.map((row) => {
-			return { id: row.id, name: row.name };
-		}),
-		problems: problems.map((row) => {
-			return { id: row.id, name: row.friendlyName };
-		})
-	};
-}) satisfies PageServerLoad;
+export const load: PageServerLoad = async () => {
+	const teams = await teamRepo.getAll({ forPublic: false });
+	const problems = await problemRepo.getAll({ forPublic: false });
+	return { teams, problems };
+};
 
-export const actions = {
+const createSchema = z.object({
+	name: z.string().min(1),
+	teamIds: stringToJsonSchema.pipe(z.array(z.number().int())),
+	problemIds: stringToJsonSchema.pipe(z.array(z.number().int()))
+});
+
+export const actions: Actions = {
 	create: async ({ request }) => {
-		const data = await request.formData();
-		const name = data.get('name');
-		const problems = (await db.problem.findMany()).filter((problem) => {
-			return data.get('problem_' + problem.id) !== null;
-		});
-		const teams = (await db.team.findMany()).filter((team) => {
-			return data.get('team_' + team.id) !== null;
-		});
-		if (name === null) {
-			return { success: false };
+		const form = createSchema.safeParse(Object.fromEntries(await request.formData()));
+		if (!form.success) {
+			return { success: false, message: 'Invalid form data' };
 		}
-		const createdContest = await db.contest.create({
-			data: {
-				name: name.toString(),
-				teams: {
-					connect: teams.map((team) => {
-						return { id: team.id };
-					})
-				},
-				problems: {
-					connect: problems.map((problem) => {
-						return { id: problem.id };
-					})
-				}
-			},
-			include: { teams: true, problems: true }
-		});
-
-		await createRepos(
-			createdContest.id,
-			teams.map((t) => t.id)
+		const contest = await contestRepo.create({ name: form.data.name });
+		if (contest === undefined) {
+			return { success: false, message: 'Unable to create contest' };
+		}
+		const assignTeamsSuccess = await contestRepo.assignTeamIds(contest.id, form.data.teamIds);
+		if (assignTeamsSuccess !== true) {
+			return { success: false, message: 'Unable to assign teams to contest' };
+		}
+		const assignProblemsSuccess = await contestRepo.assignProblemIds(
+			contest.id,
+			form.data.problemIds
 		);
-
+		if (assignProblemsSuccess !== true) {
+			return { success: false, message: 'Unable to assign problems to contest' };
+		}
+		await createRepos({ contestId: contest.id, teamIds: form.data.teamIds });
 		return { success: true };
 	}
-} satisfies Actions;
+};

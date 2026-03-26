@@ -82,15 +82,15 @@ async function addProblemsPython(params: AddProblemsParams) {
 	});
 }
 
-export async function createRepos(contestId: number, teamIds: number[]) {
+export async function createRepos(params: { contestId: number; teamIds: number[] }) {
 	const vol = new memfs.Volume();
 	const fs = createFsFromVolume(vol);
 
-	const contestTeams = await teamRepo.getInContest(contestId, { forPublic: false });
-	const contestProblems = await problemRepo.getInContest(contestId, { forPublic: false });
+	const contestTeams = await teamRepo.getInContest(params.contestId, { forPublic: false });
+	const contestProblems = await problemRepo.getInContest(params.contestId, { forPublic: false });
 
 	contestTeams
-		.filter((t) => teamIds.includes(t.id))
+		.filter((t) => params.teamIds.includes(t.id))
 		.forEach(async (team) => {
 			fs.mkdirSync(team.id.toString(), { recursive: true });
 			await git.init({ fs: fs, bare: false, defaultBranch: 'master', dir: team.id.toString() });
@@ -121,7 +121,7 @@ export async function createRepos(contestId: number, teamIds: number[]) {
 				dir: team.id.toString(),
 				url: `http://127.0.0.1:${
 					env.GIT_PORT ?? 7006
-				}/${contestId.toString()}/${team.id.toString()}`
+				}/${params.contestId.toString()}/${team.id.toString()}`
 			});
 		});
 }

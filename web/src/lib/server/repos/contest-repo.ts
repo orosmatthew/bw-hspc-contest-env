@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
-import { contestTable } from '../db/schema';
+import { contestProblemTable, contestTable, contestTeamTable } from '../db/schema';
 
 export type Contest = {
 	id: number;
@@ -11,6 +11,26 @@ export type Contest = {
 };
 
 export class ContestRepo {
+	async create(values: { name: string }): Promise<Contest | undefined> {
+		try {
+			const contest = (
+				await db.insert(contestTable).values({ name: values.name }).returning({
+					id: contestTable.id,
+					name: contestTable.name,
+					startTime: contestTable.startTime,
+					freezeTime: contestTable.freezeTime
+				})
+			).at(0);
+			if (contest === undefined) {
+				return undefined;
+			}
+			return { ...contest, isFrozen: this._calcIsFrozen(contest.freezeTime) };
+		} catch (e) {
+			console.error(e);
+			return undefined;
+		}
+	}
+
 	async getById(id: number): Promise<Contest | undefined> {
 		try {
 			const contest = (
@@ -29,7 +49,7 @@ export class ContestRepo {
 			}
 			return {
 				...contest,
-				isFrozen: contest.freezeTime === null ? false : new Date() >= contest.freezeTime
+				isFrozen: this._calcIsFrozen(contest.freezeTime)
 			};
 		} catch (e) {
 			console.error(e);
@@ -67,5 +87,39 @@ export class ContestRepo {
 			console.error(e);
 			return false;
 		}
+	}
+
+	async assignProblemIds(contestId: number, problemIds: Array<number>): Promise<boolean> {
+		try {
+			db.transaction((tx) => {
+				tx.delete(contestProblemTable).where(eq(contestProblemTable.contestId, contestId));
+				for (const problemId of problemIds) {
+					tx.insert(contestProblemTable).values({ contestId, problemId });
+				}
+			});
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
+		}
+	}
+
+	async assignTeamIds(contestId: number, teamIds: Array<number>): Promise<boolean> {
+		try {
+			db.transaction((tx) => {
+				tx.delete(contestTeamTable).where(eq(contestTeamTable.contestId, contestId));
+				for (const teamId of teamIds) {
+					tx.insert(contestTeamTable).values({ contestId, teamId });
+				}
+			});
+            return true;
+		} catch (e) {
+			console.error(e);
+			return false;
+		}
+	}
+
+	private _calcIsFrozen(freezeTime: Date | null) {
+		return freezeTime === null ? false : new Date() >= freezeTime;
 	}
 }

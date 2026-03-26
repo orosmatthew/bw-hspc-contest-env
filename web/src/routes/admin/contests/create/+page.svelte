@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import FormAlert from '$lib/components/FormAlert.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import type { ActionData, PageData } from './$types';
 
 	interface Props {
@@ -17,28 +18,27 @@
 		}
 	});
 
+	let selectedTeamIds = new SvelteSet<number>();
+	let selectedProblemIds = new SvelteSet<number>();
+
 	function selectTeamsAll() {
-		document.querySelectorAll<HTMLInputElement>('.team-checkbox').forEach((elem) => {
-			elem.checked = true;
-		});
+		for (const team of data.teams) {
+			selectedTeamIds.add(team.id);
+		}
 	}
 
 	function selectTeamsNone() {
-		document.querySelectorAll<HTMLInputElement>('.team-checkbox').forEach((elem) => {
-			elem.checked = false;
-		});
+		selectedTeamIds.clear();
 	}
 
 	function selectProblemsAll() {
-		document.querySelectorAll<HTMLInputElement>('.problem-checkbox').forEach((elem) => {
-			elem.checked = true;
-		});
+		for (const problem of data.problems) {
+			selectedProblemIds.add(problem.id);
+		}
 	}
 
 	function selectProblemsNone() {
-		document.querySelectorAll<HTMLInputElement>('.problem-checkbox').forEach((elem) => {
-			elem.checked = false;
-		});
+		selectedProblemIds.clear();
 	}
 </script>
 
@@ -52,7 +52,10 @@
 
 <form method="POST" action="?/create" use:enhance>
 	<h4>Name</h4>
-	<input name="name" class="form-control" />
+	<input name="name" class="form-control" required />
+
+	<input type="hidden" name="teamIds" value={JSON.stringify(Array.from(selectedTeamIds))} />
+	<input type="hidden" name="problemIds" value={JSON.stringify(Array.from(selectedProblemIds))} />
 
 	<div class="mt-3 row">
 		<div class="col-6">
@@ -72,11 +75,17 @@
 					<input
 						class="team-checkbox form-check-input"
 						type="checkbox"
-						value={team.id}
-						id={'team_' + team.id}
-						name={'team_' + team.id}
+						checked={selectedTeamIds.has(team.id)}
+						id={'team-' + team.id}
+						oninput={(e) => {
+							if (e.currentTarget.checked) {
+								selectedTeamIds.add(team.id);
+							} else {
+								selectedTeamIds.delete(team.id);
+							}
+						}}
 					/>
-					<label class="form-check-label" for={'team_' + team.id}>{team.name}</label>
+					<label class="form-check-label" for={'team-' + team.id}>{team.name}</label>
 				</div>
 			{/each}
 		</div>
@@ -99,11 +108,19 @@
 					<input
 						class="problem-checkbox form-check-input"
 						type="checkbox"
-						value={problem.id}
-						id={'problem_' + problem.id}
-						name={'problem_' + problem.id}
+						checked={selectedProblemIds.has(problem.id)}
+						id={'problem-' + problem.id}
+						oninput={(e) => {
+							if (e.currentTarget.checked) {
+								selectedProblemIds.add(problem.id);
+							} else {
+								selectedProblemIds.delete(problem.id);
+							}
+						}}
 					/>
-					<label class="form-check-label" for={'problem_' + problem.id}>{problem.name}</label>
+					<label class="form-check-label" for={'problem-' + problem.id}
+						>{problem.friendlyName}</label
+					>
 				</div>
 			{/each}
 		</div>

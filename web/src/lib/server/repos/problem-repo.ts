@@ -18,32 +18,44 @@ export type ProblemGetParams = { forPublic: boolean };
 export class ProblemRepo {
 	async getInContest(contestId: number, getParams: ProblemGetParams): Promise<Array<Problem>> {
 		try {
-			const base = getParams.forPublic
-				? db.select({
-						id: problemTable.id,
-						friendlyName: problemTable.friendlyName,
-						pascalName: problemTable.pascalName,
-						sampleInput: problemTable.sampleInput,
-						sampleOutput: problemTable.sampleOutput
-					})
-				: db.select({
-						id: problemTable.id,
-						friendlyName: problemTable.friendlyName,
-						pascalName: problemTable.pascalName,
-						sampleInput: problemTable.sampleInput,
-						sampleOutput: problemTable.sampleOutput,
-						realInput: problemTable.realInput,
-						realOutput: problemTable.realOutput,
-						inputSpec: problemTable.inputSpec
-					});
-			const problems = await base
+			const problems = await this._getBaseSelect(getParams)
 				.from(problemTable)
 				.innerJoin(contestProblemTable, eq(contestProblemTable.problemId, problemTable.id))
-				.where(eq(contestProblemTable.contestId, contestId));
+				.where(eq(contestProblemTable.contestId, contestId))
+				.orderBy(problemTable.friendlyName);
 			return problems;
 		} catch (e) {
 			console.error(e);
 			return [];
 		}
+	}
+
+	async getAll(getParams: ProblemGetParams): Promise<Array<Problem>> {
+		try {
+			const problems = await this._getBaseSelect(getParams)
+				.from(problemTable)
+				.orderBy(problemTable.friendlyName);
+			return problems;
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
+	private _getBaseSelect(getParams: ProblemGetParams) {
+		return db.select({
+			id: problemTable.id,
+			friendlyName: problemTable.friendlyName,
+			pascalName: problemTable.pascalName,
+			sampleInput: problemTable.sampleInput,
+			sampleOutput: problemTable.sampleOutput,
+			...(getParams.forPublic
+				? {}
+				: {
+						realInput: problemTable.realInput,
+						realOutput: problemTable.realOutput,
+						inputSpec: problemTable.inputSpec
+					})
+		});
 	}
 }
