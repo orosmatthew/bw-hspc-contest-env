@@ -123,7 +123,7 @@ export const actions: Actions = {
 			const repoPath = join('repo', contest.id.toString(), `${teamId.toString()}.git`);
 			await fs.remove(repoPath);
 		}
-		await createRepos(contest.id, form.data.teamIds);
+		await createRepos({ contestId: contest.id, teamIds: form.data.teamIds });
 		return { success: true };
 	},
 	freeze: async ({ params }) => {
