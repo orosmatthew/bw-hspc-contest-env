@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import FormAlert from '$lib/FormAlert.svelte';
+	import FormAlert from '$lib/components/FormAlert.svelte';
 	import type { Actions, PageData } from './$types';
 
 	let log = $state('');

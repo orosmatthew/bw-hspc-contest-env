@@ -1,6 +1,6 @@
+import { normalizeNewlines } from '$lib/common/output-analyzer/analyzer-utils';
 import { db } from '$lib/server/prisma';
 import type { PageServerLoad } from './$types';
-import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
 
 export const load = (async () => {
 	const problems = await db.problem.findMany();

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Problem, SubmissionSourceFile } from '@prisma/client';
-	import Tabs from './SubmissionTabs/Tabs.svelte';
-	import Tab from './SubmissionTabs/TabEntry.svelte';
+	import Tabs from './submission-tabs/Tabs.svelte';
+	import Tab from './submission-tabs/TabEntry.svelte';
 	import DiffView from './DiffView.svelte';
 	import AnnotatedOutput from './AnnotatedOutput.svelte';
 	import Code from './Code.svelte';

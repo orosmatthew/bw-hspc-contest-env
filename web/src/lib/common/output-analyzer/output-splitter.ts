@@ -1,4 +1,4 @@
-import type { CaseResult } from './analyzerTypes';
+import type { CaseResult } from './analyzer-types';
 
 export const caseLabelRegex = /^case\s*[\d]*\s*:?\s*/i;
 

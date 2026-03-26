@@ -1,8 +1,11 @@
 <script lang="ts">
 	import type { Problem, Submission } from '@prisma/client';
-	import type { CaseResult } from './outputAnalyzer/analyzerTypes';
-	import { theme } from '../routes/stores';
-	import { analyzeSubmissionOutput, rehydrateOutputPreview } from './outputAnalyzer/outputAnalyzer';
+	import type { CaseResult } from '../common/output-analyzer/analyzer-types';
+	import { theme } from '../../routes/stores';
+	import {
+		analyzeSubmissionOutput,
+		rehydrateOutputPreview
+	} from '../common/output-analyzer/output-analyzer';
 
 	interface Props {
 		problem: Problem;

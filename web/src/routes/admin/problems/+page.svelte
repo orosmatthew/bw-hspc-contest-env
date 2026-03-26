@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Actions, PageData } from './$types';
-	import Modal from '$lib/Modal.svelte';
+	import Modal from '$lib/components/Modal.svelte';
 	import InputSpecDescription from './InputSpecDescription.svelte';
 
 	interface Props {

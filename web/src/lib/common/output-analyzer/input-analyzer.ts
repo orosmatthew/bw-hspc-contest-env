@@ -1,5 +1,5 @@
 import type { Problem } from '@prisma/client';
-import { normalizeInputLines } from './analyzerUtils';
+import { normalizeInputLines } from './analyzer-utils';
 
 export function parseProblemInput(
 	problem: Problem

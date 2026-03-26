@@ -1,9 +1,9 @@
 import { db } from '$lib/server/prisma';
 import type { Contest, Problem, Submission, Team } from '@prisma/client';
 import type { PageServerLoad } from './$types';
-import { analyzeSubmissionOutput } from '$lib/outputAnalyzer/outputAnalyzer';
 import type { Actions } from '@sveltejs/kit';
-import { numInputCases as numInputCasesFromHeader } from '$lib/outputAnalyzer/inputAnalyzer';
+import { analyzeSubmissionOutput } from '$lib/common/output-analyzer/output-analyzer';
+import { numInputCases } from '$lib/common/output-analyzer/input-analyzer';
 
 export const load = (async () => {
 	const submissions = await db.submission.findMany({ include: { problem: true, team: true } });
@@ -98,7 +98,7 @@ async function regenerateTestCaseResultsForSubmissions(
 
 		log(`  Resulting DB String: ${analyzedOutput?.databaseString ?? 'Unknown'}`);
 
-		const testCasesExpected = numInputCasesFromHeader(submission.problem.realInput);
+		const testCasesExpected = numInputCases(submission.problem.realInput);
 		const testCasesReported = analyzedOutput?.testCaseResults.length ?? 'Unknown';
 
 		log(`  Test Cases Expected: ${testCasesExpected}`);

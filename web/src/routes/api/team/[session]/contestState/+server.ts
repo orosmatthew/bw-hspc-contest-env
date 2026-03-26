@@ -1,7 +1,7 @@
 import { db } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
+import { convertSubmissionStateForExtension } from '$lib/common/contest-monitor/contest-monitor-utils';
 import type {
 	ContestStateForExtension,
 	FullStateForExtension,

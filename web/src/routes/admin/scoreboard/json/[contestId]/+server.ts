@@ -1,7 +1,7 @@
-import { scoreboardData } from '$lib/server/scoreboardData';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/prisma';
+import { scoreboardData } from '$lib/server/scoreboard-data';
 
 type ScoreboardExportSchema = {
 	problems: string[];

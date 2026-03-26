@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import TestCaseResults from '$lib/TestCaseResults.svelte';
+	import TestCaseResults from '$lib/components/TestCaseResults.svelte';
 	import type { Contest, Problem, Submission, Team } from '@prisma/client';
 	import {
 		minutesBetweenTimestamps,
 		minutesFromContestStart,
 		submissionTimestampHoverText
-	} from '$lib/util';
+	} from '$lib/common/util';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {

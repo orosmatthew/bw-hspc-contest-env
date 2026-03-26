@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AnnotatedOutput from '$lib/AnnotatedOutput.svelte';
+	import AnnotatedOutput from '$lib/components/AnnotatedOutput.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {

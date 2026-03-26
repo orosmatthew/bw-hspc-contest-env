@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
-	import SubmissionsList from '$lib/SubmissionsList.svelte';
+	import SubmissionsList from '$lib/components/SubmissionsList.svelte';
 
 	interface Props {
 		data: PageData;

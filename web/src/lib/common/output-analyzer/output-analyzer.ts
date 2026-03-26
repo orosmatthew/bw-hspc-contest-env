@@ -1,14 +1,14 @@
 import type { Problem } from '@prisma/client';
-import { newline, trimmedNonemptyLines } from './analyzerUtils';
+import { newline, trimmedNonemptyLines } from './analyzer-utils';
 import type {
 	CaseResult,
 	AnalyzedOutput,
 	TestCaseResult,
 	TestCaseResultPreview,
 	AnalyzedOutputPreview
-} from './analyzerTypes';
-import { caseLabelRegex, splitJudgeOutput, splitTeamOutput } from './outputSplitter';
-import { numInputCases } from './inputAnalyzer';
+} from './analyzer-types';
+import { caseLabelRegex, splitJudgeOutput, splitTeamOutput } from './output-splitter';
+import { numInputCases } from './input-analyzer';
 
 // Team output analysis & test case results are used in two contexts:
 //   1) High Fidelity:

@@ -2,8 +2,8 @@ import { db } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { z } from 'zod';
-import { convertSubmissionStateForExtension } from '$lib/contestMonitor/contestMonitorUtils';
 import type { SubmissionForExtension } from 'bwcontest-shared/types/contest-monitor-types';
+import { convertSubmissionStateForExtension } from '$lib/common/contest-monitor/contest-monitor-utils';
 
 const submitPostData = z.object({
 	commitHash: z.string(),

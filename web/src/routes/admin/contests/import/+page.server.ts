@@ -4,8 +4,8 @@ import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { genPassword } from '../../teams/util';
 import { createRepos } from '$lib/server/repos';
-import { analyzeSubmissionOutput } from '$lib/outputAnalyzer/outputAnalyzer';
-import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
+import { normalizeNewlines } from '$lib/common/output-analyzer/analyzer-utils';
+import { analyzeSubmissionOutput } from '$lib/common/output-analyzer/output-analyzer';
 
 export const load = (async () => {}) satisfies PageServerLoad;
 

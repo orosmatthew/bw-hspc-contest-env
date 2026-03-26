@@ -3,9 +3,12 @@ import { error, json } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
 import * as Diff from 'diff';
-import { analyzeSubmissionOutput, autoJudgeResponse } from '$lib/outputAnalyzer/outputAnalyzer';
-import { normalizeNewlines } from '$lib/outputAnalyzer/analyzerUtils';
 import { env } from '$env/dynamic/private';
+import { normalizeNewlines } from '$lib/common/output-analyzer/analyzer-utils';
+import {
+	analyzeSubmissionOutput,
+	autoJudgeResponse
+} from '$lib/common/output-analyzer/output-analyzer';
 
 export const GET = (async ({ request }) => {
 	const secret = request.headers.get('secret');

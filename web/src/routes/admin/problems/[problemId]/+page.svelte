@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import ConfirmModal from '$lib/ConfirmModal.svelte';
-	import { parseProblemInput } from '$lib/outputAnalyzer/inputAnalyzer';
-	import { stretchTextarea } from '$lib/util';
+	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
+	import { parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
+	import { stretchTextarea } from '$lib/common/util';
 	import type { Actions, PageData } from './$types';
 
 	let editing = $state(false);

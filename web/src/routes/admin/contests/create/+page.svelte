@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import FormAlert from '$lib/FormAlert.svelte';
+	import FormAlert from '$lib/components/FormAlert.svelte';
 	import type { Actions, PageData } from './$types';
 
 	interface Props {

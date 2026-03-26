@@ -1,4 +1,4 @@
-import { parseProblemInput } from '$lib/outputAnalyzer/inputAnalyzer';
+import { parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
 import { db } from '$lib/server/prisma';
 import type { PageServerLoad } from './$types';
 

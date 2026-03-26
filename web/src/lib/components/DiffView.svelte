@@ -4,10 +4,10 @@
 	import { Diff2HtmlUI } from 'diff2html/lib/ui/js/diff2html-ui-base';
 	import { onMount } from 'svelte';
 	import * as Diff from 'diff';
-	import { theme } from '../routes/stores';
-	import { analyzeSubmissionOutput } from './outputAnalyzer/outputAnalyzer';
+	import { theme } from '../../routes/stores';
+	import { analyzeSubmissionOutput } from '../common/output-analyzer/output-analyzer';
 	import type { Problem } from '@prisma/client';
-	import { newline, trimmedLines } from './outputAnalyzer/analyzerUtils';
+	import { newline, trimmedLines } from '../common/output-analyzer/analyzer-utils';
 
 	interface Props {
 		expectedOutput: string;

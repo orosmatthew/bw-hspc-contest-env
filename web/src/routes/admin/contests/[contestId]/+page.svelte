@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
-	import ConfirmModal from '$lib/ConfirmModal.svelte';
-	import FormAlert from '$lib/FormAlert.svelte';
-	import Modal from '$lib/Modal.svelte';
+	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
+	import FormAlert from '$lib/components/FormAlert.svelte';
+	import Modal from '$lib/components/Modal.svelte';
 	import type { Actions, PageData } from './$types';
 
 	interface Props {

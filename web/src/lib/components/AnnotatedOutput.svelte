@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { Problem } from '@prisma/client';
-	import { numInputCases, parseProblemInput } from '$lib/outputAnalyzer/inputAnalyzer';
+	import { numInputCases, parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
 
-	import { theme } from '../routes/stores';
-	import { analyzeSubmissionOutput } from './outputAnalyzer/outputAnalyzer';
-	import type { CaseResult } from './outputAnalyzer/analyzerTypes';
-	import { normalizeInputLines } from './outputAnalyzer/analyzerUtils';
+	import { theme } from '../../routes/stores';
+	import { analyzeSubmissionOutput } from '../common/output-analyzer/output-analyzer';
+	import type { CaseResult } from '../common/output-analyzer/analyzer-types';
+	import { normalizeInputLines } from '../common/output-analyzer/analyzer-utils';
 
 	interface Props {
 		problem: Problem;
