@@ -1,18 +1,18 @@
 import { join } from 'path';
 import { exec, spawn } from 'child_process';
 import * as util from 'util';
-import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.js';
-import { timeoutSeconds } from './settings.js';
+import type { Runner, RunnerParams, RunnerResult, RunResult } from './types';
+import { timeoutSeconds } from './config';
 import kill from 'tree-kill';
 import * as os from 'os';
 import * as fs from 'fs-extra';
-import { getSourceFilesWithText } from './source-scraper.js';
+import { getSourceFilesWithText } from './source-scraper';
 
 const execPromise = util.promisify(exec);
 
 export type CppPlatform = 'VisualStudio' | 'GCC';
 
-interface IRunnerParamsCpp extends IRunnerParams {
+interface RunnerParamsCpp extends RunnerParams {
 	srcDir: string;
 	problemName: string;
 	input: string;
@@ -20,9 +20,9 @@ interface IRunnerParamsCpp extends IRunnerParams {
 	outputCallback?: (data: string) => void;
 }
 
-export const runCpp: IRunner<IRunnerParamsCpp> = async function (
-	params: IRunnerParamsCpp
-): Promise<IRunnerReturn> {
+export const runCpp: Runner<RunnerParamsCpp> = async function (
+	params: RunnerParamsCpp
+): Promise<RunnerResult> {
 	const sourceFiles = await getSourceFilesWithText(
 		params.studentCodeRootForProblem,
 		'.cpp',
@@ -34,10 +34,8 @@ export const runCpp: IRunner<IRunnerParamsCpp> = async function (
 
 	const tmpDir = os.tmpdir();
 	const buildDir = join(tmpDir, 'bwcontest-cpp');
-	if (fs.existsSync(buildDir)) {
-		fs.removeSync(buildDir);
-	}
-	fs.mkdirSync(buildDir);
+	await fs.remove(buildDir);
+	await fs.ensureDir(buildDir);
 
 	console.log(`- BUILD: ${params.problemName}`);
 

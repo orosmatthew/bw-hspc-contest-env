@@ -1,16 +1,16 @@
 import { spawn } from 'child_process';
 import kill from 'tree-kill';
-import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.js';
-import { timeoutSeconds } from './settings.js';
-import { getSourceFilesWithText } from './source-scraper.js';
+import type { Runner, RunnerParams, RunnerResult, RunResult } from './types';
+import { timeoutSeconds } from './config';
+import { getSourceFilesWithText } from './source-scraper';
 
-interface IRunnerParamsPython extends IRunnerParams {
+interface RunnerParamsPython extends RunnerParams {
 	problemName: string;
 }
 
-export const runPython: IRunner<IRunnerParamsPython> = async function (
-	params: IRunnerParamsPython
-): Promise<IRunnerReturn> {
+export const runPython: Runner<RunnerParamsPython> = async function (
+	params: RunnerParamsPython
+): Promise<RunnerResult> {
 	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.py');
 
 	console.log(`- RUN: ${params.problemName}`);

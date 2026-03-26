@@ -1,42 +1,40 @@
 import { z } from 'zod';
 
-const RunResultKind = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'RunError']);
+const runResultKindSchema = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'RunError']);
 
-export const SourceFileWithTextZod = z
+export const sourceFileWithTextSchema = z
 	.object({
 		pathFromProblemRoot: z.string(),
 		content: z.string()
 	})
 	.strict();
 
-export type SourceFileWithText = z.infer<typeof SourceFileWithTextZod>;
+export type SourceFileWithText = z.infer<typeof sourceFileWithTextSchema>;
 
-export type RunResultKind = z.infer<typeof RunResultKind>;
+export type RunResultKind = z.infer<typeof runResultKindSchema>;
 
-export const RunResultZod = z
+export const runResultSchema = z
 	.object({
-		kind: RunResultKind,
+		kind: runResultKindSchema,
 		output: z.string().optional(),
 		exitCode: z.number().optional(),
 		runtimeMilliseconds: z.number().optional(),
 		resultKindReason: z.string().optional(),
-		sourceFiles: z.array(SourceFileWithTextZod).optional()
+		sourceFiles: z.array(sourceFileWithTextSchema).optional()
 	})
 	.strict();
 
-export type RunResult = z.infer<typeof RunResultZod>;
+export type RunResult = z.infer<typeof runResultSchema>;
 
-export interface IRunnerParams {
+export interface RunnerParams {
 	srcDir: string;
 	studentCodeRootForProblem: string;
 	input: string;
 	outputCallback?: (data: string) => void;
 }
 
-export type IRunnerReturn =
+export type RunnerResult =
 	| { success: true; killFunc: () => void; runResult: Promise<RunResult> }
 	| { success: false; runResult: RunResult };
 
-export type IRunner<T extends IRunnerParams = IRunnerParams> = (
-	params: T
-) => Promise<IRunnerReturn>;
+export type Runner<T extends RunnerParams = RunnerParams> = (params: T) => Promise<RunnerResult>;

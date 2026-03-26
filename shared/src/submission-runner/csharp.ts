@@ -1,14 +1,14 @@
 import { spawn } from 'child_process';
 import kill from 'tree-kill';
-import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.js';
-import { timeoutSeconds } from './settings.js';
-import { getSourceFilesWithText } from './source-scraper.js';
+import type { Runner, RunnerParams, RunnerResult, RunResult } from './types';
+import { timeoutSeconds } from './config';
+import { getSourceFilesWithText } from './source-scraper';
 
 type CSharpBuildResult =
 	| { success: true }
 	| { success: false; exitCode: number | null; errorText: string };
 
-export const runCSharp: IRunner = async function (params: IRunnerParams): Promise<IRunnerReturn> {
+export const runCSharp: Runner = async function (params: RunnerParams): Promise<RunnerResult> {
 	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.cs');
 
 	console.log(`- BUILD: ${params.srcDir}`);

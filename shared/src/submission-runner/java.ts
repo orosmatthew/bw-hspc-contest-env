@@ -1,14 +1,14 @@
 import { join } from 'path';
 import { exec, spawn } from 'child_process';
 import * as util from 'util';
-import type { IRunner, IRunnerParams, IRunnerReturn, RunResult } from './types.js';
-import { timeoutSeconds } from './settings.js';
+import type { Runner, RunnerParams, RunnerResult, RunResult } from './types';
+import { timeoutSeconds } from './config';
 import kill from 'tree-kill';
-import { getSourceFilesWithText } from './source-scraper.js';
+import { getSourceFilesWithText } from './source-scraper';
 
 const execPromise = util.promisify(exec);
 
-interface IRunnerParamsJava extends IRunnerParams {
+interface RunnerParamsJava extends RunnerParams {
 	srcDir: string;
 	mainFile: string;
 	mainClass: string;
@@ -16,9 +16,9 @@ interface IRunnerParamsJava extends IRunnerParams {
 	outputCallback?: (data: string) => void;
 }
 
-export const runJava: IRunner<IRunnerParamsJava> = async function (
-	params: IRunnerParamsJava
-): Promise<IRunnerReturn> {
+export const runJava: Runner<RunnerParamsJava> = async function (
+	params: RunnerParamsJava
+): Promise<RunnerResult> {
 	const sourceFiles = await getSourceFilesWithText(params.studentCodeRootForProblem, '.java');
 
 	console.log(`- BUILD: ${params.mainFile}`);

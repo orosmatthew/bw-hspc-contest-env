@@ -1,5 +1,5 @@
 import { join, relative, extname } from 'path';
-import { SourceFileWithText } from './types.js';
+import { SourceFileWithText } from './types';
 import fs from 'fs-extra';
 
 export async function getSourceFilesWithText(
