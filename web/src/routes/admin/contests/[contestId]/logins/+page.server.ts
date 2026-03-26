@@ -1,31 +1,17 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { db } from '$lib/server/prisma';
+import z from 'zod';
+import { contestRepo, teamRepo } from '$lib/server/repos';
 
-export const load = (async ({ params }) => {
-	if (!params.contestId) {
-		redirect(302, '/admin/contests');
+export const load: PageServerLoad = async ({ params }) => {
+	const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+	if (!contestIdParse.success) {
+		redirect(307, '/admin/contests');
 	}
-	const contestId = parseInt(params.contestId);
-	if (isNaN(contestId)) {
-		redirect(302, '/admin/contests');
+	const contest = await contestRepo.getById(contestIdParse.data);
+	if (contest === undefined) {
+		redirect(307, '/admin/contests');
 	}
-
-	const contest = await db.contest.findUnique({
-		where: { id: contestId },
-		include: { teams: true }
-	});
-	if (!contest) {
-		redirect(302, '/admin/contests');
-	}
-
-	return {
-		teams: contest.teams.map((team) => {
-			return {
-				id: team.id,
-				name: team.name,
-				password: team.password
-			};
-		})
-	};
-}) satisfies PageServerLoad;
+	const teams = await teamRepo.getInContest(contest.id, { forPublic: false });
+	return { teams };
+};

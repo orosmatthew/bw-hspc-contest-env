@@ -13,7 +13,7 @@ import {
 import { stringToJsonSchema } from '$lib/common/utils';
 import { createRepos } from '$lib/server/git-repos';
 
-export const load = (async ({ params }) => {
+export const load: PageServerLoad = async ({ params }) => {
 	const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
 	if (!contestIdParse.success) {
 		error(400, 'Invalid contest id');
@@ -30,7 +30,7 @@ export const load = (async ({ params }) => {
 		teams,
 		activeTeamsCount: await activeTeamRepo.getCountInContest(contest.id)
 	};
-}) satisfies PageServerLoad;
+};
 
 const repoSchema = z.object({
 	teamIds: stringToJsonSchema.pipe(z.array(z.number().int()))
