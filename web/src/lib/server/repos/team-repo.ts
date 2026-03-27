@@ -2,7 +2,8 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from '../db';
 import { activeTeamTable, contestTeamTable, teamTable } from '../db/schema';
 
-export type TeamLanguage = 'java' | 'csharp' | 'cpp' | 'python';
+export const teamLanguageValues = ['java', 'csharp', 'cpp', 'python'] as const;
+export type TeamLanguage = (typeof teamLanguageValues)[number];
 
 export type TeamBase = {
 	id: number;
@@ -102,6 +103,32 @@ export class TeamRepo {
 			).at(0);
 		} catch (e) {
 			console.error(e);
+		}
+	}
+
+	async update(
+		id: number,
+		values: { name?: string; language?: TeamLanguage; password?: string }
+	): Promise<boolean> {
+		try {
+			await db
+				.update(teamTable)
+				.set({ name: values.name, language: values.language, password: values.password })
+				.where(eq(teamTable.id, id));
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
+		}
+	}
+
+	async deleteById(id: number): Promise<boolean> {
+		try {
+			await db.delete(teamTable).where(eq(teamTable.id, id));
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
 		}
 	}
 

@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { genTeamPassword } from '$lib/common/utils';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import Modal from '$lib/components/Modal.svelte';
+	import type { TeamLanguage } from '$lib/server/repos/team-repo';
 	import type { ActionData, PageData } from './$types';
-	import { genPassword } from './util';
 
 	interface Props {
 		data: PageData;
@@ -14,7 +15,7 @@
 	let { data, form }: Props = $props();
 
 	function editGenPassword() {
-		(document.getElementById('editTeamPassword') as HTMLInputElement).value = genPassword();
+		(document.getElementById('editTeamPassword') as HTMLInputElement).value = genTeamPassword();
 	}
 
 	let addModal: Modal | undefined = $state();
@@ -71,10 +72,10 @@
 						value={editTeam.language}
 						required
 					>
-						<option value="Java">Java</option>
-						<option value="CSharp">C#</option>
-						<option value="CPP">C++</option>
-						<option value="Python">Python</option>
+						<option value={'java' satisfies TeamLanguage}>Java</option>
+						<option value={'csharp' satisfies TeamLanguage}>C#</option>
+						<option value={'cpp' satisfies TeamLanguage}>C++</option>
+						<option value={'python' satisfies TeamLanguage}>Python</option>
 					</select>
 
 					<label class="mt-1 form-label" for="editTeamPassword">Password</label>
@@ -169,10 +170,10 @@
 					<td
 						><span
 							class="badge"
-							class:bg-warning={team.language === 'Java'}
-							class:bg-success={team.language === 'CSharp'}
-							class:bg-info={team.language === 'CPP'}
-							class:bg-primary={team.language === 'Python'}
+							class:bg-warning={team.language === 'java'}
+							class:bg-success={team.language === 'csharp'}
+							class:bg-info={team.language === 'cpp'}
+							class:bg-primary={team.language === 'python'}
 						>
 							{team.language}</span
 						></td

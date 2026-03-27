@@ -1,70 +1,70 @@
-import { db } from '$lib/server/prisma';
+import { teamRepo } from '$lib/server/repos';
+import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
-import { genPassword } from './util';
+import { teamLanguageValues } from '$lib/server/repos/team-repo';
+import { genTeamPassword } from '$lib/common/utils';
 
-export const load = (async () => {
-	const teams = await db.team.findMany({
-		select: { id: true, name: true, language: true, password: true },
-		orderBy: { name: 'asc' }
-	});
+export const load: PageServerLoad = async () => {
+	const teams = await teamRepo.getAllPrivate();
 	return { teams };
-}) satisfies PageServerLoad;
+};
 
-export const actions = {
+const addSchema = z.object({
+	name: z.string().min(1),
+	lang: z.enum(teamLanguageValues)
+});
+
+const deleteSchema = z.object({
+	teamId: z.coerce.number().int()
+});
+
+const editSchema = z.object({
+	id: z.coerce.number().int(),
+	name: z.string().min(1),
+	lang: z.enum(teamLanguageValues),
+	password: z.string().min(1)
+});
+
+export const actions: Actions = {
 	add: async ({ request }) => {
-		const data = await request.formData();
-		const name = data.get('name');
-		const lang = data.get('lang');
-		if (name === null || lang === null) {
-			return { success: false, message: 'Incomplete form data' };
+		const form = addSchema.safeParse(Object.fromEntries(await request.formData()));
+		if (!form.success) {
+			return { success: false, message: 'Invalid form data' };
 		}
-		if (lang !== 'Java' && lang !== 'CSharp' && lang !== 'CPP' && lang !== 'Python') {
-			return { success: false, message: 'Invalid language' };
-		}
-		try {
-			await db.team.create({
-				data: { name: name.toString(), password: genPassword(), language: lang }
-			});
-		} catch (e) {
-			return { success: false, message: `Database error: ${e}` };
+		const id = await teamRepo.create({
+			name: form.data.name,
+			language: form.data.lang,
+			password: genTeamPassword()
+		});
+		if (id === undefined) {
+			return { success: false, message: 'Unable to create team' };
 		}
 		return { success: true };
 	},
 	delete: async ({ request }) => {
-		const data = await request.formData();
-		const teamId = data.get('teamId');
-		if (teamId === null) {
-			return { success: false };
+		const form = deleteSchema.safeParse(Object.fromEntries(await request.formData()));
+		if (!form.success) {
+			return { success: false, message: 'Invalid form data' };
 		}
-		const teamIdNum = parseInt(teamId.toString());
-		try {
-			await db.team.delete({ where: { id: teamIdNum } });
-		} catch {
-			return { success: false };
+		const deleteSuccess = await teamRepo.deleteById(form.data.teamId);
+		if (deleteSuccess !== true) {
+			return { success: false, message: 'Unable to delete team' };
 		}
 		return { success: true };
 	},
 	edit: async ({ request }) => {
-		const data = await request.formData();
-		const teamId = data.get('id');
-		const name = data.get('name');
-		const lang = data.get('lang');
-		const password = data.get('password');
-		if (teamId === null || name === null || lang === null || password === null) {
-			return { success: false, message: 'Incomplete form data' };
+		const form = editSchema.safeParse(Object.fromEntries(await request.formData()));
+		if (!form.success) {
+			return { success: false, message: 'Invalid form data' };
 		}
-		if (lang !== 'Java' && lang !== 'CSharp' && lang !== 'CPP' && lang !== 'Python') {
-			return { success: false, message: 'Invalid language' };
-		}
-		try {
-			await db.team.update({
-				where: { id: parseInt(teamId.toString()) },
-				data: { name: name.toString(), language: lang, password: password.toString() }
-			});
-		} catch (e) {
-			console.error(e);
-			return { success: false, message: 'Database error' };
+		const updateSuccess = await teamRepo.update(form.data.id, {
+			name: form.data.name,
+			language: form.data.lang,
+			password: form.data.password
+		});
+		if (updateSuccess !== true) {
+			return { success: false, message: 'Unable to update team' };
 		}
 		return { success: true };
 	}
-} satisfies Actions;
+};

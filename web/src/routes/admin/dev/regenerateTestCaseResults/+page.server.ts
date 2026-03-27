@@ -136,9 +136,8 @@ async function regenerateTestCaseResultsForSubmissions(params: {
 			params.logProblem(`    ERROR: Test case count mismatch!`);
 		}
 
-		await submissionRepo.updateTestCaseResults(
-			submission.id,
-			analyzedOutput?.databaseString ?? 'Unknown'
-		);
+		await submissionRepo.update(submission.id, {
+			testCaseResults: analyzedOutput?.databaseString ?? 'Unknown'
+		});
 	}
 }

@@ -203,7 +203,9 @@ export const actions: Actions = {
 				const testCaseResultString =
 					analyzeSubmissionOutput(problem, insertedSubmission.actualOutput)?.databaseString ??
 					'Unknown';
-				await submissionRepo.updateTestCaseResults(insertedSubmission.id, testCaseResultString);
+				await submissionRepo.update(insertedSubmission.id, {
+					testCaseResults: testCaseResultString
+				});
 			}
 		}
 
