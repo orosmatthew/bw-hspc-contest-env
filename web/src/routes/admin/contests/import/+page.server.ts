@@ -1,10 +1,9 @@
 import type { PageServerLoad } from './$types';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
-import { genPassword } from '../../teams/util';
 import { normalizeNewlines } from '$lib/common/output-analyzer/analyzer-utils';
 import { analyzeSubmissionOutput } from '$lib/common/output-analyzer/output-analyzer';
 import z from 'zod';
-import { checkboxSchema, stringToJsonSchema } from '$lib/common/utils';
+import { checkboxSchema, genTeamPassword, stringToJsonSchema } from '$lib/common/utils';
 import { createRepos } from '$lib/server/git-repos';
 import {
 	activeTeamRepo,
@@ -91,7 +90,7 @@ export const actions: Actions = {
 			} else {
 				const id = await teamRepo.create({
 					name: team.TeamName,
-					password: genPassword(),
+					password: genTeamPassword(),
 					language: inferTeamLanguage(form.data.jsonText, team) ?? 'java'
 				});
 				if (id === undefined) {

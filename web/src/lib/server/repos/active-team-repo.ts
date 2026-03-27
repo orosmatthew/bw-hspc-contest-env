@@ -2,12 +2,17 @@ import { count, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { activeTeamTable } from '../db/schema';
 
-export type ActiveTeam = {
+export type ActiveTeamBase = {
 	id: number;
 	teamId: number;
+	contestId: number;
+};
+
+export type ActiveTeamPublic = ActiveTeamBase;
+
+export type ActiveTeamPrivate = ActiveTeamBase & {
 	sessionToken: string | null;
 	sessionCreatedAt: Date | null;
-	contestId: number;
 };
 
 export class ActiveTeamRepo {
@@ -25,7 +30,20 @@ export class ActiveTeamRepo {
 		}
 	}
 
-	async getCountInContest(contestId: number): Promise<number> {
+	async getBySessionTokenPublic(sessionToken: string): Promise<ActiveTeamPublic | undefined> {
+		try {
+			return (
+				await db
+					.select(this._getFieldsPublic())
+					.from(activeTeamTable)
+					.where(eq(activeTeamTable.sessionToken, sessionToken))
+			).at(0);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	async getInContestCount(contestId: number): Promise<number> {
 		try {
 			const result = (
 				await db
@@ -48,5 +66,23 @@ export class ActiveTeamRepo {
 			console.error(e);
 			return false;
 		}
+	}
+
+	private _getFieldsPublic() {
+		return {
+			id: activeTeamTable.id,
+			teamId: activeTeamTable.teamId,
+			contestId: activeTeamTable.contestId
+		};
+	}
+
+	private _getFieldsPrivate() {
+		return {
+			id: activeTeamTable.id,
+			teamId: activeTeamTable.teamId,
+			sessionToken: activeTeamTable.sessionToken,
+			sessionCreatedAt: activeTeamTable.sessionCreatedAt,
+			contestId: activeTeamTable.contestId
+		};
 	}
 }

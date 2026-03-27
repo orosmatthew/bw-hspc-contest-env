@@ -1,28 +1,18 @@
-import { db } from '$lib/server/prisma';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { activeTeamRepo, problemRepo } from '$lib/server/repos';
 
-export const GET = (async ({ params }) => {
+export const GET: RequestHandler = async ({ params }) => {
 	const session = params.session;
-	const activeTeam = await db.activeTeam.findUnique({
-		where: { sessionToken: session },
-		include: { contest: { include: { problems: true } } }
-	});
-	if (!activeTeam) {
-		return json({ success: false });
+	const activeTeam = await activeTeamRepo.getBySessionTokenPublic(session);
+	if (activeTeam === undefined) {
+		return json({ success: false, message: 'Unauthorized' }, { status: 401 });
 	}
+	const problems = await problemRepo.getInContestPublic(activeTeam.contestId);
 	return json({
 		success: true,
 		contestId: activeTeam.contestId,
 		teamId: activeTeam.teamId,
-		problems: activeTeam.contest.problems.map((problem) => {
-			return {
-				id: problem.id,
-				name: problem.friendlyName,
-				pascalName: problem.pascalName,
-				sampleInput: problem.sampleInput,
-				sampleOutput: problem.sampleOutput
-			};
-		})
+		problems
 	});
-}) satisfies RequestHandler;
+};

@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		contest,
 		problems,
 		teams,
-		activeTeamsCount: await activeTeamRepo.getCountInContest(contest.id)
+		activeTeamsCount: await activeTeamRepo.getInContestCount(contest.id)
 	};
 };
 
@@ -62,7 +62,7 @@ export const actions: Actions = {
 			return { success: false, message: 'Contest not found' };
 		}
 		const contestTeams = await teamRepo.getInContestPrivate(contest.id);
-		const activeTeamsCount = await activeTeamRepo.getCountInContest(contest.id);
+		const activeTeamsCount = await activeTeamRepo.getInContestCount(contest.id);
 		if (contestTeams.length === 0) {
 			return { success: false, message: 'Contest has no teams' };
 		}
