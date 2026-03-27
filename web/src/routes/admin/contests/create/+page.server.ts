@@ -5,8 +5,8 @@ import { stringToJsonSchema } from '$lib/common/utils';
 import { createRepos } from '$lib/server/git-repos';
 
 export const load: PageServerLoad = async () => {
-	const teams = await teamRepo.getAll({ forPublic: false });
-	const problems = await problemRepo.getAll({ forPublic: false });
+	const teams = await teamRepo.getAllPrivate();
+	const problems = await problemRepo.getAllPrivate();
 	return { teams, problems };
 };
 

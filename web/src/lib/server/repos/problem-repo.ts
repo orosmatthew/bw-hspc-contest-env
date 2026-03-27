@@ -2,18 +2,21 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { contestProblemTable, problemTable } from '../db/schema';
 
-export type Problem = {
+export type ProblemBase = {
 	id: number;
 	friendlyName: string;
 	pascalName: string;
 	sampleInput: string;
 	sampleOutput: string;
-	realInput?: string;
-	realOutput?: string;
-	inputSpec?: string | null;
 };
 
-export type ProblemGetParams = { forPublic: boolean };
+export type ProblemPublic = ProblemBase;
+
+export type ProblemPrivate = ProblemBase & {
+	realInput: string;
+	realOutput: string;
+	inputSpec: string | null;
+};
 
 export class ProblemRepo {
 	async create(values: {
@@ -45,9 +48,10 @@ export class ProblemRepo {
 		}
 	}
 
-	async getInContest(contestId: number, getParams: ProblemGetParams): Promise<Array<Problem>> {
+	async getInContestPrivate(contestId: number): Promise<Array<ProblemPrivate>> {
 		try {
-			const problems = await this._getBaseSelect(getParams)
+			const problems = await db
+				.select(this._getPrivateFields())
 				.from(problemTable)
 				.innerJoin(contestProblemTable, eq(contestProblemTable.problemId, problemTable.id))
 				.where(eq(contestProblemTable.contestId, contestId))
@@ -59,9 +63,10 @@ export class ProblemRepo {
 		}
 	}
 
-	async getAll(getParams: ProblemGetParams): Promise<Array<Problem>> {
+	async getAllPrivate(): Promise<Array<ProblemPrivate>> {
 		try {
-			const problems = await this._getBaseSelect(getParams)
+			const problems = await db
+				.select(this._getPrivateFields())
 				.from(problemTable)
 				.orderBy(problemTable.friendlyName);
 			return problems;
@@ -71,13 +76,11 @@ export class ProblemRepo {
 		}
 	}
 
-	async getByPascalName(
-		pascalName: string,
-		getParams: ProblemGetParams
-	): Promise<Problem | undefined> {
+	async getByPascalNamePrivate(pascalName: string): Promise<ProblemPrivate | undefined> {
 		try {
 			return (
-				await this._getBaseSelect(getParams)
+				await db
+					.select(this._getPrivateFields())
 					.from(problemTable)
 					.where(eq(problemTable.pascalName, pascalName))
 			).at(0);
@@ -89,27 +92,33 @@ export class ProblemRepo {
 	async updateInputSpec(problemId: number, value: string | null): Promise<boolean> {
 		try {
 			await db.update(problemTable).set({ inputSpec: value }).where(eq(problemTable.id, problemId));
-            return true;
+			return true;
 		} catch (e) {
 			console.error(e);
 			return false;
 		}
 	}
 
-	private _getBaseSelect(getParams: ProblemGetParams) {
-		return db.select({
+	private _getPublicFields() {
+		return {
+			id: problemTable.id,
+			friendlyName: problemTable.friendlyName,
+			pascalName: problemTable.pascalName,
+			sampleInput: problemTable.sampleInput,
+			sampleOutput: problemTable.sampleOutput
+		};
+	}
+
+	private _getPrivateFields() {
+		return {
 			id: problemTable.id,
 			friendlyName: problemTable.friendlyName,
 			pascalName: problemTable.pascalName,
 			sampleInput: problemTable.sampleInput,
 			sampleOutput: problemTable.sampleOutput,
-			...(getParams.forPublic
-				? {}
-				: {
-						realInput: problemTable.realInput,
-						realOutput: problemTable.realOutput,
-						inputSpec: problemTable.inputSpec
-					})
-		});
+			realInput: problemTable.realInput,
+			realOutput: problemTable.realOutput,
+			inputSpec: problemTable.inputSpec
+		};
 	}
 }

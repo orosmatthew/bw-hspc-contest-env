@@ -4,15 +4,18 @@ import { activeTeamTable, contestTeamTable, teamTable } from '../db/schema';
 
 export type TeamLanguage = 'java' | 'csharp' | 'cpp' | 'python';
 
-export type Team = {
+export type TeamBase = {
 	id: number;
 	name: string;
-	password?: string;
 	language: TeamLanguage;
 	hasActiveTeam: boolean;
 };
 
-export type TeamGetParams = { forPublic: boolean };
+export type TeamPublic = TeamBase;
+
+export type TeamPrivate = TeamBase & {
+	password: string;
+};
 
 export class TeamRepo {
 	async create(values: {
@@ -35,9 +38,10 @@ export class TeamRepo {
 		}
 	}
 
-	async getInContest(contestId: number, getParams: TeamGetParams): Promise<Array<Team>> {
+	async getInContestPrivate(contestId: number): Promise<Array<TeamPrivate>> {
 		try {
-			const teams = await this._getBaseSelect(getParams)
+			const teams = await db
+				.select(this._getPrivateFields())
 				.from(teamTable)
 				.innerJoin(contestTeamTable, eq(contestTeamTable.teamId, teamTable.id))
 				.where(eq(contestTeamTable.contestId, contestId))
@@ -49,9 +53,12 @@ export class TeamRepo {
 		}
 	}
 
-	async getAll(getParams: TeamGetParams): Promise<Array<Team>> {
+	async getAllPrivate(): Promise<Array<TeamPrivate>> {
 		try {
-			const teams = await this._getBaseSelect(getParams).from(teamTable).orderBy(teamTable.name);
+			const teams = await db
+				.select(this._getPrivateFields())
+				.from(teamTable)
+				.orderBy(teamTable.name);
 			return teams;
 		} catch (e) {
 			console.error(e);
@@ -59,10 +66,10 @@ export class TeamRepo {
 		}
 	}
 
-	async getByName(name: string, getParams: TeamGetParams): Promise<Team | undefined> {
+	async getByNamePrivate(name: string): Promise<TeamPrivate | undefined> {
 		try {
 			return (
-				await this._getBaseSelect(getParams).from(teamTable).where(eq(teamTable.name, name))
+				await db.select(this._getPrivateFields()).from(teamTable).where(eq(teamTable.name, name))
 			).at(0);
 		} catch (e) {
 			console.error(e);
@@ -75,13 +82,22 @@ export class TeamRepo {
             where ${activeTeamTable.teamId} = ${teamTable.id})`;
 	}
 
-	private _getBaseSelect(getParams: TeamGetParams) {
-		return db.select({
+	private _getPublicFields() {
+		return {
+			id: teamTable.id,
+			name: teamTable.name,
+			language: teamTable.language,
+			hasActiveTeam: this._getHasActiveTeamExpression()
+		};
+	}
+
+	private _getPrivateFields() {
+		return {
 			id: teamTable.id,
 			name: teamTable.name,
 			language: teamTable.language,
 			hasActiveTeam: this._getHasActiveTeamExpression(),
-			...(getParams.forPublic ? {} : { password: teamTable.password })
-		});
+			password: teamTable.password
+		};
 	}
 }

@@ -16,12 +16,12 @@ import {
 	templatePythonProblem
 } from './templates';
 import { problemRepo, teamRepo } from './repos';
-import type { Problem } from './repos/problem-repo';
+import type { ProblemPrivate } from './repos/problem-repo';
 
 type AddProblemsParams = {
 	fs: memfs.IFs;
 	dir: string;
-	problems: Array<Problem>;
+	problems: Array<ProblemPrivate>;
 };
 
 async function addProblemsJava(params: AddProblemsParams) {
@@ -86,8 +86,8 @@ export async function createRepos(params: { contestId: number; teamIds: number[]
 	const vol = new memfs.Volume();
 	const fs = createFsFromVolume(vol);
 
-	const contestTeams = await teamRepo.getInContest(params.contestId, { forPublic: false });
-	const contestProblems = await problemRepo.getInContest(params.contestId, { forPublic: false });
+	const contestTeams = await teamRepo.getInContestPrivate(params.contestId);
+	const contestProblems = await problemRepo.getInContestPrivate(params.contestId);
 
 	contestTeams
 		.filter((t) => params.teamIds.includes(t.id))

@@ -84,7 +84,7 @@ export const actions: Actions = {
 
 		const teamIds: Array<number> = [];
 		for (const team of form.data.jsonText.Teams) {
-			const existing = await teamRepo.getByName(team.TeamName, { forPublic: false });
+			const existing = await teamRepo.getByNamePrivate(team.TeamName);
 			if (existing !== undefined) {
 				teamIds.push(existing.id);
 			} else {
@@ -106,7 +106,7 @@ export const actions: Actions = {
 
 		const problemIds: Array<number> = [];
 		for (const problem of form.data.jsonText.Problems) {
-			const existing = await problemRepo.getByPascalName(problem.ShortName, { forPublic: false });
+			const existing = await problemRepo.getByPascalNamePrivate(problem.ShortName);
 			if (existing !== undefined) {
 				problemIds.push(existing.id);
 			} else {
@@ -137,15 +137,13 @@ export const actions: Actions = {
 			if (contestStart === null) {
 				return fail(500, { message: 'contestStart is unexpectedly null' });
 			}
-			const problem = await problemRepo.getByPascalName(submission.ProblemShortName, {
-				forPublic: false
-			});
+			const problem = await problemRepo.getByPascalNamePrivate(submission.ProblemShortName);
 			if (problem === undefined) {
 				return fail(500, {
 					message: `Problem not found for submission: ${submission.ProblemShortName}`
 				});
 			}
-			const team = await teamRepo.getByName(submission.TeamName, { forPublic: false });
+			const team = await teamRepo.getByNamePrivate(submission.TeamName);
 			if (team === undefined) {
 				return fail(500, { message: `Team not found for submission: ${submission.TeamName}` });
 			}
@@ -181,7 +179,7 @@ export const actions: Actions = {
 			}
 		}
 
-		const contestProblems = await problemRepo.getInContest(contestId, { forPublic: false });
+		const contestProblems = await problemRepo.getInContestPrivate(contestId);
 		for (const problem of contestProblems) {
 			const importedInputSpec = form.data.jsonText.Problems.find(
 				(p) => p.ShortName === problem.pascalName

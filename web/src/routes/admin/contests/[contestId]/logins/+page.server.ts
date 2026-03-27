@@ -12,6 +12,6 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (contest === undefined) {
 		redirect(307, '/admin/contests');
 	}
-	const teams = await teamRepo.getInContest(contest.id, { forPublic: false });
+	const teams = await teamRepo.getInContestPrivate(contest.id);
 	return { teams };
 };

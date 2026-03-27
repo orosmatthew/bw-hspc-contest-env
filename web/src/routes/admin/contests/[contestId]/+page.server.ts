@@ -22,8 +22,8 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (contest === undefined) {
 		redirect(307, '/admin/contests');
 	}
-	const problems = await problemRepo.getInContest(contest.id, { forPublic: false });
-	const teams = await teamRepo.getInContest(contest.id, { forPublic: false });
+	const problems = await problemRepo.getInContestPrivate(contest.id);
+	const teams = await teamRepo.getInContestPrivate(contest.id);
 	return {
 		contest,
 		problems,
@@ -61,7 +61,7 @@ export const actions: Actions = {
 		if (contest === undefined) {
 			return { success: false, message: 'Contest not found' };
 		}
-		const contestTeams = await teamRepo.getInContest(contest.id, { forPublic: false });
+		const contestTeams = await teamRepo.getInContestPrivate(contest.id);
 		const activeTeamsCount = await activeTeamRepo.getCountInContest(contest.id);
 		if (contestTeams.length === 0) {
 			return { success: false, message: 'Contest has no teams' };
