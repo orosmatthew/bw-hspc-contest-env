@@ -67,3 +67,12 @@ export function genTeamPassword(): string {
 	}
 	return password;
 }
+
+export function getBearerToken(headers: Headers): string | undefined {
+	const authHeader = headers.get('Authorization');
+	if (authHeader === null || !authHeader.startsWith('Bearer ')) {
+		return undefined;
+	}
+	const token = authHeader.slice(7);
+	return token;
+}
