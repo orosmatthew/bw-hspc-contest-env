@@ -1,14 +1,15 @@
 <script lang="ts">
-	import type { Problem, Submission } from '@prisma/client';
 	import type { CaseResult } from '../common/output-analyzer/analyzer-types';
 	import { theme } from '../../routes/stores';
 	import {
 		analyzeSubmissionOutput,
 		rehydrateOutputPreview
 	} from '../common/output-analyzer/output-analyzer';
+	import type { ProblemPrivate } from '$lib/server/repos/problem-repo';
+	import type { Submission } from '$lib/server/repos/submission-repo';
 
 	interface Props {
-		problem: Problem;
+		problem: ProblemPrivate;
 		submission: Submission;
 		condensed?: boolean;
 		previousSubmission?: Submission | null;

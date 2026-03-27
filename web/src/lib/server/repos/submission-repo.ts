@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db } from '../db';
 import { submissionTable, teamTable } from '../db/schema';
 
@@ -100,6 +100,23 @@ export class SubmissionRepo {
 				.from(submissionTable)
 				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
 				.where(eq(submissionTable.contestId, contestId))
+				.orderBy(submissionTable.createdAt);
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
+	async getInContestWithState(
+		contestId: number,
+		state: SubmissionState
+	): Promise<Array<Submission>> {
+		try {
+			return await db
+				.select(this._getFields())
+				.from(submissionTable)
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.where(and(eq(submissionTable.contestId, contestId), eq(submissionTable.state, state)))
 				.orderBy(submissionTable.createdAt);
 		} catch (e) {
 			console.error(e);

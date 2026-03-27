@@ -1,9 +1,9 @@
-import { db } from '$lib/server/prisma';
+import { contestRepo, problemRepo, submissionRepo } from '$lib/server/repos';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals }) => {
 	const selectedContestId = locals.selectedContest;
-
 	if (selectedContestId === null) {
 		return {
 			timestamp: new Date(),
@@ -11,20 +11,18 @@ export const load = (async ({ locals }) => {
 			queueList: null
 		};
 	}
-
-	const reviewList = await db.submission.findMany({
-		where: { state: 'InReview', contestId: selectedContestId },
-		include: { contest: true, team: true, problem: true }
-	});
-
-	const queueList = await db.submission.findMany({
-		where: { state: 'Queued', contestId: selectedContestId },
-		include: { contest: true, team: true, problem: true }
-	});
-
+	const contest = await contestRepo.getById(selectedContestId);
+	if (contest === undefined) {
+		error(404, { message: 'Contest not found' });
+	}
+	const reviewList = await submissionRepo.getInContestWithState(selectedContestId, 'in_review');
+	const queueList = await submissionRepo.getInContestWithState(selectedContestId, 'queued');
+	const contestProblems = await problemRepo.getInContestPrivate(selectedContestId);
 	return {
 		timestamp: new Date(),
+		contest,
 		reviewList,
-		queueList
+		queueList,
+		contestProblems
 	};
-}) satisfies PageServerLoad;
+};

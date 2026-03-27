@@ -1,4 +1,5 @@
-import type { Contest, Submission } from '@prisma/client';
+import type { Contest } from '$lib/server/repos/contest-repo';
+import type { Submission } from '$lib/server/repos/submission-repo';
 import z, { json } from 'zod';
 
 export function stretchTextarea(textarea: HTMLTextAreaElement) {

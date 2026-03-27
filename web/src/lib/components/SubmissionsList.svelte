@@ -1,21 +1,31 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import TestCaseResults from '$lib/components/TestCaseResults.svelte';
-	import type { Contest, Problem, Submission, Team } from '@prisma/client';
 	import {
 		minutesBetweenTimestamps,
 		minutesFromContestStart,
 		submissionTimestampHoverText
 	} from '$lib/common/utils';
 	import { SvelteMap } from 'svelte/reactivity';
+	import type { Submission } from '$lib/server/repos/submission-repo';
+	import type { ProblemPrivate } from '$lib/server/repos/problem-repo';
+	import type { Contest } from '$lib/server/repos/contest-repo';
 
 	interface Props {
-		submissions: (Submission & { contest: Contest; team: Team; problem: Problem })[];
+		contest: Contest;
+		submissions: Array<Submission>;
+		contestProblems: Array<ProblemPrivate>;
 		includesAllAttempts?: boolean;
 		sortDirection: 'newest first' | 'oldest first';
 	}
 
-	let { submissions, includesAllAttempts = false, sortDirection }: Props = $props();
+	let {
+		contest,
+		submissions,
+		contestProblems,
+		includesAllAttempts = false,
+		sortDirection
+	}: Props = $props();
 
 	let showOutputColumns = $state(true);
 
@@ -31,7 +41,7 @@
 	}
 
 	$effect(() => {
-		showOutputColumns = submissions.some((s) => s.state !== 'Queued');
+		showOutputColumns = submissions.some((s) => s.state !== 'queued');
 
 		submissions.sort(
 			(s1, s2) =>
@@ -88,18 +98,17 @@
 		</thead>
 		<tbody>
 			{#each submissions as submission (submission.id)}
+				{@const problem = contestProblems.find((p) => p.id === submission.problemId)}
 				<tr
 					class="submissionRow"
 					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`)}
 				>
 					<td>
-						{#if submission.team.name}
-							{submission.team.name}<br />
-						{/if}
+						{submission.teamName}<br />
 					</td>
 					<td>
-						{#if submission.problem}
-							{submission.problem.friendlyName}
+						{#if problem !== undefined}
+							{problem.friendlyName}
 						{/if}
 					</td>
 					{#if includesAllAttempts}
@@ -108,29 +117,31 @@
 						</td>
 					{/if}
 					<td>
-						{#if submission.state === 'Queued'}
+						{#if submission.state === 'queued'}
 							<span class="badge bg-secondary">Queued</span>
-						{:else if submission.state === 'InReview'}
+						{:else if submission.state === 'in_review'}
 							<span class="badge bg-warning">In Review</span>
-						{:else if submission.state === 'Correct'}
+						{:else if submission.state === 'correct'}
 							<span class="badge bg-success">Correct</span>
-						{:else if submission.state === 'Incorrect'}
+						{:else if submission.state === 'incorrect'}
 							<span class="badge bg-danger">Incorrect</span>
 						{/if}
 
-						{#if submission.stateReason === 'BuildError'}
+						{#if submission.stateReason === 'build_error'}
 							<span class="badge bg-danger opacity-50">Build Error</span>
-						{:else if submission.stateReason === 'TimeLimitExceeded'}
+						{:else if submission.stateReason === 'time_limit_exceeded'}
 							<span class="badge bg-danger opacity-50">Time Limit Exceeded</span>
-						{:else if submission.stateReason === 'IncorrectOverriddenAsCorrect'}
+						{:else if submission.stateReason === 'incorrect_overridden_as_correct'}
 							<span class="badge bg-success opacity-50">Manually Graded</span>
 						{/if}
 					</td>
 					{#if showOutputColumns}
 						<td>
-							{#key submission.testCaseResults}
-								<TestCaseResults problem={submission.problem} {submission} condensed={true} />
-							{/key}
+							{#if problem !== undefined}
+								{#key submission.testCaseResults}
+									<TestCaseResults {problem} {submission} condensed={true} />
+								{/key}
+							{/if}
 						</td>
 						<td>
 							{submission.runtimeMilliseconds !== null
@@ -139,14 +150,14 @@
 						</td>
 					{/if}
 					<td>
-						<span title={submissionTimestampHoverText(submission.contest, submission)}>
-							{Math.ceil(minutesFromContestStart(submission.contest, submission.createdAt))} min
+						<span title={submissionTimestampHoverText(contest, submission)}>
+							{Math.ceil(minutesFromContestStart(contest, submission.createdAt))} min
 						</span>
 					</td>
 					<td>
 						{#if submission.gradedAt}
-							+{Math.ceil(minutesFromContestStart(submission.contest, submission.gradedAt)) -
-								Math.ceil(minutesFromContestStart(submission.contest, submission.createdAt))} min
+							+{Math.ceil(minutesFromContestStart(contest, submission.gradedAt)) -
+								Math.ceil(minutesFromContestStart(contest, submission.createdAt))} min
 						{:else}
 							{@const minutesSinceSubmit = minutesBetweenTimestamps(
 								submission.createdAt,
