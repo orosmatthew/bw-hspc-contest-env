@@ -41,8 +41,10 @@
 
 <h1 style="text-align:center" class="mb-4"><i class="bi bi-envelope-paper"></i> Submissions</h1>
 
-{#if data.submissions !== null}
+{#if data.contest !== undefined}
 	<SubmissionsList
+		contest={data.contest}
+		contestProblems={data.contestProblems}
 		submissions={data.submissions}
 		includesAllAttempts={true}
 		sortDirection="newest first"
