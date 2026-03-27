@@ -192,7 +192,7 @@
 </script>
 
 <svelte:head>
-	<title>Submission: {data.teamName} - {data.problemName}</title>
+	<title>Submission: {data.team.name} - {data.problem.friendlyName}</title>
 </svelte:head>
 
 <ConfirmModal bind:this={confirmModal} />
@@ -201,12 +201,12 @@
 	<i class="bi bi-envelope-paper"></i> Submission History
 </h3>
 <h4 style="text-align:center" class="mb-4">
-	Team: <span style="font-family: monospace">{data.teamName}</span> | Problem:
-	<span style="font-family: monospace">{data.problemName}</span>
+	Team: <span style="font-family: monospace">{data.team.name}</span> | Problem:
+	<span style="font-family: monospace">{data.problem.friendlyName}</span>
 </h4>
 
 {#if form && !form.success}
-	<div class="alert alert-danger">Error: {form.error}</div>
+	<div class="alert alert-danger">Error: {form.message}</div>
 {/if}
 
 <div class="row">
@@ -315,34 +315,34 @@
 			{#each data.submissionHistory as submission, i (submission.id)}
 				<tr
 					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`, { noScroll: true })}
-					class="{submission.id === data.id
+					class="{submission.id === data.submission.id
 						? 'specifiedSubmission'
-						: 'otherSubmission'} {submission.state === 'InReview' ? 'inReview' : ''}"
+						: 'otherSubmission'} {submission.state === 'in_review' ? 'inReview' : ''}"
 				>
 					<td><span>#{i + 1}</span></td>
 					<td>
-						{#if submission.state === 'Queued'}
+						{#if submission.state === 'queued'}
 							<span class="badge bg-secondary">Queued</span>
-						{:else if submission.state === 'InReview'}
+						{:else if submission.state === 'in_review'}
 							<span class="badge bg-warning">In Review</span>
-						{:else if submission.state === 'Correct'}
+						{:else if submission.state === 'correct'}
 							<span class="badge bg-success">Correct</span>
-						{:else if submission.state === 'Incorrect'}
+						{:else if submission.state === 'incorrect'}
 							<span class="badge bg-danger">Incorrect</span>
 						{/if}
 
-						{#if submission.stateReason === 'BuildError'}
+						{#if submission.stateReason === 'build_error'}
 							<span class="badge bg-danger opacity-50">Build Error</span>
-						{:else if submission.stateReason === 'TimeLimitExceeded'}
+						{:else if submission.stateReason === 'time_limit_exceeded'}
 							<span class="badge bg-danger opacity-50">Time Limit Exceeded</span>
-						{:else if submission.stateReason === 'IncorrectOverriddenAsCorrect'}
+						{:else if submission.stateReason === 'incorrect_overridden_as_correct'}
 							<span class="badge bg-success opacity-50">Manually Graded</span>
 						{/if}
 					</td>
 					<td>
 						<TestCaseResults
 							{submission}
-							problem={data.submission.problem}
+							problem={data.problem}
 							previousSubmission={i > 0 ? data.submissionHistory[i - 1] : null}
 						/>
 					</td>
@@ -373,7 +373,7 @@
 	</table>
 </div>
 
-{#if data.state === 'InReview'}
+{#if data.submission.state === 'in_review'}
 	<div
 		class="gradingArea mb-3 col-md-auto {correct === null
 			? ''
@@ -447,10 +447,10 @@
 	</div>
 {/if}
 
-{#if data.state === 'Incorrect' && (data.stateReason === 'BuildError' || data.stateReason === 'TimeLimitExceeded' || data.stateReason === 'SandboxError')}
-	<h3 style="text-align:center">{data.stateReason}</h3>
+{#if data.submission.state === 'incorrect' && (data.submission.stateReason === 'build_error' || data.submission.stateReason === 'time_limit_exceeded' || data.submission.stateReason === 'sandbox_error')}
+	<h3 style="text-align:center">{data.submission.stateReason}</h3>
 	<textarea use:stretchTextarea class="code mb-3 form-control" disabled
-		>{data.stateReasonDetails}</textarea
+		>{data.submission.stateReasonDetails}</textarea
 	>
 {/if}
 
@@ -459,12 +459,12 @@
 	Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) + 1} Details
 </h3>
 
-{#key data.id}
+{#key data.submission}
 	<SubmissionCodeAndOutput
-		problem={data.submission.problem}
-		output={data.output}
-		expectedOutput={data.expectedOutput}
-		diff={data.diff}
+		problem={data.problem}
+		output={data.submission.actualOutput}
+		expectedOutput={data.problem.realOutput}
+		diff={data.submission.diff}
 		sourceFiles={data.sourceFiles}
 	/>
 {/key}

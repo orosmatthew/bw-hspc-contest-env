@@ -38,6 +38,20 @@ export class TeamRepo {
 		}
 	}
 
+	async getByIdPrivate(id: number): Promise<TeamPrivate | undefined> {
+		try {
+			return (
+				await db
+					.select(this._getPrivateFields())
+					.from(teamTable)
+					.innerJoin(contestTeamTable, eq(contestTeamTable.teamId, teamTable.id))
+					.where(eq(teamTable.id, id))
+			).at(0);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
 	async getInContestPrivate(contestId: number): Promise<Array<TeamPrivate>> {
 		try {
 			const teams = await db

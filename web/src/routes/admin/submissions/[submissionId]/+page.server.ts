@@ -1,147 +1,140 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { db } from '$lib/server/prisma';
+import z from 'zod';
+import {
+	contestRepo,
+	problemRepo,
+	submissionRepo,
+	submissionSourceFileRepo,
+	teamRepo
+} from '$lib/server/repos';
+import type { SubmissionStateReason } from '$lib/server/repos/submission-repo';
 
-export const load = (async ({ params }) => {
-	const submissionId = parseInt(params.submissionId);
-	if (isNaN(submissionId)) {
-		return error(400, 'Invalid submission');
+export const load: PageServerLoad = async ({ params }) => {
+	const submissionIdParse = z.coerce.number().safeParse(params.submissionId);
+	if (!submissionIdParse.success) {
+		error(400, { message: 'Invalid submission id' });
 	}
-	const submission = await db.submission.findUnique({
-		where: { id: submissionId },
-		include: { sourceFiles: true, problem: true, contest: true }
-	});
-	if (!submission) {
-		return redirect(302, '/admin/submissions');
+	const submission = await submissionRepo.getById(submissionIdParse.data);
+	if (submission === undefined) {
+		redirect(307, '/admin/submissions');
 	}
-	const team = await db.team.findUnique({ where: { id: submission.teamId } });
-	if (!team) {
-		return error(500, 'Invalid team');
+	const contest = await contestRepo.getById(submission.contestId);
+	if (contest === undefined) {
+		error(500, { message: 'Invalid contest' });
 	}
-	const problem = await db.problem.findUnique({ where: { id: submission.problemId } });
-	if (!problem) {
-		return error(500, 'Invalid problem');
+	const team = await teamRepo.getByIdPrivate(submission.teamId);
+	if (team === undefined) {
+		error(500, { message: 'Invalid team' });
 	}
-
-	const submissionHistory = await db.submission.findMany({
-		where: {
-			contestId: submission.contestId,
-			problemId: submission.problemId,
-			teamId: submission.teamId
-		},
-		orderBy: {
-			createdAt: 'asc'
-		}
-	});
-
+	const problem = await problemRepo.getByIdPrivate(submission.problemId);
+	if (problem === undefined) {
+		error(500, { message: 'Invalid problem' });
+	}
+	const sourceFiles = await submissionSourceFileRepo.getForSubmission(submission.id);
+	const submissionHistory = await submissionRepo.getInContestForTeamForProblem(
+		submission.contestId,
+		submission.teamId,
+		submission.problemId
+	);
 	return {
-		id: submission.id,
-		state: submission.state,
-		stateReason: submission.stateReason,
-		stateReasonDetails: submission.stateReasonDetails,
-		teamName: team.name,
-		expectedOutput: problem.realOutput,
-		problemName: problem.friendlyName,
-		submitTime: submission.createdAt,
-		gradedTime: submission.gradedAt,
-		message: submission.message,
-		diff: submission.diff,
-		output: submission.actualOutput,
-		sourceFiles: submission.sourceFiles,
-		submission: submission,
-		contest: submission.contest,
+		submission,
+		contest,
+		team,
+		problem,
+		sourceFiles,
 		submissionHistory
 	};
-}) satisfies PageServerLoad;
+};
 
-export const actions = {
+const submitGradeSchema = z.object({
+	correct: z.string().transform((v) => (v.toLowerCase() === 'true' ? true : false)),
+	message: z
+		.string()
+		.nullable()
+		.transform((v) => v ?? '')
+});
+
+export const actions: Actions = {
 	delete: async ({ params }) => {
-		const submissionId = parseInt(params.submissionId);
-		try {
-			await db.submission.delete({ where: { id: submissionId }, include: { sourceFiles: true } });
-		} catch (error) {
-			return { success: false, error: error?.toString() ?? '' };
+		const submissionIdParse = z.coerce.number().int().safeParse(params.submissionId);
+		if (!submissionIdParse.success) {
+			return { success: false, message: 'Invalid submission id' };
 		}
-		redirect(302, '/admin/submissions');
+		const deleteSuccess = await submissionRepo.deleteById(submissionIdParse.data);
+		if (deleteSuccess !== true) {
+			return { success: false, message: 'Unable to delete submission' };
+		}
+		redirect(303, '/admin/submissions');
 	},
 	clearJudgment: async ({ params }) => {
-		const submissionId = parseInt(params.submissionId);
-		try {
-			const submission = await db.submission.findUnique({
-				where: { id: submissionId }
-			});
-
-			if (!submission) {
-				return { success: false, error: 'submission not found' };
-			}
-
-			const newStateReason =
-				submission.stateReason === 'IncorrectOverriddenAsCorrect' ? null : submission.stateReason;
-
-			await db.submission.update({
-				where: { id: submissionId },
-				data: {
-					state: 'InReview',
-					gradedAt: null,
-					message: null,
-					stateReason: newStateReason
-				}
-			});
-		} catch (error) {
-			return { success: false, error: error?.toString() ?? '' };
+		const submissionIdParse = z.coerce.number().int().safeParse(params.submissionId);
+		if (!submissionIdParse.success) {
+			return { success: false, message: 'Invalid submission id' };
 		}
-		redirect(302, `/admin/submissions/${submissionId}`);
+		const submission = await submissionRepo.getById(submissionIdParse.data);
+		if (submission === undefined) {
+			return { success: false, message: 'Submission not found' };
+		}
+		const newStateReason: SubmissionStateReason | null =
+			submission.stateReason === 'incorrect_overridden_as_correct' ? null : submission.stateReason;
+		const updateSuccess = await submissionRepo.update(submission.id, {
+			state: 'in_review',
+			gradedAt: null,
+			message: null,
+			stateReason: newStateReason
+		});
+		if (updateSuccess !== true) {
+			return { success: false, message: 'Unable to update submission' };
+		}
+		redirect(303, `/admin/submissions/${submission.id}`);
 	},
 	rerun: async ({ params }) => {
-		const submissionId = parseInt(params.submissionId);
-		try {
-			await db.submission.update({
-				where: { id: submissionId },
-				data: {
-					state: 'Queued',
-					stateReason: null,
-					stateReasonDetails: null,
-					gradedAt: null,
-					message: null,
-					actualOutput: null,
-					diff: null,
-					exitCode: null,
-					runtimeMilliseconds: null,
-					testCaseResults: null,
-					sourceFiles: {
-						deleteMany: {
-							submissionId: submissionId
-						}
-					}
-				}
-			});
-		} catch (error) {
-			return { success: false, error: error?.toString() ?? '' };
+		const submissionIdParse = z.coerce.number().int().safeParse(params.submissionId);
+		if (!submissionIdParse.success) {
+			return { success: false, message: 'Invalid submission id' };
 		}
-		redirect(302, `/admin/submissions/${submissionId}`);
+		const sourceFilesDeleteSuccess = await submissionSourceFileRepo.deleteForSubmission(
+			submissionIdParse.data
+		);
+		if (sourceFilesDeleteSuccess !== true) {
+			return { success: false, message: 'Unable to delete submission source files' };
+		}
+		const updateSuccess = await submissionRepo.update(submissionIdParse.data, {
+			state: 'queued',
+			stateReason: null,
+			stateReasonDetails: null,
+			gradedAt: null,
+			message: null,
+			actualOutput: null,
+			diff: null,
+			exitCode: null,
+			runtimeMilliseconds: null,
+			testCaseResults: null
+		});
+		if (updateSuccess !== true) {
+			return { success: false, message: 'Unable to update submission' };
+		}
+		redirect(303, `/admin/submissions/${submissionIdParse.data}`);
 	},
 	submitGrade: async ({ request, params }) => {
-		const submissionId = parseInt(params.submissionId);
-		if (isNaN(submissionId)) {
-			return { success: false };
+		const submissionIdParse = z.coerce.number().int().safeParse(params.submissionId);
+		if (!submissionIdParse.success) {
+			return { success: false, message: 'Invalid submission id' };
 		}
-		const data = await request.formData();
-		const correct = data.get('correct');
-		const message = data.get('message');
-		if (correct === null) {
-			return { success: false };
+		const form = submitGradeSchema.safeParse(Object.fromEntries(await request.formData()));
+		if (!form.success) {
+			return { success: false, message: 'Invalid form data' };
 		}
-		const correctBool = correct.toString().toLowerCase() === 'true';
-		const gradedTime = new Date();
-		await db.submission.update({
-			where: { id: submissionId },
-			data: {
-				state: correctBool ? 'Correct' : 'Incorrect',
-				stateReason: correctBool ? 'IncorrectOverriddenAsCorrect' : null,
-				message: message !== null ? message.toString() : '',
-				gradedAt: gradedTime
-			}
+		const updateSuccess = await submissionRepo.update(submissionIdParse.data, {
+			state: form.data.correct ? 'correct' : 'incorrect',
+			stateReason: form.data.correct ? 'incorrect_overridden_as_correct' : null,
+			message: form.data.message,
+			gradedAt: new Date()
 		});
+		if (updateSuccess !== true) {
+			return { success: false, message: 'Unable to update submission' };
+		}
 		return { success: true };
 	}
-} satisfies Actions;
+};
