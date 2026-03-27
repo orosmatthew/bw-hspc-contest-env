@@ -187,9 +187,9 @@ function compareSingleCaseOutput(
 export function autoJudgeResponse(
 	judgeOutput: string,
 	teamOutput: string
-): 'Correct' | 'NeedsReview' {
+): 'correct' | 'needsReview' {
 	const judgeLines = trimmedNonemptyLines(judgeOutput);
 	const teamLines = trimmedNonemptyLines(teamOutput);
 
-	return judgeLines.join(newline) === teamLines.join(newline) ? 'Correct' : 'NeedsReview';
+	return judgeLines.join(newline) === teamLines.join(newline) ? 'correct' : 'needsReview';
 }

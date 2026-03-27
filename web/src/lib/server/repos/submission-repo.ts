@@ -107,6 +107,22 @@ export class SubmissionRepo {
 		}
 	}
 
+	async getLatestQueued(): Promise<Submission | undefined> {
+		try {
+			return (
+				await db
+					.select(this._getFields())
+					.from(submissionTable)
+					.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
+					.where(eq(submissionTable.state, 'queued'))
+					.orderBy(submissionTable.createdAt)
+					.limit(1)
+			).at(0);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
 	async getInContest(contestId: number): Promise<Array<Submission>> {
 		try {
 			return await db

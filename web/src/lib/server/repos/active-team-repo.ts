@@ -30,11 +30,11 @@ export class ActiveTeamRepo {
 		}
 	}
 
-	async getBySessionTokenPublic(sessionToken: string): Promise<ActiveTeamPublic | undefined> {
+	async getBySessionTokenPrivate(sessionToken: string): Promise<ActiveTeamPrivate | undefined> {
 		try {
 			return (
 				await db
-					.select(this._getFieldsPublic())
+					.select(this._getFieldsPrivate())
 					.from(activeTeamTable)
 					.where(eq(activeTeamTable.sessionToken, sessionToken))
 			).at(0);

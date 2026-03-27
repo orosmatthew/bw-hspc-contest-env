@@ -1,8 +1,8 @@
 {
 	"name": "bwcontest-shared",
 	"scripts": {
-		"build": "rimraf --glob dist/**/* && tsc",
-		"watch": "rimraf --glob dist/**/* && tsc --watch",
+		"build": "rimraf --glob dist/* && tsc",
+		"watch": "rimraf --glob dist/* && tsc --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"check": "tsc -noEmit",
