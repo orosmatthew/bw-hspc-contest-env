@@ -40,7 +40,7 @@
 {/if}
 
 <div class="text-end">
-	{#if data.frozen}
+	{#if data.isFrozen}
 		<span class="badge bg-info">Frozen</span>
 	{/if}
 	{#if updating}
