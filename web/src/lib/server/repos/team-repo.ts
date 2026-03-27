@@ -53,6 +53,21 @@ export class TeamRepo {
 		}
 	}
 
+	async getInContestPublic(contestId: number): Promise<Array<TeamPublic>> {
+		try {
+			const teams = await db
+				.select(this._getPublicFields())
+				.from(teamTable)
+				.innerJoin(contestTeamTable, eq(contestTeamTable.teamId, teamTable.id))
+				.where(eq(contestTeamTable.contestId, contestId))
+				.orderBy(teamTable.name);
+			return teams;
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
 	async getAllPrivate(): Promise<Array<TeamPrivate>> {
 		try {
 			const teams = await db

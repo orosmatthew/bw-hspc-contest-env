@@ -1,32 +1,30 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/prisma';
 import { scoreboardData } from '$lib/server/scoreboard-data';
+import z from 'zod';
+import { contestRepo } from '$lib/server/repos';
 
 type ScoreboardExportSchema = {
-	problems: string[];
-	teams: {
+	problems: Array<string>;
+	teams: Array<{
 		correct: number;
 		name: string;
 		points: number;
-		problems: {
+		problems: Array<{
 			attempts: number | null;
 			time: number | null;
-		}[];
-	}[];
+		}>;
+	}>;
 };
 
 export const GET = (async ({ params }) => {
-	const contestId = parseInt(params.contestId);
-	if (isNaN(contestId)) {
-		throw error(400, 'Invalid contest id');
+	const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+	if (!contestIdParse.success) {
+		error(400, { message: 'Invalid contest id' });
 	}
-	const contest = await db.contest.findUnique({
-		where: { id: contestId },
-		include: { problems: true, teams: { include: { submissions: true } } }
-	});
-	if (contest === null) {
-		throw error(304, 'Contest not found');
+	const contest = await contestRepo.getById(contestIdParse.data);
+	if (contest === undefined) {
+		error(404, 'Contest not found');
 	}
 	const data = scoreboardData(contest);
 	const problems = data.contest.problems.map((p) => p.friendlyName);

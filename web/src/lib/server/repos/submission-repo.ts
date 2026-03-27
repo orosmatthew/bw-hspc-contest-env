@@ -124,6 +124,54 @@ export class SubmissionRepo {
 		}
 	}
 
+	async getInContestForTeamWithState(
+		contestId: number,
+		teamId: number,
+		state: SubmissionState
+	): Promise<Array<Submission>> {
+		try {
+			return await db
+				.select(this._getFields())
+				.from(submissionTable)
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.where(
+					and(
+						eq(submissionTable.contestId, contestId),
+						eq(submissionTable.teamId, teamId),
+						eq(submissionTable.state, state)
+					)
+				)
+				.orderBy(submissionTable.createdAt);
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
+	async getInContestForTeamForProblem(
+		contestId: number,
+		teamId: number,
+		problemId: number
+	): Promise<Array<Submission>> {
+		try {
+			return await db
+				.select(this._getFields())
+				.from(submissionTable)
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.where(
+					and(
+						eq(submissionTable.contestId, contestId),
+						eq(submissionTable.teamId, teamId),
+						eq(submissionTable.problemId, problemId)
+					)
+				)
+				.orderBy(submissionTable.createdAt);
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
 	async updateTestCaseResults(id: number, value: string | null): Promise<boolean> {
 		try {
 			await db

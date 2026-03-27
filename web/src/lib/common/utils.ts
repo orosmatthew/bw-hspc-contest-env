@@ -1,3 +1,4 @@
+import { building } from '$app/environment';
 import type { Contest } from '$lib/server/repos/contest-repo';
 import type { Submission } from '$lib/server/repos/submission-repo';
 import z, { json } from 'zod';
@@ -50,3 +51,10 @@ export const checkboxSchema = z
 	.string()
 	.optional()
 	.transform((value) => value === 'on');
+
+export function initRuntimeOnly<T>(factory: () => T): T {
+	if (building) {
+		return undefined as T;
+	}
+	return factory();
+}

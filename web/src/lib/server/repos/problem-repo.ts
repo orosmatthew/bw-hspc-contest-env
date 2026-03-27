@@ -74,6 +74,21 @@ export class ProblemRepo {
 		}
 	}
 
+	async getInContestPublic(contestId: number): Promise<Array<ProblemPublic>> {
+		try {
+			const problems = await db
+				.select(this._getPublicFields())
+				.from(problemTable)
+				.innerJoin(contestProblemTable, eq(contestProblemTable.problemId, problemTable.id))
+				.where(eq(contestProblemTable.contestId, contestId))
+				.orderBy(problemTable.friendlyName);
+			return problems;
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
 	async getAllPrivate(): Promise<Array<ProblemPrivate>> {
 		try {
 			const problems = await db
