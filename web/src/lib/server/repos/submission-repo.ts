@@ -178,6 +178,20 @@ export class SubmissionRepo {
 		}
 	}
 
+	async getInContestForTeam(contestId: number, teamId: number): Promise<Array<Submission>> {
+		try {
+			return await db
+				.select(this._getFields())
+				.from(submissionTable)
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.where(and(eq(submissionTable.contestId, contestId), eq(submissionTable.teamId, teamId)))
+				.orderBy(submissionTable.createdAt);
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
 	async getInContestForTeamForProblem(
 		contestId: number,
 		teamId: number,

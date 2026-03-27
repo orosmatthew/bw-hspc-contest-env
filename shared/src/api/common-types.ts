@@ -80,3 +80,13 @@ export const submissionDtoSchema = z.object({
 });
 export type SubmissionDto = z.infer<typeof submissionDtoSchema>;
 
+export const teamLanguageDtoSchema = z.enum(['java', 'csharp', 'cpp', 'python']);
+export type TeamLanguageDto = z.infer<typeof teamLanguageDtoSchema>;
+
+export const teamPublicDtoSchema = z.object({
+	id: z.number().int(),
+	name: z.string(),
+	language: teamLanguageDtoSchema,
+	hasActiveTeam: z.boolean()
+});
+export type TeamPublicDto = z.infer<typeof teamPublicDtoSchema>;

@@ -58,7 +58,11 @@
 
 <Modal title="Reset Repos" bind:this={repoModal}>
 	<form action="?/repo" method="POST" use:enhance>
-		<input type="hidden" name="teamIds" value={JSON.stringify(Array.from(selectedResetRepoTeamIds))} />
+		<input
+			type="hidden"
+			name="teamIds"
+			value={JSON.stringify(Array.from(selectedResetRepoTeamIds))}
+		/>
 		<div class="modal-body">
 			<div class="d-flex flex-row gap-2 pb-2">
 				<button onclick={repoSelectNone} type="button" class="btn btn-sm btn-outline-secondary"

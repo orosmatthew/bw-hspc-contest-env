@@ -43,6 +43,20 @@ export class ActiveTeamRepo {
 		}
 	}
 
+	async getForTeamPrivate(teamId: number): Promise<ActiveTeamPrivate | undefined> {
+		try {
+			return (
+				await db
+					.select(this._getFieldsPrivate())
+					.from(activeTeamTable)
+					.where(eq(activeTeamTable.teamId, teamId))
+					.limit(1)
+			).at(0);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
 	async getInContestCount(contestId: number): Promise<number> {
 		try {
 			const result = (
@@ -55,6 +69,22 @@ export class ActiveTeamRepo {
 		} catch (e) {
 			console.error(e);
 			return 0;
+		}
+	}
+
+	async update(
+		id: number,
+		values: { sessionToken?: string | null; sessionCreatedAt?: Date | null }
+	): Promise<boolean> {
+		try {
+			await db
+				.update(activeTeamTable)
+				.set({ sessionToken: values.sessionToken, sessionCreatedAt: values.sessionCreatedAt })
+				.where(eq(activeTeamTable.id, id));
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
 		}
 	}
 
