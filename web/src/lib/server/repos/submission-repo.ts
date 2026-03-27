@@ -2,23 +2,42 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { submissionTable } from '../db/schema';
 
-export const stateReasonValues = [
+export const submissionStateReasonValues = [
 	'build_error',
 	'time_limit_exceeded',
 	'incorrect_overridden_as_correct',
 	'sandbox_error'
 ] as const;
-export type StateReason = (typeof stateReasonValues)[number];
+export type SubmissionStateReason = (typeof submissionStateReasonValues)[number];
 
 export const submissionStateValues = ['queued', 'in_review', 'correct', 'incorrect'] as const;
 export type SubmissionState = (typeof submissionStateValues)[number];
+
+export type Submission = {
+	id: number;
+	createdAt: Date;
+	gradedAt: Date | null;
+	state: SubmissionState;
+	stateReason: SubmissionStateReason | null;
+	stateReasonDetails: string | null;
+	actualOutput: string | null;
+	testCaseResults: string | null;
+	exitCode: number | null;
+	runtimeMilliseconds: number | null;
+	commitHash: string;
+	diff: string | null;
+	message: string | null;
+	teamId: number;
+	problemId: number;
+	contestId: number;
+};
 
 export class SubmissionRepo {
 	async create(values: {
 		createdAt: Date;
 		gradedAt: Date | null;
 		state: SubmissionState;
-		stateReason: StateReason | null;
+		stateReason: SubmissionStateReason | null;
 		stateReasonDetails: string | null;
 		actualOutput: string | null;
 		testCaseResults: string | null;
@@ -56,6 +75,49 @@ export class SubmissionRepo {
 			).at(0)?.id;
 		} catch (e) {
 			console.error(e);
+		}
+	}
+
+	async getInContest(contestId: number): Promise<Array<Submission>> {
+		try {
+			return await db
+				.select({
+					id: submissionTable.id,
+					createdAt: submissionTable.createdAt,
+					gradedAt: submissionTable.gradedAt,
+					state: submissionTable.state,
+					stateReason: submissionTable.stateReason,
+					stateReasonDetails: submissionTable.stateReasonDetails,
+					actualOutput: submissionTable.actualOutput,
+					testCaseResults: submissionTable.testCaseResults,
+					exitCode: submissionTable.exitCode,
+					runtimeMilliseconds: submissionTable.runtimeMilliseconds,
+					commitHash: submissionTable.commitHash,
+					diff: submissionTable.diff,
+					message: submissionTable.message,
+					teamId: submissionTable.teamId,
+					problemId: submissionTable.problemId,
+					contestId: submissionTable.contestId
+				})
+				.from(submissionTable)
+				.where(eq(submissionTable.contestId, contestId))
+				.orderBy(submissionTable.createdAt);
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
+	async updateTestCaseResults(id: number, value: string | null): Promise<boolean> {
+		try {
+			await db
+				.update(submissionTable)
+				.set({ testCaseResults: value })
+				.where(eq(submissionTable.id, id));
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
 		}
 	}
 

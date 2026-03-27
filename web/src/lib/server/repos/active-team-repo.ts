@@ -13,7 +13,6 @@ export type ActiveTeam = {
 export class ActiveTeamRepo {
 	async createMany(values: Array<{ teamId: number; contestId: number }>): Promise<boolean> {
 		try {
-			// TODO: idk if this actually works
 			db.transaction((tx) => {
 				for (const entry of values) {
 					tx.insert(activeTeamTable).values({ teamId: entry.teamId, contestId: entry.contestId });

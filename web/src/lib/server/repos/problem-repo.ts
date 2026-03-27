@@ -48,6 +48,17 @@ export class ProblemRepo {
 		}
 	}
 
+	async getByIdPrivate(id: number): Promise<ProblemPrivate | undefined> {
+		try {
+			const problem = (
+				await db.select(this._getPrivateFields()).from(problemTable).where(eq(problemTable.id, id))
+			).at(0);
+			return problem;
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
 	async getInContestPrivate(contestId: number): Promise<Array<ProblemPrivate>> {
 		try {
 			const problems = await db

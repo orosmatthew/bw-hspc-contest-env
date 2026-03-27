@@ -7,6 +7,7 @@ import z from 'zod';
 import { checkboxSchema, stringToJsonSchema } from '$lib/common/utils';
 import { createRepos } from '$lib/server/git-repos';
 import {
+	activeTeamRepo,
 	contestRepo,
 	problemRepo,
 	submissionRepo,
@@ -190,52 +191,38 @@ export const actions: Actions = {
 		}
 
 		if (form.data.includeSubmissions) {
-			const insertedSubmissions = await db.submission.findMany({
-				where: { contestId: contest.id },
-				include: { problem: true }
-			});
+			const insertedSubmissions = await submissionRepo.getInContest(contestId);
 			for (const insertedSubmission of insertedSubmissions) {
 				if (insertedSubmission.actualOutput === null) {
 					continue;
 				}
-
+				const problem = await problemRepo.getByIdPrivate(insertedSubmission.problemId);
+				if (problem === undefined) {
+					continue;
+				}
 				const testCaseResultString =
-					analyzeSubmissionOutput(insertedSubmission.problem, insertedSubmission.actualOutput)
-						?.databaseString ?? 'Unknown';
-				await db.submission.update({
-					where: { id: insertedSubmission.id },
-					data: { testCaseResults: testCaseResultString }
-				});
+					analyzeSubmissionOutput(problem, insertedSubmission.actualOutput)?.databaseString ??
+					'Unknown';
+				await submissionRepo.updateTestCaseResults(insertedSubmission.id, testCaseResultString);
 			}
 		}
 
 		if (form.data.createReposAndKeepContestRunning) {
-			const fullContest = await db.contest.findUnique({
-				where: { id: contest.id },
-				include: { teams: { include: { activeTeam: true } } }
-			});
-
+			const contest = await contestRepo.getById(contestId);
 			if (
-				fullContest &&
+				contest !== undefined &&
 				form.data.jsonText.Problems.length > 0 &&
 				form.data.jsonText.Teams.length > 0
 			) {
-				if (!fullContest.startTime) {
-					await db.contest.update({
-						where: { id: fullContest.id },
-						data: {
-							startTime: new Date()
-						}
-					});
+				if (contest.startTime !== null) {
+					await contestRepo.updateStartTime(contest.id, new Date());
 				}
-
-				fullContest.teams.forEach(async (team) => {
-					await db.activeTeam.create({ data: { teamId: team.id, contestId: contest.id } });
-				});
-
-				await createRepos({ contestId: contest.id, teamIds: fullContest.teams.map((t) => t.id) });
+				const teams = await teamRepo.getInContestPrivate(contest.id);
+				await activeTeamRepo.createMany(
+					teams.map((t) => ({ contestId: contest.id, teamId: t.id }))
+				);
+				await createRepos({ contestId: contest.id, teamIds: teams.map((t) => t.id) });
 			}
-
 			return redirect(303, '/admin/contests');
 		}
 	}
