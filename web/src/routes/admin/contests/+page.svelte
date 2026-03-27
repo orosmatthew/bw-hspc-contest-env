@@ -38,10 +38,10 @@
 					<td>{contest.id}</td>
 					<td>{contest.name}</td>
 					<td>
-						{#if contest.activeTeams === 0}
-							<span class="badge bg-secondary">Inactive</span>
-						{:else}
+						{#if contest.isActive}
 							<span class="badge bg-success">Active</span>
+						{:else}
+							<span class="badge bg-secondary">Inactive</span>
 						{/if}
 					</td>
 					<td

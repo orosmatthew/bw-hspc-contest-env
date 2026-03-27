@@ -1,11 +1,7 @@
-import { db } from '$lib/server/prisma';
+import { contestRepo } from '$lib/server/repos';
 import type { PageServerLoad } from './$types';
 
 export const load = (async () => {
-	const contests = await db.contest.findMany({ include: { activeTeams: true } });
-	return {
-		contests: contests.map((contest) => {
-			return { id: contest.id, name: contest.name, activeTeams: contest.activeTeams.length };
-		})
-	};
+	const contests = await contestRepo.getAll();
+	return { contests };
 }) satisfies PageServerLoad;

@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 import { db } from '../db';
-import { contestProblemTable, contestTable, contestTeamTable } from '../db/schema';
+import { activeTeamTable, contestProblemTable, contestTable, contestTeamTable } from '../db/schema';
 
 export type Contest = {
 	id: number;
@@ -8,6 +8,8 @@ export type Contest = {
 	startTime: Date | null;
 	freezeTime: Date | null;
 	isFrozen: boolean;
+	activeTeamsCount: number;
+	isActive: boolean;
 };
 
 export class ContestRepo {
@@ -34,15 +36,21 @@ export class ContestRepo {
 
 	async getById(id: number): Promise<Contest | undefined> {
 		try {
+			const activeTeamsCountSubquery = this._getActiveTeamsCountSubquery();
 			const contest = (
 				await db
 					.select({
 						id: contestTable.id,
 						name: contestTable.name,
 						startTime: contestTable.startTime,
-						freezeTime: contestTable.freezeTime
+						freezeTime: contestTable.freezeTime,
+						activeTeamsCount: activeTeamsCountSubquery.activeTeamsCount
 					})
 					.from(contestTable)
+					.innerJoin(
+						activeTeamsCountSubquery,
+						eq(activeTeamsCountSubquery.contestId, contestTable.id)
+					)
 					.where(eq(contestTable.id, id))
 			).at(0);
 			if (contest === undefined) {
@@ -50,10 +58,39 @@ export class ContestRepo {
 			}
 			return {
 				...contest,
-				isFrozen: this._calcIsFrozen(contest.freezeTime)
+				isFrozen: this._calcIsFrozen(contest.freezeTime),
+				isActive: contest.activeTeamsCount > 0
 			};
 		} catch (e) {
 			console.error(e);
+		}
+	}
+
+	async getAll(): Promise<Array<Contest>> {
+		try {
+			const activeTeamsCountSubquery = this._getActiveTeamsCountSubquery();
+			const contests = await db
+				.select({
+					id: contestTable.id,
+					name: contestTable.name,
+					startTime: contestTable.startTime,
+					freezeTime: contestTable.freezeTime,
+					activeTeamsCount: activeTeamsCountSubquery.activeTeamsCount
+				})
+				.from(contestTable)
+				.innerJoin(
+					activeTeamsCountSubquery,
+					eq(activeTeamsCountSubquery.contestId, contestTable.id)
+				)
+				.orderBy(contestTable.name);
+			return contests.map((c) => ({
+				...c,
+				isFrozen: this._calcIsFrozen(c.freezeTime),
+				isActive: c.activeTeamsCount > 0
+			}));
+		} catch (e) {
+			console.error(e);
+			return [];
 		}
 	}
 
@@ -122,5 +159,14 @@ export class ContestRepo {
 
 	private _calcIsFrozen(freezeTime: Date | null) {
 		return freezeTime === null ? false : new Date() >= freezeTime;
+	}
+
+	private _getActiveTeamsCountSubquery() {
+		return db
+			.select({ contestId: contestTable.id, activeTeamsCount: count(activeTeamTable.id) })
+			.from(contestTable)
+			.leftJoin(activeTeamTable, eq(activeTeamTable.contestId, contestTable.id))
+			.groupBy(contestTable.id)
+			.as('active_teams_count_subquery');
 	}
 }
