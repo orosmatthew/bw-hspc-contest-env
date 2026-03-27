@@ -110,6 +110,27 @@ export class ProblemRepo {
 		}
 	}
 
+	async updateInputOutputs(
+		id: number,
+		values: { sampleInput?: string; sampleOutput?: string; realInput?: string; realOutput?: string }
+	): Promise<boolean> {
+		try {
+			await db
+				.update(problemTable)
+				.set({
+					sampleInput: values.sampleInput,
+					sampleOutput: values.sampleOutput,
+					realInput: values.realInput,
+					realOutput: values.realOutput
+				})
+				.where(eq(problemTable.id, id));
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
+		}
+	}
+
 	private _getPublicFields() {
 		return {
 			id: problemTable.id,

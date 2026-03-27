@@ -16,8 +16,11 @@
 <h1 style="text-align:center" class="mb-1"><i class="bi"></i>All Annotated Outputs</h1>
 
 {#each data.submissions as submission (submission.id)}
-	<h2>{submission.team.name} : {submission.problem.friendlyName}</h2>
-	<div>
-		<AnnotatedOutput problem={submission.problem} output={submission.actualOutput} />
-	</div>
+	{@const problem = data.problems.find((p) => p.id === submission.problemId)}
+	{#if problem !== undefined}
+		<h2>{submission.teamName} : {problem.friendlyName}</h2>
+		<div>
+			<AnnotatedOutput {problem} output={submission.actualOutput} />
+		</div>
+	{/if}
 {/each}

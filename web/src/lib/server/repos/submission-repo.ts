@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
-import { submissionTable } from '../db/schema';
+import { submissionTable, teamTable } from '../db/schema';
 
 export const submissionStateReasonValues = [
 	'build_error',
@@ -30,6 +30,8 @@ export type Submission = {
 	teamId: number;
 	problemId: number;
 	contestId: number;
+
+	teamName: string;
 };
 
 export class SubmissionRepo {
@@ -78,28 +80,25 @@ export class SubmissionRepo {
 		}
 	}
 
+	async getAll(): Promise<Array<Submission>> {
+		try {
+			return await db
+				.select(this._getFields())
+				.from(submissionTable)
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
+				.orderBy(submissionTable.createdAt);
+		} catch (e) {
+			console.error(e);
+			return [];
+		}
+	}
+
 	async getInContest(contestId: number): Promise<Array<Submission>> {
 		try {
 			return await db
-				.select({
-					id: submissionTable.id,
-					createdAt: submissionTable.createdAt,
-					gradedAt: submissionTable.gradedAt,
-					state: submissionTable.state,
-					stateReason: submissionTable.stateReason,
-					stateReasonDetails: submissionTable.stateReasonDetails,
-					actualOutput: submissionTable.actualOutput,
-					testCaseResults: submissionTable.testCaseResults,
-					exitCode: submissionTable.exitCode,
-					runtimeMilliseconds: submissionTable.runtimeMilliseconds,
-					commitHash: submissionTable.commitHash,
-					diff: submissionTable.diff,
-					message: submissionTable.message,
-					teamId: submissionTable.teamId,
-					problemId: submissionTable.problemId,
-					contestId: submissionTable.contestId
-				})
+				.select(this._getFields())
 				.from(submissionTable)
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
 				.where(eq(submissionTable.contestId, contestId))
 				.orderBy(submissionTable.createdAt);
 		} catch (e) {
@@ -129,5 +128,27 @@ export class SubmissionRepo {
 			console.error(e);
 			return false;
 		}
+	}
+
+	private _getFields() {
+		return {
+			id: submissionTable.id,
+			createdAt: submissionTable.createdAt,
+			gradedAt: submissionTable.gradedAt,
+			state: submissionTable.state,
+			stateReason: submissionTable.stateReason,
+			stateReasonDetails: submissionTable.stateReasonDetails,
+			actualOutput: submissionTable.actualOutput,
+			testCaseResults: submissionTable.testCaseResults,
+			exitCode: submissionTable.exitCode,
+			runtimeMilliseconds: submissionTable.runtimeMilliseconds,
+			commitHash: submissionTable.commitHash,
+			diff: submissionTable.diff,
+			message: submissionTable.message,
+			teamId: submissionTable.teamId,
+			problemId: submissionTable.problemId,
+			contestId: submissionTable.contestId,
+			teamName: teamTable.name
+		};
 	}
 }

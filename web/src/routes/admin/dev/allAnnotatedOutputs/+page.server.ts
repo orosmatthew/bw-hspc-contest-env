@@ -1,9 +1,8 @@
-import { db } from '$lib/server/prisma';
+import { problemRepo, submissionRepo } from '$lib/server/repos';
 import type { PageServerLoad } from './$types';
 
-export const load = (async () => {
-	const submissions = await db.submission.findMany({ include: { problem: true, team: true } });
-	return {
-		submissions
-	};
-}) satisfies PageServerLoad;
+export const load: PageServerLoad = async () => {
+	const submissions = await submissionRepo.getAll();
+	const problems = await problemRepo.getAllPrivate();
+	return { submissions, problems };
+};

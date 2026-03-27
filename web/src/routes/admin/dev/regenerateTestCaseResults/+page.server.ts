@@ -1,18 +1,19 @@
-import { db } from '$lib/server/prisma';
-import type { Contest, Problem, Submission, Team } from '@prisma/client';
 import type { PageServerLoad } from './$types';
 import type { Actions } from '@sveltejs/kit';
 import { analyzeSubmissionOutput } from '$lib/common/output-analyzer/output-analyzer';
 import { numInputCases } from '$lib/common/output-analyzer/input-analyzer';
+import { contestRepo, problemRepo, submissionRepo, teamRepo } from '$lib/server/repos';
+import type { Submission } from '$lib/server/repos/submission-repo';
+import type { Contest } from '$lib/server/repos/contest-repo';
+import type { TeamPrivate } from '$lib/server/repos/team-repo';
+import type { ProblemPrivate } from '$lib/server/repos/problem-repo';
 
-export const load = (async () => {
-	const submissions = await db.submission.findMany({ include: { problem: true, team: true } });
-	return {
-		submissions
-	};
-}) satisfies PageServerLoad;
+export const load: PageServerLoad = async () => {
+	const submissions = await submissionRepo.getAll();
+	return { submissions };
+};
 
-export const actions = {
+export const actions: Actions = {
 	regenerateMissing: async () => {
 		const report: string[] = [];
 		let problemCount = 0;
@@ -25,11 +26,20 @@ export const actions = {
 		};
 
 		try {
-			const submissions = await db.submission.findMany({
-				where: { actualOutput: { not: null }, testCaseResults: null },
-				include: { problem: true, team: true, contest: true }
+			const submissions = (await submissionRepo.getAll()).filter(
+				(s) => s.actualOutput !== null && s.testCaseResults !== null
+			);
+			const contests = await contestRepo.getAll();
+			const teams = await teamRepo.getAllPrivate();
+			const problems = await problemRepo.getAllPrivate();
+			await regenerateTestCaseResultsForSubmissions({
+				contests,
+				submissions,
+				teams,
+				problems,
+				log,
+				logProblem
 			});
-			await regenerateTestCaseResultsForSubmissions(submissions, log, logProblem);
 			return {
 				success: true,
 				reportJson: JSON.stringify(report),
@@ -57,11 +67,18 @@ export const actions = {
 		};
 
 		try {
-			const submissions = await db.submission.findMany({
-				where: { actualOutput: { not: null } },
-				include: { problem: true, team: true, contest: true }
+			const submissions = (await submissionRepo.getAll()).filter((s) => s.actualOutput !== null);
+			const contests = await contestRepo.getAll();
+			const teams = await teamRepo.getAllPrivate();
+			const problems = await problemRepo.getAllPrivate();
+			await regenerateTestCaseResultsForSubmissions({
+				submissions,
+				contests,
+				teams,
+				problems,
+				log,
+				logProblem
 			});
-			await regenerateTestCaseResultsForSubmissions(submissions, log, logProblem);
 			return {
 				success: true,
 				reportJson: JSON.stringify(report),
@@ -77,40 +94,51 @@ export const actions = {
 			};
 		}
 	}
-} satisfies Actions;
+};
 
-async function regenerateTestCaseResultsForSubmissions(
-	submissions: (Submission & { problem: Problem; contest: Contest; team: Team })[],
-	log: (text: string) => void,
-	logProblem: (text: string) => void
-) {
-	for (const submission of submissions) {
-		if (submission.actualOutput === null) {
+async function regenerateTestCaseResultsForSubmissions(params: {
+	contests: Array<Contest>;
+	teams: Array<TeamPrivate>;
+	submissions: Array<Submission>;
+	problems: Array<ProblemPrivate>;
+	log: (text: string) => void;
+	logProblem: (text: string) => void;
+}) {
+	for (const submission of params.submissions) {
+		const contest = params.contests.find((c) => c.id === submission.contestId);
+		const team = params.teams.find((t) => t.id === submission.teamId);
+		const problem = params.problems.find((p) => p.id === submission.problemId);
+		if (
+			submission.actualOutput === null ||
+			contest === undefined ||
+			team === undefined ||
+			problem === undefined
+		) {
 			continue;
 		}
 
-		log(`Analyzing submission #${submission.id}`);
-		log(`  Contest: ${submission.contest.name}`);
-		log(`  Team: ${submission.team.name}`);
-		log(`  Problem: ${submission.problem.friendlyName}`);
+		params.log(`Analyzing submission #${submission.id}`);
+		params.log(`  Contest: ${contest.name}`);
+		params.log(`  Team: ${team.name}`);
+		params.log(`  Problem: ${problem.friendlyName}`);
 
-		const analyzedOutput = analyzeSubmissionOutput(submission.problem, submission.actualOutput);
+		const analyzedOutput = analyzeSubmissionOutput(problem, submission.actualOutput);
 
-		log(`  Resulting DB String: ${analyzedOutput?.databaseString ?? 'Unknown'}`);
+		params.log(`  Resulting DB String: ${analyzedOutput?.databaseString ?? 'Unknown'}`);
 
-		const testCasesExpected = numInputCases(submission.problem.realInput);
+		const testCasesExpected = numInputCases(problem.realInput);
 		const testCasesReported = analyzedOutput?.testCaseResults.length ?? 'Unknown';
 
-		log(`  Test Cases Expected: ${testCasesExpected}`);
-		log(`  Test Cases Included: ${testCasesReported}`);
+		params.log(`  Test Cases Expected: ${testCasesExpected}`);
+		params.log(`  Test Cases Included: ${testCasesReported}`);
 
 		if (testCasesExpected !== testCasesReported) {
-			logProblem(`    ERROR: Test case count mismatch!`);
+			params.logProblem(`    ERROR: Test case count mismatch!`);
 		}
 
-		await db.submission.update({
-			where: { id: submission.id },
-			data: { testCaseResults: analyzedOutput?.databaseString ?? 'Unknown' }
-		});
+		await submissionRepo.updateTestCaseResults(
+			submission.id,
+			analyzedOutput?.databaseString ?? 'Unknown'
+		);
 	}
 }

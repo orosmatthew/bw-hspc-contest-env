@@ -1,28 +1,24 @@
 import { normalizeNewlines } from '$lib/common/output-analyzer/analyzer-utils';
-import { db } from '$lib/server/prisma';
+import { problemRepo } from '$lib/server/repos';
 import type { PageServerLoad } from './$types';
 
-export const load = (async () => {
-	const problems = await db.problem.findMany();
+export const load: PageServerLoad = async () => {
+	const problems = await problemRepo.getAllPrivate();
 	return { problems };
-}) satisfies PageServerLoad;
+};
 
 export const actions = {
 	fixProblemNewlines: async () => {
 		try {
-			const problems = await db.problem.findMany();
+			const problems = await problemRepo.getAllPrivate();
 			for (const problem of problems) {
-				await db.problem.update({
-					where: { id: problem.id },
-					data: {
-						sampleInput: normalizeNewlines(problem.sampleInput),
-						sampleOutput: normalizeNewlines(problem.sampleOutput),
-						realInput: normalizeNewlines(problem.realInput),
-						realOutput: normalizeNewlines(problem.realOutput)
-					}
+				await problemRepo.updateInputOutputs(problem.id, {
+					sampleInput: normalizeNewlines(problem.sampleInput),
+					sampleOutput: normalizeNewlines(problem.sampleOutput),
+					realInput: normalizeNewlines(problem.realInput),
+					realOutput: normalizeNewlines(problem.realOutput)
 				});
 			}
-
 			return { success: true };
 		} catch (err) {
 			return { success: false, errorMessage: err?.toString() ?? 'error' };
