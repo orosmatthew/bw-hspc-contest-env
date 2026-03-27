@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import Modal from '$lib/components/Modal.svelte';
 	import InputSpecDescription from './InputSpecDescription.svelte';
+	import { parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
 
 	interface Props {
 		data: PageData;
@@ -48,12 +49,13 @@
 		</thead>
 		<tbody>
 			{#each data.problems as problem (problem.id)}
+				{@const parsedInput = parseProblemInput(problem)}
 				<tr>
 					<td>{problem.id}</td>
 					<td>{problem.friendlyName}</td>
 					<td>
 						{#if problem.inputSpec !== null}
-							{problem.parsedInput.success ? '✅' : '❌'}
+							{parsedInput.success ? '✅' : '❌'}
 							<span class="inputSpec">{problem.inputSpec}</span>
 						{:else}
 							<span class="inputSpecMissing">none</span>

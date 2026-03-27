@@ -36,20 +36,20 @@
 
 	let confirmModal: ConfirmModal | undefined = $state();
 
-	const parsedInput = $derived(parseProblemInput(data.problemData));
+	const parsedInput = $derived(parseProblemInput(data.problem));
 	const inputSpecStatus = $derived(
 		parsedInput.success ? '✅ Input Spec matches Real Input' : `❌ ${parsedInput.errorMessage}`
 	);
 </script>
 
 <svelte:head>
-	<title>Problem - {data.problemData.friendlyName}</title>
+	<title>Problem - {data.problem.friendlyName}</title>
 </svelte:head>
 
 <ConfirmModal bind:this={confirmModal} />
 
 <h1 style="text-align:center" class="mb-1">
-	<i class="bi bi-question-circle"></i> Problem - {data.problemData.friendlyName}
+	<i class="bi bi-question-circle"></i> Problem - {data.problem.friendlyName}
 </h1>
 
 {#if error}
@@ -87,16 +87,16 @@
 		<h4 style="text-align:center" class="mt-3">Name</h4>
 		<div class="col-md-auto">
 			<textarea
-				name="name"
+				name="friendlyName"
 				style="height:auto"
 				class="form-control"
 				disabled={!editing}
-				use:stretchTextarea>{data.problemData.friendlyName}</textarea
+				use:stretchTextarea>{data.problem.friendlyName}</textarea
 			>
 			<h4 style="text-align:center" class="mt-3">PascalCase Name (for filenames)</h4>
 			<div class="col-md-auto">
 				<input
-					value={data.problemData.pascalName}
+					value={data.problem.pascalName}
 					disabled={!editing}
 					name="pascalName"
 					class="form-control"
@@ -105,7 +105,7 @@
 			<h4 style="text-align:center" class="mt-3">Input Spec (optional)</h4>
 			<div class="col-md-auto">
 				<input
-					value={data.problemData.inputSpec}
+					value={data.problem.inputSpec}
 					disabled={!editing}
 					name="inputSpec"
 					class="form-control"
@@ -125,7 +125,7 @@
 				style="height:auto"
 				class="form-control"
 				disabled={!editing}
-				use:stretchTextarea>{data.problemData.sampleInput}</textarea
+				use:stretchTextarea>{data.problem.sampleInput}</textarea
 			>
 		</div>
 		<div class="col-6">
@@ -135,7 +135,7 @@
 				style="height:auto"
 				class="form-control"
 				disabled={!editing}
-				use:stretchTextarea>{data.problemData.sampleOutput}</textarea
+				use:stretchTextarea>{data.problem.sampleOutput}</textarea
 			>
 		</div>
 	</div>
@@ -149,7 +149,7 @@
 				style="height:auto"
 				class="form-control"
 				disabled={!editing}
-				use:stretchTextarea>{data.problemData.realInput}</textarea
+				use:stretchTextarea>{data.problem.realInput}</textarea
 			>
 		</div>
 		<div class="col-6">
@@ -159,7 +159,7 @@
 				style="height:auto"
 				class="form-control"
 				disabled={!editing}
-				use:stretchTextarea>{data.problemData.realOutput}</textarea
+				use:stretchTextarea>{data.problem.realOutput}</textarea
 			>
 		</div>
 	</div>

@@ -1,17 +1,7 @@
-import { parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
-import { db } from '$lib/server/prisma';
+import { problemRepo } from '$lib/server/repos';
 import type { PageServerLoad } from './$types';
 
-export const load = (async () => {
-	const query = await db.problem.findMany({ orderBy: { friendlyName: 'asc' } });
-	return {
-		problems: query.map((row) => {
-			return {
-				id: row.id,
-				friendlyName: row.friendlyName,
-				inputSpec: row.inputSpec,
-				parsedInput: parseProblemInput(row)
-			};
-		})
-	};
-}) satisfies PageServerLoad;
+export const load: PageServerLoad = async () => {
+	const problems = await problemRepo.getAllPrivate();
+	return { problems };
+};

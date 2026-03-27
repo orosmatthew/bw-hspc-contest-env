@@ -186,7 +186,7 @@ export const actions: Actions = {
 				(p) => p.ShortName === problem.pascalName
 			)?.InputSpec;
 			if (importedInputSpec !== undefined) {
-				await problemRepo.updateInputSpec(problem.id, importedInputSpec);
+				await problemRepo.update(problem.id, { inputSpec: importedInputSpec });
 			}
 		}
 

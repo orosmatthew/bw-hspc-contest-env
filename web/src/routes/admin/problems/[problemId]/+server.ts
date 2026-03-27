@@ -1,16 +1,16 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/prisma';
+import z from 'zod';
+import { problemRepo } from '$lib/server/repos';
 
-export const DELETE = (async ({ params }) => {
-	const problemId = parseInt(params.problemId);
-	if (isNaN(problemId)) {
-		error(400, 'Invalid problem');
+export const DELETE: RequestHandler = async ({ params }) => {
+	const problemIdParse = z.coerce.number().int().safeParse(params.problemId);
+	if (!problemIdParse.success) {
+		error(400, { message: 'Invalid problem id' });
 	}
-	try {
-		await db.problem.delete({ where: { id: problemId } });
-	} catch {
+	const deleteSuccess = await problemRepo.delete(problemIdParse.data);
+	if (!deleteSuccess) {
 		return json({ success: false });
 	}
 	return json({ success: true });
-}) satisfies RequestHandler;
+};

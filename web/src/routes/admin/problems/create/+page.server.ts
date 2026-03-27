@@ -1,41 +1,34 @@
-import { db } from '$lib/server/prisma';
+import z from 'zod';
 import type { Actions } from './$types';
+import { problemRepo } from '$lib/server/repos';
 
-export const actions = {
+const createSchema = z.object({
+	friendlyName: z.string().min(1),
+	pascalName: z.string().min(1),
+	sampleInput: z.string(),
+	sampleOutput: z.string(),
+	realInput: z.string(),
+	realOutput: z.string()
+});
+
+export const actions: Actions = {
 	create: async ({ request }) => {
-		const data = await request.formData();
-		const name = data.get('name');
-		const pascalName = data.get('pascalName');
-		const sampleInput = data.get('sampleInput');
-		const sampleOutput = data.get('sampleOutput');
-		const realInput = data.get('realInput');
-		const realOutput = data.get('realOutput');
-		if (
-			name === null ||
-			pascalName === null ||
-			sampleInput === null ||
-			sampleOutput === null ||
-			realInput === null ||
-			realOutput === null
-		) {
-			return { success: false };
+		const form = createSchema.safeParse(Object.fromEntries(await request.formData()));
+		if (!form.success) {
+			return { success: false, message: 'Invalid form data' };
 		}
-
-		try {
-			await db.problem.create({
-				data: {
-					pascalName: pascalName.toString(),
-					friendlyName: name.toString(),
-					sampleInput: sampleInput.toString(),
-					sampleOutput: sampleOutput.toString(),
-					realInput: realInput.toString(),
-					realOutput: realOutput.toString()
-				}
-			});
-		} catch {
-			return { success: false };
+		const id = await problemRepo.create({
+			friendlyName: form.data.friendlyName,
+			pascalName: form.data.pascalName,
+			sampleInput: form.data.sampleInput,
+			sampleOutput: form.data.sampleOutput,
+			realInput: form.data.realInput,
+			realOutput: form.data.realOutput,
+			inputSpec: null
+		});
+		if (id === undefined) {
+			return { success: false, message: 'Unable to create problem' };
 		}
-
 		return { success: true };
 	}
-} satisfies Actions;
+};

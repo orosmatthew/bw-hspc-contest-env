@@ -36,7 +36,7 @@
 	<div class="row justify-content-center">
 		<h4 style="text-align:center" class="mt-3">Name</h4>
 		<div class="col-md-auto">
-			<textarea name="name" class="form-control"></textarea>
+			<textarea name="friendlyName" class="form-control"></textarea>
 		</div>
 		<h4 style="text-align:center" class="mt-3">PascalCase Name (for filenames)</h4>
 		<div class="col-md-auto">

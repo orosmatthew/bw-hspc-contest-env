@@ -100,9 +100,31 @@ export class ProblemRepo {
 		}
 	}
 
-	async updateInputSpec(problemId: number, value: string | null): Promise<boolean> {
+	async update(
+		id: number,
+		values: {
+			friendlyName?: string;
+			pascalName?: string;
+			sampleInput?: string;
+			sampleOutput?: string;
+			realInput?: string;
+			realOutput?: string;
+			inputSpec?: string | null;
+		}
+	): Promise<boolean> {
 		try {
-			await db.update(problemTable).set({ inputSpec: value }).where(eq(problemTable.id, problemId));
+			await db
+				.update(problemTable)
+				.set({
+					friendlyName: values.friendlyName,
+					pascalName: values.pascalName,
+					sampleInput: values.sampleInput,
+					sampleOutput: values.sampleOutput,
+					realInput: values.realInput,
+					realOutput: values.realOutput,
+					inputSpec: values.inputSpec
+				})
+				.where(eq(problemTable.id, id));
 			return true;
 		} catch (e) {
 			console.error(e);
@@ -110,20 +132,9 @@ export class ProblemRepo {
 		}
 	}
 
-	async updateInputOutputs(
-		id: number,
-		values: { sampleInput?: string; sampleOutput?: string; realInput?: string; realOutput?: string }
-	): Promise<boolean> {
+	async delete(id: number): Promise<boolean> {
 		try {
-			await db
-				.update(problemTable)
-				.set({
-					sampleInput: values.sampleInput,
-					sampleOutput: values.sampleOutput,
-					realInput: values.realInput,
-					realOutput: values.realOutput
-				})
-				.where(eq(problemTable.id, id));
+			await db.delete(problemTable).where(eq(problemTable.id, id));
 			return true;
 		} catch (e) {
 			console.error(e);
