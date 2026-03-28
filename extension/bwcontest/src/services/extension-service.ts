@@ -88,7 +88,7 @@ export class ExtensionService {
 
 	deactivate() {
 		outputPanelLog.info('BWContest Extension Deactivated');
-        ProblemPanelProvider.kill();
+		ProblemPanelProvider.kill();
 		stopTeamStatusPolling();
 		clearCachedRepoState();
 	}

@@ -56,6 +56,6 @@ export default defineConfig(
 		}
 	},
 	{
-		ignores: ['dist/', 'media/', '.vscode-test/']
+		ignores: ['dist/', 'media/', '.vscode-test/', './eslint.config.mjs', './rollup.config.mjs']
 	}
 );
