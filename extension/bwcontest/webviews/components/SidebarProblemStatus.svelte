@@ -26,7 +26,7 @@
 </script>
 
 <script lang="ts">
-	import type { SidebarProblemWithSubmissions } from '../../src/SidebarProvider';
+	import type { SidebarProblemWithSubmissions } from '../../src/providers/sidebar-provider';
 	import type {
 		ContestStateForExtension,
 		SubmissionForExtension,

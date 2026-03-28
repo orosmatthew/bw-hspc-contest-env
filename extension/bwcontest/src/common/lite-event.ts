@@ -1,14 +1,12 @@
 // Modified from JasonKleban @ https://gist.github.com/JasonKleban/50cee44960c225ac1993c922563aa540
 
-export { ILiteEvent, LiteEvent };
-
-interface ILiteEvent<T> {
+export interface ILiteEvent<T> {
 	add(handler: { (data?: T): void }): void;
 	remove(handler: { (data?: T): void }): void;
 }
 
-class LiteEvent<T> implements ILiteEvent<T> {
-	protected handlers: { (data?: T): void }[] = [];
+export class LiteEvent<T> implements ILiteEvent<T> {
+	protected handlers: Array<{ (data?: T): void }> = [];
 
 	public add(handler: { (data?: T): void }): void {
 		this.handlers.push(handler);
@@ -17,7 +15,7 @@ class LiteEvent<T> implements ILiteEvent<T> {
 	public remove(handler: { (data?: T): void }): boolean {
 		const countBefore = this.handlers.length;
 		this.handlers = this.handlers.filter((h) => h !== handler);
-		return countBefore != this.handlers.length;
+		return countBefore !== this.handlers.length;
 	}
 
 	public trigger(data?: T) {

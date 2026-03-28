@@ -11,7 +11,7 @@
 		WebviewMessageType,
 		MessageType,
 		SidebarTeamStatus
-	} from '../../src/SidebarProvider';
+	} from '../../src/providers/sidebar-provider';
 	import type { RepoState } from '../../src/teamRepoManager';
 
 	let teamname: string = $state('');

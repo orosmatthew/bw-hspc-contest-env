@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import urlJoin from 'url-join';
 import { join } from 'path';
-import { getNonce } from '../common/utils';
 import { outputPanelLog } from '../common/output-panel-log';
 import { TeamData } from '../types';
-import { extensionService, submitService } from '../services';
+import { extensionService, globalStateService, submitService } from '../services';
 import { runJava } from 'bwcontest-shared/submission-runner/java';
 import { runCSharp } from 'bwcontest-shared/submission-runner/csharp';
 import { runCpp } from 'bwcontest-shared/submission-runner/cpp';
 import { runPython } from 'bwcontest-shared/submission-runner/python';
 import { RunnerResult, RunResult } from 'bwcontest-shared/submission-runner/common';
+import { createHtmlForWebview } from '../common/utils';
 
 export type ProblemData = Array<{
 	id: number;
@@ -64,7 +64,11 @@ export class ProblemPanelProvider {
 		this._webUrl = params.webUrl;
 
 		this._setupWebviewMessageListener();
-		this._panel.webview.html = this._getHtmlForWebview();
+		this._panel.webview.html = createHtmlForWebview({
+			webview: this._panel.webview,
+			extensionUri: this._extensionUri,
+			entryName: 'problem-panel'
+		});
 		this._panel.onDidDispose(() => this._dispose());
 	}
 
@@ -104,8 +108,8 @@ export class ProblemPanelProvider {
 	}
 
 	private _getContestContext(problemId?: number): ContestContext {
-		const token = this._context.globalState.get<string>('token');
-		const teamData = this._context.globalState.get<TeamData>('teamData');
+		const token = globalStateService.getToken();
+		const teamData = globalStateService.getTeamData();
 		const problem =
 			problemId !== undefined ? this._problemData?.find((p) => p.id === problemId) : undefined;
 
@@ -138,9 +142,9 @@ export class ProblemPanelProvider {
 
 		const submitResult = await submitService.submitProblem({
 			token,
-			contestId: teamData.contestId,
+			contestId: teamData.contest.id,
 			problemId,
-			teamId: teamData.teamId
+			teamId: teamData.team.id
 		});
 		if (!submitResult.success) {
 			vscode.window.showErrorMessage(`Web error submitting '${problem.name}'`);
@@ -165,8 +169,8 @@ export class ProblemPanelProvider {
 		const teamBasePath = join(
 			repoDir,
 			'BWContest',
-			teamData.contestId.toString(),
-			teamData.teamId.toString()
+			teamData.contest.id.toString(),
+			teamData.team.id.toString()
 		);
 		const studentCodeRootForProblem = join(teamBasePath, problem.pascalName);
 		const outputCallback = (data: string) => {
@@ -175,8 +179,8 @@ export class ProblemPanelProvider {
 		};
 		let runResponse: RunnerResult | undefined;
 		try {
-			switch (teamData.language) {
-				case 'Java':
+			switch (teamData.team.language) {
+				case 'java':
 					runResponse = await runJava({
 						input,
 						studentCodeRootForProblem,
@@ -186,7 +190,7 @@ export class ProblemPanelProvider {
 						outputCallback
 					});
 					break;
-				case 'CSharp':
+				case 'csharp':
 					runResponse = await runCSharp({
 						input,
 						studentCodeRootForProblem,
@@ -194,7 +198,7 @@ export class ProblemPanelProvider {
 						outputCallback
 					});
 					break;
-				case 'CPP':
+				case 'cpp':
 					runResponse = await runCpp({
 						input,
 						studentCodeRootForProblem,
@@ -204,7 +208,7 @@ export class ProblemPanelProvider {
 						outputCallback
 					});
 					break;
-				case 'Python':
+				case 'python':
 					runResponse = await runPython({
 						input,
 						studentCodeRootForProblem,
@@ -214,7 +218,7 @@ export class ProblemPanelProvider {
 					});
 					break;
 				default:
-					throw new Error(`Unsupported language: ${teamData.language}`);
+					throw new Error(`Unsupported language: ${teamData.team.language}`);
 			}
 
 			if (!runResponse.success) {
@@ -279,7 +283,7 @@ export class ProblemPanelProvider {
 	}
 
 	private async _handleRequestProblemData(): Promise<void> {
-		const token: string | undefined = this._context.globalState.get('token');
+		const token = globalStateService.getToken();
 		if (token !== undefined) {
 			const res = await fetch(urlJoin(this._webUrl, `/api/contest/${token}`));
 			const data = await res.json();
@@ -310,42 +314,5 @@ export class ProblemPanelProvider {
 					break;
 			}
 		});
-	}
-
-	private _getHtmlForWebview(): string {
-		const webview = this._panel.webview;
-		const scriptUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'dist/webviews', 'problemPanel.js')
-		);
-		const stylesResetUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css')
-		);
-		const stylesMainUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css')
-		);
-		const cssUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'dist/webviews', 'problemPanel.css')
-		);
-
-		const nonce = getNonce();
-
-		return `<!DOCTYPE html>
-			<html lang="en">
-				<head>
-					<meta charset="UTF-8">
-					<meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
-						<meta name="viewport" content="width=device-width, initial-scale=1.0">
-						<link href="${stylesResetUri}" rel="stylesheet">
-						<link href="${stylesMainUri}" rel="stylesheet">
-						<link href="${cssUri}" rel="stylesheet">
-						<script nonce="${nonce}">
-							const vscode = acquireVsCodeApi();
-						</script>
-				</head>
-				<body>
-				</body>
-				<script src="${scriptUri}" nonce="${nonce}">
-				</script>
-			</html>`;
 	}
 }

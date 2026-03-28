@@ -12,16 +12,10 @@ import {
 } from 'bwcontest-shared/types/api/client';
 import urlJoin from 'url-join';
 import z from 'zod';
-import { extensionService } from '.';
+import { extensionService, globalStateService } from '.';
 import { outputPanelLog } from '../common/output-panel-log';
 
 export class ApiClient {
-	private _token: string | undefined;
-
-	setToken(token: string | undefined): void {
-		this._token = token;
-	}
-
 	async login(req: PostLoginReq): Promise<PostLoginRes> {
 		try {
 			const res = await fetch(urlJoin(this._getBaseUrl(), '/api/client/login'), {
@@ -38,12 +32,13 @@ export class ApiClient {
 
 	async logout(): Promise<PostLogoutRes> {
 		try {
-			if (this._token === undefined) {
+			const token = globalStateService.getToken();
+			if (token === undefined) {
 				throw new Error('Token is undefined');
 			}
 			const res = await fetch(urlJoin(this._getBaseUrl(), '/api/client/logout'), {
 				method: 'POST',
-				headers: { Authorization: `Bearer ${this._token}` }
+				headers: { Authorization: `Bearer ${token}` }
 			});
 			return await this._processResponse(res, postLogoutResSchema);
 		} catch (e) {
@@ -54,12 +49,13 @@ export class ApiClient {
 
 	async getData(): Promise<GetDataRes> {
 		try {
-			if (this._token === undefined) {
+			const token = globalStateService.getToken();
+			if (token === undefined) {
 				throw new Error('Token is undefined');
 			}
 			const res = await fetch(urlJoin(this._getBaseUrl(), '/api/client/data'), {
 				method: 'GET',
-				headers: { Authorization: `Bearer ${this._token}` }
+				headers: { Authorization: `Bearer ${token}` }
 			});
 			return await this._processResponse(res, getDataResSchema);
 		} catch (e) {
@@ -70,12 +66,13 @@ export class ApiClient {
 
 	async postSubmission(req: PostSubmissionReq): Promise<PostSubmissionRes> {
 		try {
-			if (this._token === undefined) {
+			const token = globalStateService.getToken();
+			if (token === undefined) {
 				throw new Error('Token is undefined');
 			}
 			const res = await fetch(urlJoin(this._getBaseUrl(), '/api/client/submission'), {
 				method: 'POST',
-				headers: { Authorization: `Bearer ${this._token}`, 'Content-Type': 'application/json' },
+				headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 				body: JSON.stringify(req)
 			});
 			return await this._processResponse(res, postSubmissionResSchema);

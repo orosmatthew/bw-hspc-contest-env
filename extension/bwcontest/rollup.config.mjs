@@ -12,10 +12,10 @@ const __dirname = import.meta.dirname;
 
 const production = !process.env.ROLLUP_WATCH;
 
-export default fs.readdirSync(path.join(__dirname, 'webviews', 'pages')).map((input) => {
+export default fs.readdirSync(path.join(__dirname, 'webviews', 'entries')).map((input) => {
 	const name = input.split('.')[0];
 	return {
-		input: 'webviews/pages/' + input,
+		input: 'webviews/entries/' + input,
 		output: {
 			sourcemap: true,
 			format: 'iife',

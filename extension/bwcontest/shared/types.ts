@@ -1,9 +1,3 @@
-export type ContestLanguage = 'Java' | 'CSharp' | 'CPP' | 'Python';
+import { GetDataRes } from 'bwcontest-shared/types/api/client';
 
-export type TeamData = {
-	teamId: number;
-	teamName: string;
-	contestId: number;
-	contestName: string;
-	language: ContestLanguage;
-};
+export type TeamData = Extract<GetDataRes, { success: true }>['data'];
