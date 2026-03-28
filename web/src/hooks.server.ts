@@ -1,27 +1,11 @@
-import { redirect, type Handle } from '@sveltejs/kit';
-import { PrismaClient } from '@prisma/client';
-import { startGitServer } from '$lib/server/gitserver';
-import { hashPassword, isSessionValid, logout } from '$lib/server/auth';
-import { db } from '$lib/server/prisma';
-import { building } from '$app/environment';
+import { redirect, type Handle, type ServerInit } from '@sveltejs/kit';
+import { startGitServer } from '$lib/server/git-server';
+import { adminSessionRepo, contestRepo } from '$lib/server/repos';
 
-async function createDefaultAccount(db: PrismaClient) {
-	const count = await db.user.count();
-	if (count !== 0) {
-		return;
-	}
-	const password = await hashPassword('bw123');
-	await db.user.create({
-		data: { username: 'admin', passwordHash: password.hash, passwordSalt: password.salt }
-	});
-}
-
-if (!building) {
+export const init: ServerInit = async () => {
 	console.log('Runtime initialization...');
-	const db = new PrismaClient();
-	await createDefaultAccount(db);
 	startGitServer();
-}
+};
 
 export const handle = (async ({ event, resolve }) => {
 	const theme = event.cookies.get('theme') as 'light' | 'dark' | undefined;
@@ -38,15 +22,14 @@ export const handle = (async ({ event, resolve }) => {
 		});
 	}
 
-	if (event.url.pathname.startsWith('/login')) {
-		if ((await isSessionValid(event.cookies)) === true) {
-			redirect(302, '/admin');
-		}
-	}
 	if (event.url.pathname.startsWith('/admin')) {
-		if ((await isSessionValid(event.cookies)) !== true) {
-			await logout(event.cookies);
-			redirect(302, '/login');
+		const token = event.cookies.get('session');
+		if (token === undefined) {
+			redirect(307, '/login');
+		}
+		const session = await adminSessionRepo.getValidSession(token);
+		if (session === undefined) {
+			redirect(307, '/login');
 		}
 		const contestParam = event.url.searchParams.get('c');
 		const contestCookie = event.cookies.get('selectedContest');
@@ -56,8 +39,8 @@ export const handle = (async ({ event, resolve }) => {
 				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
 				event.locals.selectedContest = null;
 			} else {
-				const contest = await db.contest.findUnique({ where: { id: selectedContest } });
-				if (contest !== null) {
+				const contest = await contestRepo.getById(selectedContest);
+				if (contest !== undefined) {
 					event.cookies.set('selectedContest', contestParam, { path: '/admin', secure: false });
 					event.locals.selectedContest = selectedContest;
 				} else {
@@ -71,8 +54,8 @@ export const handle = (async ({ event, resolve }) => {
 				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
 				event.locals.selectedContest = null;
 			}
-			const contest = await db.contest.findUnique({ where: { id: selectedContest } });
-			if (contest !== null) {
+			const contest = await contestRepo.getById(selectedContest);
+			if (contest !== undefined) {
 				event.locals.selectedContest = selectedContest;
 			} else {
 				event.cookies.delete('selectedContest', { path: '/admin', secure: false });

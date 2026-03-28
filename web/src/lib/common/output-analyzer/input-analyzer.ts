@@ -1,8 +1,8 @@
-import type { Problem } from '@prisma/client';
+import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 import { normalizeInputLines } from './analyzer-utils';
 
 export function parseProblemInput(
-	problem: Problem
+	problem: ProblemPrivate
 ):
 	| { success: true; caseStartIndexes: number[] }
 	| { success: false; caseStartIndexes: number[]; errorMessage: string } {

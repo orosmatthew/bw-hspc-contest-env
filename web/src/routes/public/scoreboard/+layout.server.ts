@@ -1,7 +1,7 @@
-import { db } from '$lib/server/prisma';
+import { contestRepo } from '$lib/server/repos';
 import type { LayoutServerLoad } from './$types';
 
-export const load = (async () => {
-	const contests = await db.contest.findMany({ select: { id: true, name: true } });
+export const load: LayoutServerLoad = async () => {
+	const contests = await contestRepo.getAll();
 	return { contests };
-}) satisfies LayoutServerLoad;
+};

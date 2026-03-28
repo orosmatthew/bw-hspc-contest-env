@@ -1,4 +1,3 @@
-import type { Problem } from '@prisma/client';
 import { newline, trimmedNonemptyLines } from './analyzer-utils';
 import type {
 	CaseResult,
@@ -9,6 +8,7 @@ import type {
 } from './analyzer-types';
 import { caseLabelRegex, splitJudgeOutput, splitTeamOutput } from './output-splitter';
 import { numInputCases } from './input-analyzer';
+import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 
 // Team output analysis & test case results are used in two contexts:
 //   1) High Fidelity:
@@ -37,7 +37,7 @@ const compactCharToCaseResult = new Map<string, CaseResult>(
 );
 
 export function analyzeSubmissionOutput(
-	problem: Problem,
+	problem: ProblemPrivate,
 	teamOutput: string
 ): AnalyzedOutput | null {
 	const sampleCaseCount = numInputCases(problem.sampleInput);

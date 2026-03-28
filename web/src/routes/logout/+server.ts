@@ -1,8 +1,11 @@
-import { logout } from '$lib/server/auth';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { adminSessionRepo } from '$lib/server/repos';
 
 export const POST = (async ({ cookies }) => {
-	await logout(cookies);
+	const token = cookies.get('session');
+	if (token !== undefined) {
+		await adminSessionRepo.logout(token);
+	}
 	return json({ success: true });
 }) satisfies RequestHandler;

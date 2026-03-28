@@ -1,13 +1,14 @@
 <script lang="ts">
-	import type { Problem, SubmissionSourceFile } from '@prisma/client';
 	import Tabs from './submission-tabs/Tabs.svelte';
 	import Tab from './submission-tabs/TabEntry.svelte';
 	import DiffView from './DiffView.svelte';
 	import AnnotatedOutput from './AnnotatedOutput.svelte';
 	import Code from './Code.svelte';
+	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
+	import type { SubmissionSourceFile } from 'bwcontest-shared/types/submission-source-file';
 
 	interface Props {
-		problem: Problem;
+		problem: ProblemPrivate;
 		expectedOutput: string;
 		output: string | null;
 		diff: string | null;

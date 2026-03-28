@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { Problem } from '@prisma/client';
 	import { numInputCases, parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
 
 	import { theme } from '../../routes/stores';
 	import { analyzeSubmissionOutput } from '../common/output-analyzer/output-analyzer';
 	import type { CaseResult } from '../common/output-analyzer/analyzer-types';
 	import { normalizeInputLines } from '../common/output-analyzer/analyzer-utils';
+	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 
 	interface Props {
-		problem: Problem;
+		problem: ProblemPrivate;
 		output: string | null;
 	}
 

@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 	const scoreboard = await scoreboardService.getForContest(selectedContestId);
 	if (scoreboard === undefined) {
-		redirect(307, '/admin/scoreboard');
+		redirect(307, '/admin');
 	}
 	return scoreboard;
 };

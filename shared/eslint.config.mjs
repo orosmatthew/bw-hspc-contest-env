@@ -39,5 +39,5 @@ export default defineConfig(
 			'@typescript-eslint/restrict-template-expressions': 'error'
 		}
 	},
-	{ ignores: ['./eslint.config.mjs'] }
+	{ ignores: ['./eslint.config.mjs', './tsup.config.ts'] }
 );

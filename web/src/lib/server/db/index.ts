@@ -1,6 +1,5 @@
-import { building } from '$app/environment';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { env } from '$env/dynamic/private';
+import { initRuntimeOnly } from '$lib/common/utils';
+import { drizzle } from 'drizzle-orm/libsql';
 
-export const db = (building ? undefined : drizzle('file:./data/data.db')) as ReturnType<
-	typeof drizzle
->;
+export const db = initRuntimeOnly(() => drizzle({ connection: { url: env.DATABASE_URL } }));

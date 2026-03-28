@@ -10,60 +10,59 @@ import {
 import { getBearerToken } from '$lib/common/utils';
 import { problemRepo, submissionRepo, submissionSourceFileRepo } from '$lib/server/repos';
 import {
-	postSubmissionReqDto,
-	type GetSubmissionResDto,
-	type PostSubmissionResDto
-} from 'bwcontest-shared/api/sandbox-types';
+	postSubmissionReqSchema,
+	type GetSubmissionRes,
+	type PostSubmissionRes
+} from 'bwcontest-shared/types/api/sandbox';
 
 export const GET: RequestHandler = async ({ request }) => {
 	const token = getBearerToken(request.headers);
 	if (token === undefined || token !== env.WEB_SANDBOX_SECRET) {
-		return json({ success: false, message: 'Unauthorized' } satisfies GetSubmissionResDto, {
+		return json({ success: false, message: 'Unauthorized' } satisfies GetSubmissionRes, {
 			status: 401
 		});
 	}
 	const submission = await submissionRepo.getLatestQueued();
 	if (submission === undefined) {
-		return json({ success: true, data: null } satisfies GetSubmissionResDto);
+		return json({ success: true, data: null } satisfies GetSubmissionRes);
 	}
 	const problem = await problemRepo.getByIdPrivate(submission.problemId);
 	if (problem === undefined) {
-		return json({ success: false, message: 'Problem is undefined' } satisfies GetSubmissionResDto, {
+		return json({ success: false, message: 'Problem is undefined' } satisfies GetSubmissionRes, {
 			status: 500
 		});
 	}
-	return json({ success: true, data: { submission, problem } } satisfies GetSubmissionResDto);
+	return json({ success: true, data: { submission, problem } } satisfies GetSubmissionRes);
 };
 
 export const POST: RequestHandler = async ({ request }) => {
 	const token = getBearerToken(request.headers);
 	if (token === undefined || token !== env.WEB_SANDBOX_SECRET) {
-		return json({ success: false, message: 'Unauthorized' } satisfies PostSubmissionResDto, {
+		return json({ success: false, message: 'Unauthorized' } satisfies PostSubmissionRes, {
 			status: 401
 		});
 	}
-	const req = postSubmissionReqDto.safeParse(await request.json());
+	const req = postSubmissionReqSchema.safeParse(await request.json());
 	if (req.success !== true) {
-		return json({ success: false, message: 'Invalid POST data' } satisfies PostSubmissionResDto, {
+		return json({ success: false, message: 'Invalid POST data' } satisfies PostSubmissionRes, {
 			status: 400
 		});
 	}
 	const submission = await submissionRepo.getById(req.data.submissionId);
 	if (submission === undefined) {
-		return json(
-			{ success: false, message: 'Submission not found' } satisfies PostSubmissionResDto,
-			{ status: 404 }
-		);
+		return json({ success: false, message: 'Submission not found' } satisfies PostSubmissionRes, {
+			status: 404
+		});
 	}
 	const problem = await problemRepo.getByIdPrivate(submission.problemId);
 	if (problem === undefined) {
-		return json({ success: false, message: 'Problem not found' } satisfies PostSubmissionResDto, {
+		return json({ success: false, message: 'Problem not found' } satisfies PostSubmissionRes, {
 			status: 404
 		});
 	}
 	if (submission.state !== 'queued') {
 		return json(
-			{ success: false, message: 'Submission state is not queued' } satisfies PostSubmissionResDto,
+			{ success: false, message: 'Submission state is not queued' } satisfies PostSubmissionRes,
 			{ status: 400 }
 		);
 	}
@@ -98,7 +97,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					exitCode: req.data.result.exitCode,
 					runtimeMilliseconds: req.data.result.runtimeMilliseconds
 				});
-				return json({ success: true, data: undefined } satisfies PostSubmissionResDto);
+				return json({ success: true, data: undefined } satisfies PostSubmissionRes);
 			} else {
 				const diff = Diff.createTwoFilesPatch(
 					'expected',
@@ -116,7 +115,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					exitCode: req.data.result.exitCode,
 					runtimeMilliseconds: req.data.result.runtimeMilliseconds
 				});
-				return json({ success: true, data: undefined } satisfies PostSubmissionResDto);
+				return json({ success: true, data: undefined } satisfies PostSubmissionRes);
 			}
 		case 'compileFailed':
 			console.log('compile failed...');
@@ -127,7 +126,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				stateReasonDetails: req.data.result.resultKindReason,
 				message: 'Compilation Failed'
 			});
-			return json({ success: true, data: undefined } satisfies PostSubmissionResDto);
+			return json({ success: true, data: undefined } satisfies PostSubmissionRes);
 		case 'timeLimitExceeded':
 			await submissionRepo.update(req.data.submissionId, {
 				state: 'incorrect',
@@ -140,13 +139,13 @@ export const POST: RequestHandler = async ({ request }) => {
 				runtimeMilliseconds: req.data.result.runtimeMilliseconds,
 				message: 'Time Limit Exceeded'
 			});
-			return json({ success: true, data: undefined } satisfies PostSubmissionResDto);
+			return json({ success: true, data: undefined } satisfies PostSubmissionRes);
 		case 'runError':
 			// TODO: Raise to admins somehow. For now, just mark stateReason so it *could* be observed
 			await submissionRepo.update(req.data.submissionId, {
 				stateReason: 'sandbox_error',
 				stateReasonDetails: req.data.result.resultKindReason
 			});
-			return json({ success: true, data: undefined } satisfies PostSubmissionResDto);
+			return json({ success: true, data: undefined } satisfies PostSubmissionRes);
 	}
 };

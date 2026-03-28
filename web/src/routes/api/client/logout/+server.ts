@@ -1,19 +1,19 @@
 import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 import { getBearerToken } from '$lib/common/utils';
-import type { PostLogoutResDto } from 'bwcontest-shared/api/client-types';
+import type { PostLogoutRes } from 'bwcontest-shared/types/api/client';
 import { activeTeamRepo } from '$lib/server/repos';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const token = getBearerToken(request.headers);
 	if (token === undefined) {
-		return json({ success: false, message: 'Unauthorized' } satisfies PostLogoutResDto, {
+		return json({ success: false, message: 'Unauthorized' } satisfies PostLogoutRes, {
 			status: 401
 		});
 	}
 	const activeTeam = await activeTeamRepo.getBySessionTokenPrivate(token);
 	if (activeTeam === undefined) {
-		return json({ success: false, message: 'Unauthorized' } satisfies PostLogoutResDto, {
+		return json({ success: false, message: 'Unauthorized' } satisfies PostLogoutRes, {
 			status: 401
 		});
 	}
@@ -23,9 +23,9 @@ export const POST: RequestHandler = async ({ request }) => {
 	});
 	if (updateSuccess !== true) {
 		return json(
-			{ success: false, message: 'Unable to update active team' } satisfies PostLogoutResDto,
+			{ success: false, message: 'Unable to update active team' } satisfies PostLogoutRes,
 			{ status: 500 }
 		);
 	}
-	return json({ success: true, data: undefined } satisfies PostLogoutResDto);
+	return json({ success: true, data: undefined } satisfies PostLogoutRes);
 };

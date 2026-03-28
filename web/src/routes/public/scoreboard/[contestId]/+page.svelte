@@ -65,19 +65,19 @@
 	}
 </script>
 
-<h2 style="text-align:center">{data.contest.name}</h2>
+<h2 style="text-align:center">{data.scoreboard.contest.name}</h2>
 <div class="row">
 	<div class="text-end"></div>
 </div>
 
 <div class="text-end mb-1">
-	{#if data.frozen}
+	{#if data.scoreboard.isFrozen}
 		<span class="badge bg-info">Frozen</span>
 	{/if}
 	{#if updating}
 		<div class="spinner-border spinner-border-sm text-secondary"></div>
 	{/if}
-	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
+	<strong>Last Updated: </strong>{data.scoreboard.timestamp.toLocaleTimeString()}
 </div>
 
 <table class="table table-striped table-bordered">
@@ -87,24 +87,24 @@
 			<th>Team Name</th>
 			<th>Solves</th>
 			<th>Time</th>
-			{#each data.contest.problems as problem (problem.id)}
+			{#each data.scoreboard.contest.problems as problem (problem.id)}
 				<th>{problem.friendlyName}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
-		{#each data.contest.teams as team, i (team.id)}
+		{#each data.scoreboard.contest.teams as team, i (team.id)}
 			<tr>
 				<td style="text-align:center; font-size:24px;"><strong>{i + 1}</strong></td>
 				<td style="font-size:18px">{team.name}</td>
 				<td style="font-size:18px">{team.solves}</td>
 				<td style="font-size:18px">{team.time.toFixed(0)}</td>
-				{#each data.contest.problems as problem (problem.id)}
+				{#each data.scoreboard.contest.problems as problem (problem.id)}
 					<td>
 						<div class="d-flex flex-row align-items-center gap-3">
 							{#if team.problems.find((p) => {
 								return p.id === problem.id;
-							})?.graphic !== null}
+							})?.graphic !== undefined}
 								<img
 									src={team.problems.find((p) => {
 										return p.id === problem.id;

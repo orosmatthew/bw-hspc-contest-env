@@ -1,18 +1,23 @@
 {
 	"name": "bwcontest-shared",
 	"scripts": {
-		"build": "rimraf --glob dist/* && tsc",
-		"watch": "rimraf --glob dist/* && tsc --watch",
+		"build": "tsup",
+		"watch": "tsup --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"check": "tsc -noEmit",
 		"pre-commit": "npm run format; npm run lint; npm run check"
 	},
-	"type": "commonjs",
 	"exports": {
 		"./*": {
-			"types": "./dist/*.d.ts",
-			"default": "./dist/*.js"
+			"import": {
+				"types": "./dist/*.d.mts",
+				"default": "./dist/*.mjs"
+			},
+			"require": {
+				"types": "./dist/*.d.ts",
+				"default": "./dist/*.js"
+			}
 		}
 	},
 	"devDependencies": {
@@ -27,6 +32,7 @@
 		"globals": "^17.4.0",
 		"prettier": "^3.8.1",
 		"rimraf": "^6.1.3",
+		"tsup": "^8.5.1",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.57.2"
 	},

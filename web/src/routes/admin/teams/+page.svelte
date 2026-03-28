@@ -4,7 +4,7 @@
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import Modal from '$lib/components/Modal.svelte';
-	import { TeamLanguage } from 'bwcontest-shared/types/team';
+	import type { TeamLanguage } from 'bwcontest-shared/types/team';
 	import type { ActionData, PageData } from './$types';
 
 	interface Props {
@@ -118,10 +118,10 @@
 			<input name="name" id="addTeamName" type="text" class="form-control" required />
 			<label class="mt-1 form-label" for="addTeamLang">Language</label>
 			<select id="addTeamLang" name="lang" class="form-select" required>
-				<option value="Java">Java</option>
-				<option value="CSharp">C#</option>
-				<option value="CPP">C++</option>
-				<option value="Python">Python</option>
+				<option value={'java' satisfies TeamLanguage}>Java</option>
+				<option value={'csharp' satisfies TeamLanguage}>C#</option>
+				<option value={'cpp' satisfies TeamLanguage}>C++</option>
+				<option value={'python' satisfies TeamLanguage}>Python</option>
 			</select>
 		</div>
 		<div class="modal-footer">

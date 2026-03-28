@@ -6,15 +6,15 @@
 	import * as Diff from 'diff';
 	import { theme } from '../../routes/stores';
 	import { analyzeSubmissionOutput } from '../common/output-analyzer/output-analyzer';
-	import type { Problem } from '@prisma/client';
 	import { newline, trimmedLines } from '../common/output-analyzer/analyzer-utils';
+	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 
 	interface Props {
 		expectedOutput: string;
 		output: string | null;
 		diff: string | null;
 		kind: 'aligned' | 'best-match' | 'case-diff';
-		problem: Problem;
+		problem: ProblemPrivate;
 	}
 
 	let { expectedOutput, output, diff, kind, problem }: Props = $props();

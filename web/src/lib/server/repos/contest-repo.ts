@@ -120,10 +120,10 @@ export class ContestRepo {
 
 	async assignProblemIds(contestId: number, problemIds: Array<number>): Promise<boolean> {
 		try {
-			db.transaction((tx) => {
-				tx.delete(contestProblemTable).where(eq(contestProblemTable.contestId, contestId));
+			await db.transaction(async (tx) => {
+				await tx.delete(contestProblemTable).where(eq(contestProblemTable.contestId, contestId));
 				for (const problemId of problemIds) {
-					tx.insert(contestProblemTable).values({ contestId, problemId });
+					await tx.insert(contestProblemTable).values({ contestId, problemId });
 				}
 			});
 			return true;
@@ -135,10 +135,10 @@ export class ContestRepo {
 
 	async assignTeamIds(contestId: number, teamIds: Array<number>): Promise<boolean> {
 		try {
-			db.transaction((tx) => {
-				tx.delete(contestTeamTable).where(eq(contestTeamTable.contestId, contestId));
+			await db.transaction(async (tx) => {
+				await tx.delete(contestTeamTable).where(eq(contestTeamTable.contestId, contestId));
 				for (const teamId of teamIds) {
-					tx.insert(contestTeamTable).values({ contestId, teamId });
+					await tx.insert(contestTeamTable).values({ contestId, teamId });
 				}
 			});
 			return true;
@@ -154,7 +154,10 @@ export class ContestRepo {
 
 	private _getActiveTeamsCountSubquery() {
 		return db
-			.select({ contestId: contestTable.id, activeTeamsCount: count(activeTeamTable.id) })
+			.select({
+				contestId: contestTable.id,
+				activeTeamsCount: count(activeTeamTable.id).as('active_teams_count')
+			})
 			.from(contestTable)
 			.leftJoin(activeTeamTable, eq(activeTeamTable.contestId, contestTable.id))
 			.groupBy(contestTable.id)

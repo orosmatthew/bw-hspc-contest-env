@@ -8,24 +8,24 @@ import {
 	teamRepo
 } from '$lib/server/repos';
 import { getBearerToken } from '$lib/common/utils';
-import type { GetDataResDto } from 'bwcontest-shared/api/client-types';
+import type { GetDataRes } from 'bwcontest-shared/types/api/client';
 
 export const GET: RequestHandler = async ({ request }) => {
 	const token = getBearerToken(request.headers);
 	if (token === undefined) {
-		return json({ success: false, message: 'Unauthorized' } satisfies GetDataResDto, {
+		return json({ success: false, message: 'Unauthorized' } satisfies GetDataRes, {
 			status: 401
 		});
 	}
 	const activeTeam = await activeTeamRepo.getBySessionTokenPrivate(token);
 	if (activeTeam === undefined) {
-		return json({ success: false, message: 'Unauthorized' } satisfies GetDataResDto, {
+		return json({ success: false, message: 'Unauthorized' } satisfies GetDataRes, {
 			status: 401
 		});
 	}
 	const contest = await contestRepo.getById(activeTeam.contestId);
 	if (contest === undefined) {
-		return json({ success: false, message: 'Contest is undefined' } satisfies GetDataResDto, {
+		return json({ success: false, message: 'Contest is undefined' } satisfies GetDataRes, {
 			status: 500
 		});
 	}
@@ -36,12 +36,12 @@ export const GET: RequestHandler = async ({ request }) => {
 	);
 	const team = await teamRepo.getByIdPublic(activeTeam.teamId);
 	if (team === undefined) {
-		return json({ success: false, message: 'Team is undefined' } satisfies GetDataResDto, {
+		return json({ success: false, message: 'Team is undefined' } satisfies GetDataRes, {
 			status: 500
 		});
 	}
 	return json({
 		success: true,
 		data: { activeTeam, contest, problems, submissions, team }
-	} satisfies GetDataResDto);
+	} satisfies GetDataRes);
 };

@@ -6,9 +6,11 @@ import type { ActiveTeamPrivate } from 'bwcontest-shared/types/active-team';
 export class ActiveTeamRepo {
 	async createMany(values: Array<{ teamId: number; contestId: number }>): Promise<boolean> {
 		try {
-			db.transaction((tx) => {
+			await db.transaction(async (tx) => {
 				for (const entry of values) {
-					tx.insert(activeTeamTable).values({ teamId: entry.teamId, contestId: entry.contestId });
+					await tx
+						.insert(activeTeamTable)
+						.values({ teamId: entry.teamId, contestId: entry.contestId });
 				}
 			});
 			return true;

@@ -80,7 +80,7 @@
 								<div class="col-3">
 									{#if team.problems.find((p) => {
 										return p.id === problem.id;
-									})?.graphic !== null}
+									})?.graphic !== undefined}
 										<img
 											src={team.problems.find((p) => {
 												return p.id === problem.id;
