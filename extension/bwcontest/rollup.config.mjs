@@ -24,7 +24,6 @@ export default fs.readdirSync(path.join(__dirname, 'webviews', 'pages')).map((in
 		},
 		plugins: [
 			svelte({
-				// enable run-time checks when not in production
 				compilerOptions: {
 					dev: !production
 				},

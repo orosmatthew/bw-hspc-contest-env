@@ -102,6 +102,7 @@
 		"pre-commit": "npm run format; npm run lint; npm run check"
 	},
 	"devDependencies": {
+		"@eslint/js": "^10.0.1",
 		"@rollup/plugin-commonjs": "^29.0.2",
 		"@rollup/plugin-node-resolve": "^16.0.3",
 		"@rollup/plugin-terser": "^1.0.0",
@@ -115,6 +116,7 @@
 		"@typescript-eslint/eslint-plugin": "^8.57.2",
 		"@typescript-eslint/parser": "^8.57.2",
 		"@vscode/test-electron": "^2.5.2",
+		"@vscode/vsce": "^3.7.1",
 		"concurrently": "^9.2.1",
 		"esbuild": "^0.27.4",
 		"eslint": "^10.1.0",
@@ -137,7 +139,6 @@
 		"typescript-eslint": "^8.57.2"
 	},
 	"dependencies": {
-		"@vscode/vsce": "^3.7.1",
 		"axios": "^1.14.0",
 		"bwcontest-shared": "file:../../shared",
 		"fs-extra": "^11.3.4",

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import urlJoin from 'url-join';
 import outputPanelLog from '../outputPanelLog';
-import { extensionSettings } from '../extension';
+import { getExtensionSettings } from '../extension';
 import type {
 	ContestStateForExtension,
 	ProblemNameForExtension,
@@ -45,7 +45,7 @@ export async function pollContestStatus(context: vscode.ExtensionContext) {
 	}
 
 	const contestStateResponse = await fetch(
-		urlJoin(extensionSettings().webUrl, `api/team/${sessionToken}/contestState`),
+		urlJoin(getExtensionSettings().webUrl, `api/team/${sessionToken}/contestState`),
 		{
 			method: 'GET'
 		}

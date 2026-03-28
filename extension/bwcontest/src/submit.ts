@@ -1,4 +1,4 @@
-import { extensionSettings } from './extension';
+import { getExtensionSettings } from './extension';
 import * as fs from 'fs-extra';
 import git from 'isomorphic-git';
 import http from 'isomorphic-git/http/node';
@@ -21,7 +21,7 @@ export async function submitProblem(
 	let repoDir: string;
 
 	try {
-		const repoClonePath = extensionSettings().repoClonePath;
+		const repoClonePath = getExtensionSettings().repoClonePath;
 
 		repoDir = path.join(repoClonePath, 'BWContest', contestId.toString(), teamId.toString());
 		await git.add({ fs, dir: repoDir, filepath: '.' });
@@ -52,7 +52,7 @@ export async function submitProblem(
 	}
 
 	const res = await fetch(
-		urlJoin(extensionSettings().webUrl, '/api/team', sessionToken, '/submit'),
+		urlJoin(getExtensionSettings().webUrl, '/api/team', sessionToken, '/submit'),
 		{
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },

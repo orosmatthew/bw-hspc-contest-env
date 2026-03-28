@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
 import urlJoin from 'url-join';
-import { extensionSettings } from './extension';
+import { getExtensionSettings } from './extension';
 import { runJava } from 'bwcontest-shared/submission-runner/java.cjs';
 import { join } from 'path';
 import { submitProblem } from './submit';
@@ -168,7 +168,7 @@ export class BWPanel {
 			return;
 		}
 		await vscode.workspace.saveAll();
-		const repoDir = extensionSettings().repoClonePath;
+		const repoDir = getExtensionSettings().repoClonePath;
 		const outputBuffer: string[] = [];
 		this.webviewPostMessage({ msg: 'onRunning' });
 		this.webviewPostMessage({ msg: 'onRunningOutput', data: '[Compiling...]' });

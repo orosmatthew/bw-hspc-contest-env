@@ -23,8 +23,8 @@ export const postSubmissionReqSchema = z.object({
 });
 export type PostSubmissionReq = z.infer<typeof postSubmissionReqSchema>;
 
-export const postSubmissionRes = createApiResultSchema(z.object({ submission: submissionSchema }));
-export type PostSubmissionRes = z.infer<typeof postSubmissionRes>;
+export const postSubmissionResSchema = createApiResultSchema(z.object({ submission: submissionSchema }));
+export type PostSubmissionRes = z.infer<typeof postSubmissionResSchema>;
 
 export const postLoginReqSchema = z.object({ teamName: z.string(), password: z.string() });
 export type PostLoginReq = z.infer<typeof postLoginReqSchema>;

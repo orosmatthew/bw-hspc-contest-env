@@ -6,7 +6,7 @@ import http from 'isomorphic-git/http/node';
 import outputPanelLog from './outputPanelLog';
 import { BWContestSettings } from './extension';
 import { LiteEvent } from './utilities/LiteEvent';
-import { TeamData } from './sharedTypes';
+import { TeamData } from '../shared/types';
 import * as os from 'os';
 import path from 'path';
 
