@@ -1,8 +1,8 @@
 import { teamRepo } from '$lib/server/repos';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
-import { teamLanguageValues } from '$lib/server/repos/team-repo';
 import { genTeamPassword } from '$lib/common/utils';
+import { teamLanguageValues } from 'bwcontest-shared/types/team';
 
 export const load: PageServerLoad = async () => {
 	const teams = await teamRepo.getAllPrivate();

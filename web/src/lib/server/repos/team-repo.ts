@@ -1,22 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 import { db } from '../db';
 import { activeTeamTable, contestTeamTable, teamTable } from '../db/schema';
-
-export const teamLanguageValues = ['java', 'csharp', 'cpp', 'python'] as const;
-export type TeamLanguage = (typeof teamLanguageValues)[number];
-
-export type TeamBase = {
-	id: number;
-	name: string;
-	language: TeamLanguage;
-	hasActiveTeam: boolean;
-};
-
-export type TeamPublic = TeamBase;
-
-export type TeamPrivate = TeamBase & {
-	password: string;
-};
+import type { TeamLanguage, TeamPrivate, TeamPublic } from 'bwcontest-shared/types/team';
 
 export class TeamRepo {
 	async create(values: {

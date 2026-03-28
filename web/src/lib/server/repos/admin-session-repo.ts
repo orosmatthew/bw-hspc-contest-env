@@ -2,11 +2,7 @@ import { randomUUID } from 'crypto';
 import { db } from '../db';
 import { adminSessionTable } from '../db/schema';
 import { eq, and, lte, gt } from 'drizzle-orm';
-
-export type AdminSession = {
-	token: string;
-	createdAt: Date;
-};
+import type { AdminSession } from 'bwcontest-shared/types/admin-session';
 
 export class AdminSessionRepo {
 	private _adminUsername: string;

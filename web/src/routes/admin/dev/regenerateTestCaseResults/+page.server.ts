@@ -3,10 +3,10 @@ import type { Actions } from '@sveltejs/kit';
 import { analyzeSubmissionOutput } from '$lib/common/output-analyzer/output-analyzer';
 import { numInputCases } from '$lib/common/output-analyzer/input-analyzer';
 import { contestRepo, problemRepo, submissionRepo, teamRepo } from '$lib/server/repos';
-import type { Submission } from '$lib/server/repos/submission-repo';
-import type { Contest } from '$lib/server/repos/contest-repo';
-import type { TeamPrivate } from '$lib/server/repos/team-repo';
-import type { ProblemPrivate } from '$lib/server/repos/problem-repo';
+import type { Contest } from 'bwcontest-shared/types/contest';
+import type { TeamPrivate } from 'bwcontest-shared/types/team';
+import type { Submission } from 'bwcontest-shared/types/submission';
+import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 
 export const load: PageServerLoad = async () => {
 	const submissions = await submissionRepo.getAll();

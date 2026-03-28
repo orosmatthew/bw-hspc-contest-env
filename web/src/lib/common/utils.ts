@@ -1,6 +1,6 @@
 import { building } from '$app/environment';
-import type { Contest } from '$lib/server/repos/contest-repo';
-import type { Submission } from '$lib/server/repos/submission-repo';
+import type { Contest } from 'bwcontest-shared/types/contest';
+import type { Submission } from 'bwcontest-shared/types/submission';
 import z, { json } from 'zod';
 
 export function stretchTextarea(textarea: HTMLTextAreaElement) {

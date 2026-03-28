@@ -4,7 +4,7 @@
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import Modal from '$lib/components/Modal.svelte';
-	import type { TeamLanguage } from '$lib/server/repos/team-repo';
+	import { TeamLanguage } from 'bwcontest-shared/types/team';
 	import type { ActionData, PageData } from './$types';
 
 	interface Props {

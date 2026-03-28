@@ -13,8 +13,8 @@ import {
 	submissionSourceFileRepo,
 	teamRepo
 } from '$lib/server/repos';
-import type { TeamLanguage } from '$lib/server/repos/team-repo';
-import type { SubmissionState } from '$lib/server/repos/submission-repo';
+import type { SubmissionState } from 'bwcontest-shared/types/submission';
+import type { TeamLanguage } from 'bwcontest-shared/types/team';
 
 export const load: PageServerLoad = async () => {};
 

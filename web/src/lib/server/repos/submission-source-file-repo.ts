@@ -1,13 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { submissionSourceFileTable } from '../db/schema';
-
-export type SubmissionSourceFile = {
-	id: number;
-	submissionId: number;
-	pathFromProblemRoot: string;
-	content: string;
-};
+import type { SubmissionSourceFile } from 'bwcontest-shared/types/submission-source-file';
 
 export class SubmissionSourceFileRepo {
 	async create(values: {

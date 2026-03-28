@@ -1,13 +1,13 @@
-import type { SubmissionState } from '@prisma/client';
-import type { SubmissionStateForExtension } from 'bwcontest-shared/types/contest-monitor-types';
+import type { SubmissionState } from 'bwcontest-shared/types/submission';
+import type { SubmissionStateForExtension } from 'bwcontest-shared/contest-monitor/types';
 
 export function convertSubmissionStateForExtension(
 	state: SubmissionState
 ): SubmissionStateForExtension {
 	switch (state) {
-		case 'Correct':
+		case 'correct':
 			return 'Correct';
-		case 'Incorrect':
+		case 'incorrect':
 			return 'Incorrect';
 		default:
 			return 'Processing';

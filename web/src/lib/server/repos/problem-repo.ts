@@ -1,22 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { contestProblemTable, problemTable } from '../db/schema';
-
-export type ProblemBase = {
-	id: number;
-	friendlyName: string;
-	pascalName: string;
-	sampleInput: string;
-	sampleOutput: string;
-};
-
-export type ProblemPublic = ProblemBase;
-
-export type ProblemPrivate = ProblemBase & {
-	realInput: string;
-	realOutput: string;
-	inputSpec: string | null;
-};
+import type { ProblemPrivate, ProblemPublic } from 'bwcontest-shared/types/problem';
 
 export class ProblemRepo {
 	async create(values: {

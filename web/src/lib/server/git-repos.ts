@@ -16,7 +16,7 @@ import {
 	templatePythonProblem
 } from './templates';
 import { problemRepo, teamRepo } from './repos';
-import type { ProblemPrivate } from './repos/problem-repo';
+import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 
 type AddProblemsParams = {
 	fs: memfs.IFs;

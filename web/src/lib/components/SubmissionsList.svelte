@@ -7,9 +7,9 @@
 		submissionTimestampHoverText
 	} from '$lib/common/utils';
 	import { SvelteMap } from 'svelte/reactivity';
-	import type { Submission } from '$lib/server/repos/submission-repo';
-	import type { ProblemPrivate } from '$lib/server/repos/problem-repo';
-	import type { Contest } from '$lib/server/repos/contest-repo';
+	import type { Submission } from 'bwcontest-shared/types/submission';
+	import type { Contest } from 'bwcontest-shared/types/contest';
+	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 
 	interface Props {
 		contest: Contest;

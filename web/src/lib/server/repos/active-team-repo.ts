@@ -1,19 +1,7 @@
 import { count, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { activeTeamTable } from '../db/schema';
-
-export type ActiveTeamBase = {
-	id: number;
-	teamId: number;
-	contestId: number;
-};
-
-export type ActiveTeamPublic = ActiveTeamBase;
-
-export type ActiveTeamPrivate = ActiveTeamBase & {
-	sessionToken: string | null;
-	sessionCreatedAt: Date | null;
-};
+import type { ActiveTeamPrivate } from 'bwcontest-shared/types/active-team';
 
 export class ActiveTeamRepo {
 	async createMany(values: Array<{ teamId: number; contestId: number }>): Promise<boolean> {

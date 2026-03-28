@@ -1,16 +1,7 @@
 import { count, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { activeTeamTable, contestProblemTable, contestTable, contestTeamTable } from '../db/schema';
-
-export type Contest = {
-	id: number;
-	name: string;
-	startTime: Date | null;
-	freezeTime: Date | null;
-	isFrozen: boolean;
-	activeTeamsCount: number;
-	isActive: boolean;
-};
+import type { Contest } from 'bwcontest-shared/types/contest';
 
 export class ContestRepo {
 	async create(values: {

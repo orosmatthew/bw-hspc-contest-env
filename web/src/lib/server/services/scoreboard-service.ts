@@ -1,7 +1,7 @@
+import type { ProblemPublic } from 'bwcontest-shared/types/problem';
 import { contestRepo, problemRepo, submissionRepo, teamRepo } from '../repos';
-import type { ProblemPublic } from '../repos/problem-repo';
-import type { Submission } from '../repos/submission-repo';
-import type { TeamPublic } from '../repos/team-repo';
+import type { TeamPublic } from 'bwcontest-shared/types/team';
+import type { Submission } from 'bwcontest-shared/types/submission';
 
 export type ScoreboardTeamProblemGraphic = 'correct' | 'incorrect' | undefined;
 

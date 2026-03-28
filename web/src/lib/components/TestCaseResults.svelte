@@ -5,8 +5,8 @@
 		analyzeSubmissionOutput,
 		rehydrateOutputPreview
 	} from '../common/output-analyzer/output-analyzer';
-	import type { ProblemPrivate } from '$lib/server/repos/problem-repo';
-	import type { Submission } from '$lib/server/repos/submission-repo';
+	import type { Submission } from 'bwcontest-shared/types/submission';
+	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 
 	interface Props {
 		problem: ProblemPrivate;

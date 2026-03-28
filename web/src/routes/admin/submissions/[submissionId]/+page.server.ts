@@ -8,7 +8,7 @@ import {
 	submissionSourceFileRepo,
 	teamRepo
 } from '$lib/server/repos';
-import type { SubmissionStateReason } from '$lib/server/repos/submission-repo';
+import type { SubmissionStateReason } from 'bwcontest-shared/types/submission';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const submissionIdParse = z.coerce.number().safeParse(params.submissionId);

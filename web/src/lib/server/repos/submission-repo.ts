@@ -1,38 +1,11 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db';
 import { submissionTable, teamTable } from '../db/schema';
-
-export const submissionStateReasonValues = [
-	'build_error',
-	'time_limit_exceeded',
-	'incorrect_overridden_as_correct',
-	'sandbox_error'
-] as const;
-export type SubmissionStateReason = (typeof submissionStateReasonValues)[number];
-
-export const submissionStateValues = ['queued', 'in_review', 'correct', 'incorrect'] as const;
-export type SubmissionState = (typeof submissionStateValues)[number];
-
-export type Submission = {
-	id: number;
-	createdAt: Date;
-	gradedAt: Date | null;
-	state: SubmissionState;
-	stateReason: SubmissionStateReason | null;
-	stateReasonDetails: string | null;
-	actualOutput: string | null;
-	testCaseResults: string | null;
-	exitCode: number | null;
-	runtimeMilliseconds: number | null;
-	commitHash: string;
-	diff: string | null;
-	message: string | null;
-	teamId: number;
-	problemId: number;
-	contestId: number;
-
-	teamName: string;
-};
+import type {
+	Submission,
+	SubmissionState,
+	SubmissionStateReason
+} from 'bwcontest-shared/types/submission';
 
 export class SubmissionRepo {
 	async create(values: {
