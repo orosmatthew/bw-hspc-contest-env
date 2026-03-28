@@ -12,8 +12,8 @@ import {
 } from 'bwcontest-shared/types/api/client';
 import urlJoin from 'url-join';
 import z from 'zod';
-import outputPanelLog from '../outputPanelLog';
 import { extensionService } from '.';
+import { outputPanelLog } from '../common/output-panel-log';
 
 export class ApiClient {
 	private _token: string | undefined;
@@ -93,7 +93,7 @@ export class ApiClient {
 		const contentType = res.headers.get('content-type');
 		if (contentType === null || !contentType.includes('application/json')) {
 			throw new Error(
-				`Network Error: Expected JSOn but received ${contentType ?? 'unknown'} (Status ${res.status})`
+				`Network Error: Expected JSON but received ${contentType ?? 'unknown'} (Status ${res.status})`
 			);
 		}
 		const jsonParse = schema.safeParse(await res.json());

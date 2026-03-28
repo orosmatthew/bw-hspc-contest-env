@@ -1,18 +1,18 @@
 import z from 'zod';
 import * as vscode from 'vscode';
-import outputPanelLog from '../outputPanelLog';
 import { SidebarProvider } from '../SidebarProvider';
 import {
 	startTeamStatusPollingOnActivation,
 	stopTeamStatusPolling,
 	useFastPolling
 } from '../contestMonitor/pollingService';
-import { BWPanel } from '../problemPanel';
 import {
 	clearCachedRepoState,
 	refreshRepoState,
 	setRepoManagerExtensionContext
 } from '../teamRepoManager';
+import { outputPanelLog } from '../common/output-panel-log';
+import { ProblemPanelProvider } from '../providers/problem-panel-provider';
 
 export const bwContestSettingsSchema = z.object({
 	repoBaseUrl: z.string(),
@@ -70,7 +70,7 @@ export class ExtensionService {
 				outputPanelLog.info(`Fast polling toggled to: ${fastPolling}`);
 			}),
 			vscode.commands.registerCommand('bwcontest.showTestSubmitPage', () => {
-				BWPanel.show(context, this.getSettings().webUrl);
+				ProblemPanelProvider.show(context, this.getSettings().webUrl);
 			}),
 			vscode.commands.registerCommand('bwcontest.refreshState', async () => {
 				await refreshRepoState();
@@ -88,6 +88,7 @@ export class ExtensionService {
 
 	deactivate() {
 		outputPanelLog.info('BWContest Extension Deactivated');
+        ProblemPanelProvider.kill();
 		stopTeamStatusPolling();
 		clearCachedRepoState();
 	}
