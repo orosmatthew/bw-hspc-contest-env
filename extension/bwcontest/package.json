@@ -13,7 +13,7 @@
 		"onStartupFinished"
 	],
 	"type": "commonjs",
-	"main": "./out/main.js",
+	"main": "./dist/index.js",
 	"contributes": {
 		"configuration": {
 			"title": "BWContest",
@@ -93,11 +93,10 @@
 		"vscode:prepublish": "npm run build",
 		"package": "vsce package",
 		"check": "tsc -noEmit",
-		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
-		"esbuild": "npm run esbuild-base -- --sourcemap",
-		"build": "rollup -c && npm run esbuild-base -- --minify",
+		"esbuild": "esbuild ./src/index.ts --bundle --outfile=dist/index.js --external:vscode --format=cjs --platform=node --sourcemap --minify",
+		"build": "rollup -c && npm run esbuild --minify",
 		"format": "prettier --plugin prettier-plugin-svelte --write .",
-		"watch": "concurrently \"rollup -c -w\" \"npm run esbuild-base -- --sourcemap --watch\"",
+		"watch": "concurrently \"rollup -c -w\" \"npm run esbuild --watch\"",
 		"lint": "prettier --plugin prettier-plugin-svelte --check . && eslint .",
 		"pre-commit": "npm run format; npm run lint; npm run check"
 	},

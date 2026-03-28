@@ -80,7 +80,7 @@ export class ProblemPanelProvider {
 			retainContextWhenHidden: true,
 			localResourceRoots: [
 				vscode.Uri.joinPath(context.extensionUri, 'media'),
-				vscode.Uri.joinPath(context.extensionUri, 'out/compiled')
+				vscode.Uri.joinPath(context.extensionUri, 'dist/webviews')
 			]
 		});
 		ProblemPanelProvider.currentProvider = new ProblemPanelProvider({
@@ -315,7 +315,7 @@ export class ProblemPanelProvider {
 	private _getHtmlForWebview(): string {
 		const webview = this._panel.webview;
 		const scriptUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'out/compiled', 'problemPanel.js')
+			vscode.Uri.joinPath(this._extensionUri, 'dist/webviews', 'problemPanel.js')
 		);
 		const stylesResetUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css')
@@ -324,7 +324,7 @@ export class ProblemPanelProvider {
 			vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css')
 		);
 		const cssUri = webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, 'out/compiled', 'problemPanel.css')
+			vscode.Uri.joinPath(this._extensionUri, 'dist/webviews', 'problemPanel.css')
 		);
 
 		const nonce = getNonce();

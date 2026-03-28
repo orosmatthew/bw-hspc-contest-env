@@ -56,6 +56,6 @@ export default defineConfig(
 		}
 	},
 	{
-		ignores: ['out/', 'dist/', 'media/', '.vscode-test/']
+		ignores: ['dist/', 'media/', '.vscode-test/']
 	}
 );

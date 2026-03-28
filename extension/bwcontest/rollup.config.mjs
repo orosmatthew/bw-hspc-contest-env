@@ -20,7 +20,7 @@ export default fs.readdirSync(path.join(__dirname, 'webviews', 'pages')).map((in
 			sourcemap: true,
 			format: 'iife',
 			name: 'app',
-			file: 'out/compiled/' + name + '.js'
+			file: 'dist/webviews/' + name + '.js'
 		},
 		plugins: [
 			svelte({
