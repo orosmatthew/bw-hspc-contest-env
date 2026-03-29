@@ -11,7 +11,7 @@ export type ContestTeamState = {
 	submissionsList: Map<number, Array<Submission>>;
 };
 
-export type OnSubmissionListStateChangedData = {
+export type OnSubmissionListStateChangeData = {
 	contestTeamState: ContestTeamState;
 	changedProblemIds: Set<number>;
 };
@@ -19,9 +19,9 @@ export type OnSubmissionListStateChangedData = {
 export class ContestStateSyncService {
 	private _latestPollNum = 0;
 	private _latestContestTeamState: ContestTeamState | undefined;
-	private _onSubmissionsListChanged = new LiteEvent<OnSubmissionListStateChangedData>();
+	private _onSubmissionsListChange = new LiteEvent<OnSubmissionListStateChangeData>();
 
-	public onSubmissionsListChanged = this._onSubmissionsListChanged.expose();
+	public onSUbmissionsListChange = this._onSubmissionsListChange.expose();
 
 	public async pollContestStatus(): Promise<void> {
 		const pollNum = ++this._latestPollNum;
@@ -79,7 +79,7 @@ export class ContestStateSyncService {
 
 		outputPanelLog.trace(`  New submission #${submission.id} added to cache, triggering events`);
 		existingSubmissionListForProblem.push(submission);
-		this._onSubmissionsListChanged.trigger({
+		this._onSubmissionsListChange.trigger({
 			contestTeamState: this._latestContestTeamState,
 			changedProblemIds: new Set<number>([submission.problemId])
 		});
@@ -155,7 +155,7 @@ export class ContestStateSyncService {
 
 		if (anythingChanged) {
 			this._latestContestTeamState = { teamData, submissionsList: currentSubmissionsList };
-			this._onSubmissionsListChanged.trigger({
+			this._onSubmissionsListChange.trigger({
 				contestTeamState: this._latestContestTeamState,
 				changedProblemIds
 			});

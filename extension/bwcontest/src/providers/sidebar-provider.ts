@@ -1,26 +1,20 @@
 import * as vscode from 'vscode';
 import { TeamData } from '../types';
-import {
-	clearCachedRepoState,
-	cloneOpenRepo,
-	cloneRepo,
-	getCachedRepoState,
-	openRepo,
-	refreshRepoState,
-	RepoState,
-	repoStateChanged
-} from '../teamRepoManager';
-import {
-	ContestStateForExtension,
-	ProblemNameForExtension,
-	SubmissionForExtension,
-	SubmissionStateForExtension
-} from 'bwcontest-shared/contest-monitor/types';
 import { outputPanelLog } from '../common/output-panel-log';
-import { startTeamStatusPolling, stopTeamStatusPolling } from '../contestMonitor/pollingService';
 import { ProblemPanelProvider } from './problem-panel-provider';
 import { createHtmlForWebview } from '../common/utils';
-import { apiClient, contestStateSyncService, globalStateService } from '../services';
+import {
+	apiClient,
+	contestStateSyncService,
+	globalStateService,
+	pollingService,
+	teamRepoService
+} from '../services';
+import { RepoState } from '../services/team-repo-service';
+import { ContestTeamState } from '../services/contest-state-sync-service';
+import { Submission } from 'bwcontest-shared/types/submission';
+import { ProblemPublic } from 'bwcontest-shared/types/problem';
+import { Contest } from 'bwcontest-shared/types/contest';
 
 export type WebviewMessageType =
 	| { msg: 'onLogin'; data: TeamData }
@@ -38,17 +32,19 @@ export type MessageType =
 	| { msg: 'onLogout' };
 
 export type SidebarTeamStatus = {
-	contestState: ContestStateForExtension;
-	correctProblems: SidebarProblemWithSubmissions[];
-	processingProblems: SidebarProblemWithSubmissions[];
-	incorrectProblems: SidebarProblemWithSubmissions[];
-	notStartedProblems: SidebarProblemWithSubmissions[];
+	contestState: Contest;
+	correctProblems: Array<SidebarProblemWithSubmissions>;
+	processingProblems: Array<SidebarProblemWithSubmissions>;
+	incorrectProblems: Array<SidebarProblemWithSubmissions>;
+	notStartedProblems: Array<SidebarProblemWithSubmissions>;
 };
 
+export type SubmissionDisplayState = 'Processing' | 'Correct' | 'Incorrect';
+
 export type SidebarProblemWithSubmissions = {
-	problem: ProblemNameForExtension;
-	overallState: SubmissionStateForExtension | null;
-	submissions: SubmissionForExtension[];
+	problem: ProblemPublic;
+	overallState: SubmissionDisplayState | undefined;
+	submissions: Array<Submission>;
 	modified: boolean;
 };
 
@@ -77,7 +73,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			contestTeamState: currentSubmissionsList,
 			changedProblemIds: new Set<number>()
 		});
-		contestStateSyncService.onSubmissionsListChanged.add((submissionsChangedEventArgs) => {
+		contestStateSyncService.onSUbmissionsListChange.add((submissionsChangedEventArgs) => {
 			outputPanelLog.trace('Sidebar submission list updating from submissionsListChanged event');
 
 			if (!submissionsChangedEventArgs) {
@@ -90,19 +86,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			});
 		});
 
-		const currentRepoState = getCachedRepoState();
+		const currentRepoState = teamRepoService.getCachedRepoState();
 		outputPanelLog.info(
 			'When SidebarProvider constructed, cached repo state is: ' + currentRepoState
 		);
 		this.updateRepoStatus(currentRepoState);
 
-		repoStateChanged.add((repoChangedEventArgs) => {
+		teamRepoService.onRepoStateChange.add((repoChangedEventArgs) => {
 			outputPanelLog.trace('Repo status updating from event');
-
 			if (!repoChangedEventArgs) {
 				return;
 			}
-
 			this.updateRepoStatus(repoChangedEventArgs.state);
 		});
 	}
@@ -135,12 +129,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		}
 		await globalStateService.setTeamData(dataRes.data);
 
-		await startTeamStatusPolling();
+		await pollingService.startTeamStatusPolling();
 
 		outputPanelLog.info('Login succeeded');
 		params.webviewPostMessage({ msg: 'onLogin', data: dataRes.data });
 
-		const currentSubmissionsList = getCachedContestTeamState();
+		const currentSubmissionsList = contestStateSyncService.getCachedContestTeamState();
 		outputPanelLog.info(
 			'After login, cached submission list is: ' + JSON.stringify(currentSubmissionsList)
 		);
@@ -149,10 +143,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			changedProblemIds: new Set<number>()
 		});
 
-		const currentRepoState = getCachedRepoState();
+		const currentRepoState = teamRepoService.getCachedRepoState();
 		outputPanelLog.info('After login, cached repo state is: ' + currentRepoState);
 		this.updateRepoStatus(currentRepoState);
-		await refreshRepoState();
+		await teamRepoService.refreshRepoState();
 	}
 
 	private async _handleLogout(params: { webviewPostMessage: (m: WebviewMessageType) => void }) {
@@ -193,21 +187,23 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 	}) {
 		params.webviewPostMessage({ msg: 'onLogout' });
 
-		stopTeamStatusPolling();
-		clearCachedContestTeamState();
+		pollingService.stopTeamStatusPolling();
+		contestStateSyncService.clearCachedContestTeamState();
 
-		clearCachedRepoState();
+		teamRepoService.clearCachedRepoState();
 
 		await globalStateService.setToken(undefined);
 		await globalStateService.setTeamData(undefined);
 	}
 
 	public updateTeamStatus(params: {
-		contestTeamState: ContestTeamState | null;
+		contestTeamState: ContestTeamState | undefined;
 		changedProblemIds: Set<number>;
 	}) {
-		if (params.contestTeamState === null) {
-			outputPanelLog.trace('Not updating sidebar submission list because provided state is null');
+		if (params.contestTeamState === undefined) {
+			outputPanelLog.trace(
+				'Not updating sidebar submission list because provided state is undefined'
+			);
 			return;
 		}
 
@@ -216,20 +212,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 			return;
 		}
 
-		const contestState = params.contestTeamState.contestState;
-		const problemsWithSubmissions = contestState.problems.map<SidebarProblemWithSubmissions>(
-			(p) => ({
-				problem: p,
-				overallState: this._calculateOverallState(
-					params.contestTeamState?.submissionsList.get(p.id) ?? []
-				),
-				submissions: params.contestTeamState?.submissionsList.get(p.id) ?? [],
-				modified: params.changedProblemIds.has(p.id)
-			})
-		);
+		const problemsWithSubmissions = params.contestTeamState.teamData.problems.map((p) => ({
+			problem: p,
+			overallState: this._calculateOverallState(
+				params.contestTeamState?.submissionsList.get(p.id) ?? []
+			),
+			submissions: params.contestTeamState?.submissionsList.get(p.id) ?? [],
+			modified: params.changedProblemIds.has(p.id)
+		}));
 
 		const teamStatus: SidebarTeamStatus = {
-			contestState,
+			contestState: params.contestTeamState.teamData.contest,
 			correctProblems: problemsWithSubmissions.filter((p) => p.overallState === 'Correct'),
 			processingProblems: problemsWithSubmissions.filter((p) => p.overallState === 'Processing'),
 			incorrectProblems: problemsWithSubmissions.filter((p) => p.overallState === 'Incorrect'),
@@ -299,7 +292,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 							data: teamData
 						});
 
-						const currentSubmissionsList = getCachedContestTeamState();
+						const currentSubmissionsList = contestStateSyncService.getCachedContestTeamState();
 						outputPanelLog.trace(
 							'onUIMount, currentSubmissionsList is ' + JSON.stringify(currentSubmissionsList)
 						);
@@ -308,22 +301,25 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 							changedProblemIds: new Set<number>()
 						});
 
-						const currentRepoState = getCachedRepoState();
+						const currentRepoState = teamRepoService.getCachedRepoState();
 						outputPanelLog.trace('onUIMount, currentRepoState is ' + currentRepoState);
 						this.updateRepoStatus(currentRepoState);
 					}
 					break;
 				}
 				case 'onCloneOpenRepo': {
-					await cloneOpenRepo(m.data.contestId, m.data.teamId);
+					await teamRepoService.cloneOpenRepo({
+						contestId: m.data.contestId,
+						teamId: m.data.teamId
+					});
 					break;
 				}
 				case 'onCloneRepo': {
-					await cloneRepo(m.data.contestId, m.data.teamId);
+					await teamRepoService.cloneRepo({ contestId: m.data.contestId, teamId: m.data.teamId });
 					break;
 				}
 				case 'onOpenRepo': {
-					openRepo(m.data.contestId, m.data.teamId);
+					await teamRepoService.openRepo({ contestId: m.data.contestId, teamId: m.data.teamId });
 					break;
 				}
 				case 'onLogin': {
@@ -343,16 +339,16 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 	}
 
 	private _calculateOverallState(
-		submissions: SubmissionForExtension[]
-	): SubmissionStateForExtension | null {
-		if (submissions.find((s) => s.state === 'Correct')) {
+		submissions: Array<Submission>
+	): SubmissionDisplayState | undefined {
+		if (submissions.find((s) => s.state === 'correct')) {
 			return 'Correct';
-		} else if (submissions.find((s) => s.state === 'Processing')) {
+		} else if (submissions.find((s) => s.state === 'queued' || s.state === 'in_review')) {
 			return 'Processing';
-		} else if (submissions.find((s) => s.state === 'Incorrect')) {
+		} else if (submissions.find((s) => s.state === 'incorrect')) {
 			return 'Incorrect';
 		} else {
-			return null;
+			return undefined;
 		}
 	}
 }

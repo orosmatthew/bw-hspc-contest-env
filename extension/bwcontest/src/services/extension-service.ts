@@ -1,18 +1,10 @@
 import z from 'zod';
 import * as vscode from 'vscode';
-import { SidebarProvider } from '../SidebarProvider';
-import {
-	startTeamStatusPollingOnActivation,
-	stopTeamStatusPolling,
-	useFastPolling
-} from '../contestMonitor/pollingService';
-import {
-	clearCachedRepoState,
-	refreshRepoState,
-	setRepoManagerExtensionContext
-} from '../teamRepoManager';
+
 import { outputPanelLog } from '../common/output-panel-log';
 import { ProblemPanelProvider } from '../providers/problem-panel-provider';
+import { SidebarProvider } from '../providers/sidebar-provider';
+import { globalStateService, pollingService, teamRepoService } from '.';
 
 export const bwContestSettingsSchema = z.object({
 	repoBaseUrl: z.string(),
@@ -43,6 +35,8 @@ export class ExtensionService {
 	async activate(context: vscode.ExtensionContext) {
 		outputPanelLog.info('BWContest Extension Activated');
 
+		globalStateService.init({ context });
+
 		let settings: BwContestSettings;
 		try {
 			settings = this.getSettings();
@@ -52,10 +46,14 @@ export class ExtensionService {
 			return;
 		}
 
-		const sidebarProvider = new SidebarProvider(context.extensionUri, context, settings.webUrl);
+		const sidebarProvider = new SidebarProvider({
+			extensionUri: context.extensionUri,
+			context,
+			webUrl: settings.webUrl
+		});
 
 		let fastPolling = settings.debugFastPolling;
-		useFastPolling(fastPolling);
+		pollingService.useFastPolling(fastPolling);
 
 		context.subscriptions.push(
 			vscode.window.registerWebviewViewProvider('bwcontest-sidebar', sidebarProvider),
@@ -66,30 +64,29 @@ export class ExtensionService {
 					return;
 				}
 				fastPolling = !fastPolling;
-				useFastPolling(fastPolling);
+				pollingService.useFastPolling(fastPolling);
 				outputPanelLog.info(`Fast polling toggled to: ${fastPolling}`);
 			}),
 			vscode.commands.registerCommand('bwcontest.showTestSubmitPage', () => {
 				ProblemPanelProvider.show(context, this.getSettings().webUrl);
 			}),
 			vscode.commands.registerCommand('bwcontest.refreshState', async () => {
-				await refreshRepoState();
+				await teamRepoService.refreshRepoState();
 			}),
 			vscode.workspace.onDidChangeWorkspaceFolders(async () => {
 				outputPanelLog.info('Workspace folders changed, refreshing repo state');
-				await refreshRepoState();
+				await teamRepoService.refreshRepoState();
 			})
 		);
 
-		await startTeamStatusPollingOnActivation(context);
-		setRepoManagerExtensionContext(context);
-		await refreshRepoState();
+		await pollingService.startTeamStatusPollingOnActivation();
+		await teamRepoService.refreshRepoState();
 	}
 
 	deactivate() {
 		outputPanelLog.info('BWContest Extension Deactivated');
 		ProblemPanelProvider.kill();
-		stopTeamStatusPolling();
-		clearCachedRepoState();
+		pollingService.stopTeamStatusPolling();
+		teamRepoService.clearCachedRepoState();
 	}
 }

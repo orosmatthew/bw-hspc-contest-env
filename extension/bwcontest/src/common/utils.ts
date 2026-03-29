@@ -44,3 +44,20 @@ export function createHtmlForWebview(params: {
                 </script>
             </html>`;
 }
+
+export class CancellationToken {
+	private _isCancelled = false;
+
+	public isCancelled(): boolean {
+		return this._isCancelled;
+	}
+
+	public cancel(): void {
+		this._isCancelled = true;
+	}
+}
+
+export function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
