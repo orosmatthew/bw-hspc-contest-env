@@ -1,3 +1,8 @@
-node_modules
-.vscode
-../../shared/**/*
+src/
+webviews/
+shared/
+node_modules/
+.gitignore
+tsconfig.json
+rollup.config.mjs
+eslint.config.mjs
