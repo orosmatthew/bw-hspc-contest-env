@@ -30,7 +30,7 @@ export const GET: RequestHandler = async ({ request }) => {
 		});
 	}
 	const problems = await problemRepo.getInContestPublic(activeTeam.contestId);
-	const submissions = await submissionRepo.getInContestForTeam(
+	const submissions = await submissionRepo.getInContestForTeamPublic(
 		activeTeam.contestId,
 		activeTeam.teamId
 	);

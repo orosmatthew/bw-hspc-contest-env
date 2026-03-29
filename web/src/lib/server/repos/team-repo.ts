@@ -1,7 +1,12 @@
 import { eq, sql } from 'drizzle-orm';
 import { db } from '../db';
 import { activeTeamTable, contestTeamTable, teamTable } from '../db/schema';
-import type { TeamLanguage, TeamPrivate, TeamPublic } from 'bwcontest-shared/types/team';
+import {
+	teamPublicSchema,
+	type TeamLanguage,
+	type TeamPrivate,
+	type TeamPublic
+} from 'bwcontest-shared/types/team';
 
 export class TeamRepo {
 	async create(values: {
@@ -25,24 +30,14 @@ export class TeamRepo {
 	}
 
 	async getByIdPublic(id: number): Promise<TeamPublic | undefined> {
-		try {
-			return (
-				await db
-					.select(this._getPublicFields())
-					.from(teamTable)
-					.innerJoin(contestTeamTable, eq(contestTeamTable.teamId, teamTable.id))
-					.where(eq(teamTable.id, id))
-			).at(0);
-		} catch (e) {
-			console.error(e);
-		}
+		return this._ensurePublicSingle(await this.getByIdPrivate(id));
 	}
 
 	async getByIdPrivate(id: number): Promise<TeamPrivate | undefined> {
 		try {
 			return (
 				await db
-					.select(this._getPrivateFields())
+					.select(this._getFields())
 					.from(teamTable)
 					.innerJoin(contestTeamTable, eq(contestTeamTable.teamId, teamTable.id))
 					.where(eq(teamTable.id, id))
@@ -55,7 +50,7 @@ export class TeamRepo {
 	async getInContestPrivate(contestId: number): Promise<Array<TeamPrivate>> {
 		try {
 			const teams = await db
-				.select(this._getPrivateFields())
+				.select(this._getFields())
 				.from(teamTable)
 				.innerJoin(contestTeamTable, eq(contestTeamTable.teamId, teamTable.id))
 				.where(eq(contestTeamTable.contestId, contestId))
@@ -68,26 +63,12 @@ export class TeamRepo {
 	}
 
 	async getInContestPublic(contestId: number): Promise<Array<TeamPublic>> {
-		try {
-			const teams = await db
-				.select(this._getPublicFields())
-				.from(teamTable)
-				.innerJoin(contestTeamTable, eq(contestTeamTable.teamId, teamTable.id))
-				.where(eq(contestTeamTable.contestId, contestId))
-				.orderBy(teamTable.name);
-			return teams;
-		} catch (e) {
-			console.error(e);
-			return [];
-		}
+		return this._ensurePublic(await this.getInContestPrivate(contestId));
 	}
 
 	async getAllPrivate(): Promise<Array<TeamPrivate>> {
 		try {
-			const teams = await db
-				.select(this._getPrivateFields())
-				.from(teamTable)
-				.orderBy(teamTable.name);
+			const teams = await db.select(this._getFields()).from(teamTable).orderBy(teamTable.name);
 			return teams;
 		} catch (e) {
 			console.error(e);
@@ -98,7 +79,7 @@ export class TeamRepo {
 	async getByNamePrivate(name: string): Promise<TeamPrivate | undefined> {
 		try {
 			return (
-				await db.select(this._getPrivateFields()).from(teamTable).where(eq(teamTable.name, name))
+				await db.select(this._getFields()).from(teamTable).where(eq(teamTable.name, name))
 			).at(0);
 		} catch (e) {
 			console.error(e);
@@ -137,16 +118,7 @@ export class TeamRepo {
             where ${activeTeamTable.teamId} = ${teamTable.id})`;
 	}
 
-	private _getPublicFields() {
-		return {
-			id: teamTable.id,
-			name: teamTable.name,
-			language: teamTable.language,
-			hasActiveTeam: this._getHasActiveTeamExpression()
-		};
-	}
-
-	private _getPrivateFields() {
+	private _getFields() {
 		return {
 			id: teamTable.id,
 			name: teamTable.name,
@@ -154,5 +126,16 @@ export class TeamRepo {
 			hasActiveTeam: this._getHasActiveTeamExpression(),
 			password: teamTable.password
 		};
+	}
+
+	private _ensurePublicSingle(team: TeamPublic | undefined): TeamPublic | undefined {
+		if (team === undefined) {
+			return undefined;
+		}
+		return teamPublicSchema.parse(team);
+	}
+
+	private _ensurePublic(teams: Array<TeamPublic>): Array<TeamPublic> {
+		return teams.map((p) => teamPublicSchema.parse(p));
 	}
 }

@@ -22,7 +22,7 @@ export const GET: RequestHandler = async ({ request }) => {
 			status: 401
 		});
 	}
-	const submission = await submissionRepo.getLatestQueued();
+	const submission = await submissionRepo.getLatestQueuedPrivate();
 	if (submission === undefined) {
 		return json({ success: true, data: null } satisfies GetSubmissionRes);
 	}
@@ -48,7 +48,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			status: 400
 		});
 	}
-	const submission = await submissionRepo.getById(req.data.submissionId);
+	const submission = await submissionRepo.getByIdPrivate(req.data.submissionId);
 	if (submission === undefined) {
 		return json({ success: false, message: 'Submission not found' } satisfies PostSubmissionRes, {
 			status: 404
@@ -106,7 +106,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					teamOutput ?? ''
 				);
 				await submissionRepo.update(req.data.submissionId, {
-					state: 'in_review',
+					state: 'inReview',
 					diff,
 					actualOutput: teamOutput,
 					stateReason: null,
@@ -122,7 +122,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			await submissionRepo.update(req.data.submissionId, {
 				state: 'incorrect',
 				gradedAt: new Date(),
-				stateReason: 'build_error',
+				stateReason: 'buildError',
 				stateReasonDetails: req.data.result.resultKindReason,
 				message: 'Compilation Failed'
 			});
@@ -132,7 +132,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				state: 'incorrect',
 				gradedAt: new Date(),
 				actualOutput: teamOutput,
-				stateReason: 'time_limit_exceeded',
+				stateReason: 'timeLimitExceeded',
 				stateReasonDetails: req.data.result.resultKindReason,
 				testCaseResults,
 				exitCode: req.data.result.exitCode,
@@ -143,7 +143,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		case 'runError':
 			// TODO: Raise to admins somehow. For now, just mark stateReason so it *could* be observed
 			await submissionRepo.update(req.data.submissionId, {
-				stateReason: 'sandbox_error',
+				stateReason: 'sandboxError',
 				stateReasonDetails: req.data.result.resultKindReason
 			});
 			return json({ success: true, data: undefined } satisfies PostSubmissionRes);

@@ -1,10 +1,13 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db';
 import { submissionTable, teamTable } from '../db/schema';
-import type {
-	Submission,
-	SubmissionState,
-	SubmissionStateReason
+import {
+	submissionPublicSchema,
+	type SubmissionDisplayState,
+	type SubmissionPrivate,
+	type SubmissionPublic,
+	type SubmissionState,
+	type SubmissionStateReason
 } from 'bwcontest-shared/types/submission';
 
 export class SubmissionRepo {
@@ -31,7 +34,6 @@ export class SubmissionRepo {
 					.insert(submissionTable)
 					.values({
 						createdAt: values.createdAt,
-						gradedAt: values.gradedAt,
 						state: values.state,
 						stateReason: values.stateReason,
 						stateReasonDetails: values.stateReasonDetails,
@@ -53,36 +55,45 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getById(id: number): Promise<Submission | undefined> {
+	async getByIdPrivate(id: number): Promise<SubmissionPrivate | undefined> {
 		try {
-			return (
+			const submission = (
 				await db
 					.select(this._getFields())
 					.from(submissionTable)
 					.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
 					.where(eq(submissionTable.id, id))
 			).at(0);
+			if (submission === undefined) {
+				return undefined;
+			}
+			return { ...submission, displayState: this._calcDisplayState(submission.state) };
 		} catch (e) {
 			console.error(e);
 		}
 	}
 
-	async getAll(): Promise<Array<Submission>> {
+	async getByIdPublic(id: number): Promise<SubmissionPublic | undefined> {
+		return this._ensurePublicSingle(await this.getByIdPrivate(id));
+	}
+
+	async getAllPrivate(): Promise<Array<SubmissionPrivate>> {
 		try {
-			return await db
+			const submissions = await db
 				.select(this._getFields())
 				.from(submissionTable)
 				.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
 				.orderBy(submissionTable.createdAt);
+			return submissions.map((s) => ({ ...s, displayState: this._calcDisplayState(s.state) }));
 		} catch (e) {
 			console.error(e);
 			return [];
 		}
 	}
 
-	async getLatestQueued(): Promise<Submission | undefined> {
+	async getLatestQueuedPrivate(): Promise<SubmissionPrivate | undefined> {
 		try {
-			return (
+			const submission = (
 				await db
 					.select(this._getFields())
 					.from(submissionTable)
@@ -91,52 +102,62 @@ export class SubmissionRepo {
 					.orderBy(submissionTable.createdAt)
 					.limit(1)
 			).at(0);
+			if (submission === undefined) {
+				return undefined;
+			}
+			return { ...submission, displayState: this._calcDisplayState(submission.state) };
 		} catch (e) {
 			console.error(e);
 		}
 	}
 
-	async getInContest(contestId: number): Promise<Array<Submission>> {
+	async getInContestPrivate(contestId: number): Promise<Array<SubmissionPrivate>> {
 		try {
-			return await db
+			const submissions = await db
 				.select(this._getFields())
 				.from(submissionTable)
-				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
 				.where(eq(submissionTable.contestId, contestId))
 				.orderBy(submissionTable.createdAt);
+			return submissions.map((s) => ({ ...s, displayState: this._calcDisplayState(s.state) }));
 		} catch (e) {
 			console.error(e);
 			return [];
 		}
 	}
 
-	async getInContestWithState(
+	async getInContestPublic(contestId: number): Promise<Array<SubmissionPublic>> {
+		return this._ensurePublic(await this.getInContestPrivate(contestId));
+	}
+
+	async getInContestWithStatePrivate(
 		contestId: number,
 		state: SubmissionState
-	): Promise<Array<Submission>> {
+	): Promise<Array<SubmissionPrivate>> {
 		try {
-			return await db
+			const submissions = await db
 				.select(this._getFields())
 				.from(submissionTable)
-				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
 				.where(and(eq(submissionTable.contestId, contestId), eq(submissionTable.state, state)))
 				.orderBy(submissionTable.createdAt);
+			return submissions.map((s) => ({ ...s, displayState: this._calcDisplayState(s.state) }));
 		} catch (e) {
 			console.error(e);
 			return [];
 		}
 	}
 
-	async getInContestForTeamWithState(
+	async getInContestForTeamWithStatePrivate(
 		contestId: number,
 		teamId: number,
 		state: SubmissionState
-	): Promise<Array<Submission>> {
+	): Promise<Array<SubmissionPrivate>> {
 		try {
-			return await db
+			const submissions = await db
 				.select(this._getFields())
 				.from(submissionTable)
-				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
 				.where(
 					and(
 						eq(submissionTable.contestId, contestId),
@@ -145,36 +166,48 @@ export class SubmissionRepo {
 					)
 				)
 				.orderBy(submissionTable.createdAt);
+			return submissions.map((s) => ({ ...s, displayState: this._calcDisplayState(s.state) }));
 		} catch (e) {
 			console.error(e);
 			return [];
 		}
 	}
 
-	async getInContestForTeam(contestId: number, teamId: number): Promise<Array<Submission>> {
+	async getInContestForTeamPrivate(
+		contestId: number,
+		teamId: number
+	): Promise<Array<SubmissionPrivate>> {
 		try {
-			return await db
+			const submissions = await db
 				.select(this._getFields())
 				.from(submissionTable)
-				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
 				.where(and(eq(submissionTable.contestId, contestId), eq(submissionTable.teamId, teamId)))
 				.orderBy(submissionTable.createdAt);
+			return submissions.map((s) => ({ ...s, displayState: this._calcDisplayState(s.state) }));
 		} catch (e) {
 			console.error(e);
 			return [];
 		}
 	}
 
-	async getInContestForTeamForProblem(
+	async getInContestForTeamPublic(
+		contestId: number,
+		teamId: number
+	): Promise<Array<SubmissionPublic>> {
+		return this._ensurePublic(await this.getInContestForTeamPrivate(contestId, teamId));
+	}
+
+	async getInContestForTeamForProblemPrivate(
 		contestId: number,
 		teamId: number,
 		problemId: number
-	): Promise<Array<Submission>> {
+	): Promise<Array<SubmissionPrivate>> {
 		try {
-			return await db
+			const submissions = await db
 				.select(this._getFields())
 				.from(submissionTable)
-				.innerJoin(teamTable, eq(teamTable.id, submissionTable.id))
+				.innerJoin(teamTable, eq(teamTable.id, submissionTable.teamId))
 				.where(
 					and(
 						eq(submissionTable.contestId, contestId),
@@ -183,10 +216,21 @@ export class SubmissionRepo {
 					)
 				)
 				.orderBy(submissionTable.createdAt);
+			return submissions.map((s) => ({ ...s, displayState: this._calcDisplayState(s.state) }));
 		} catch (e) {
 			console.error(e);
 			return [];
 		}
+	}
+
+	async getInContestForTeamForProblemPublic(
+		contestId: number,
+		teamId: number,
+		problemId: number
+	): Promise<Array<SubmissionPublic>> {
+		return this._ensurePublic(
+			await this.getInContestForTeamForProblemPrivate(contestId, teamId, problemId)
+		);
 	}
 
 	async update(
@@ -269,5 +313,30 @@ export class SubmissionRepo {
 			contestId: submissionTable.contestId,
 			teamName: teamTable.name
 		};
+	}
+
+	private _calcDisplayState(state: SubmissionState): SubmissionDisplayState {
+		switch (state) {
+			case 'queued':
+			case 'inReview':
+				return 'processing';
+			case 'correct':
+				return 'correct';
+			case 'incorrect':
+				return 'incorrect';
+		}
+	}
+
+	private _ensurePublicSingle(
+		submission: SubmissionPublic | undefined
+	): SubmissionPublic | undefined {
+		if (submission === undefined) {
+			return undefined;
+		}
+		return submissionPublicSchema.parse(submission);
+	}
+
+	private _ensurePublic(submissions: Array<SubmissionPublic>): Array<SubmissionPublic> {
+		return submissions.map((p) => submissionPublicSchema.parse(p));
 	}
 }

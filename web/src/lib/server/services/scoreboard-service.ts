@@ -1,7 +1,7 @@
 import type { ProblemPublic } from 'bwcontest-shared/types/problem';
 import { contestRepo, problemRepo, submissionRepo, teamRepo } from '../repos';
 import type { TeamPublic } from 'bwcontest-shared/types/team';
-import type { Submission } from 'bwcontest-shared/types/submission';
+import type { SubmissionPublic } from 'bwcontest-shared/types/submission';
 
 export type ScoreboardTeamProblemGraphic = 'correct' | 'incorrect' | undefined;
 
@@ -39,7 +39,7 @@ type ContestData = {
 	startTime: Date;
 	problems: Array<ProblemPublic>;
 	teams: Array<TeamPublic>;
-	submissions: Array<Submission>;
+	submissions: Array<SubmissionPublic>;
 };
 
 export class ScoreboardService {
@@ -50,7 +50,7 @@ export class ScoreboardService {
 		}
 		const problems = await problemRepo.getInContestPublic(contest.id);
 		const teams = await teamRepo.getInContestPublic(contest.id);
-		const submissions = await submissionRepo.getInContest(contest.id);
+		const submissions = await submissionRepo.getInContestPublic(contest.id);
 		const contestData: ContestData = {
 			id: contest.id,
 			name: contest.name,
@@ -126,11 +126,11 @@ export class ScoreboardService {
 	private _getTeamCorrectSubmissions(params: {
 		contestData: ContestData;
 		teamId: number;
-	}): Array<Submission> {
+	}): Array<SubmissionPublic> {
 		const correctSubmissions = params.contestData.submissions.filter(
-			(s) => s.teamId === params.teamId && s.state === 'correct'
+			(s) => s.teamId === params.teamId && s.displayState === 'correct'
 		);
-		const dedupedSubmissions: Array<Submission> = [];
+		const dedupedSubmissions: Array<SubmissionPublic> = [];
 		for (const submission of correctSubmissions) {
 			const existingIndex = dedupedSubmissions.findIndex(
 				(s) => s.problemId === submission.problemId
@@ -149,10 +149,10 @@ export class ScoreboardService {
 	private _getTeamTime(params: {
 		contestData: ContestData;
 		teamId: number;
-		correctSubmissions: Array<Submission>;
+		correctSubmissions: Array<SubmissionPublic>;
 	}): number {
 		const incorrectSubmissions = params.contestData.submissions.filter(
-			(s) => s.teamId === params.teamId && s.state === 'incorrect'
+			(s) => s.teamId === params.teamId && s.displayState === 'incorrect'
 		);
 		const incorrectSubmissionsBeforeCorrect = incorrectSubmissions.filter((s) =>
 			params.correctSubmissions.some(
@@ -188,22 +188,22 @@ export class ScoreboardService {
 	}
 
 	private _getTeamProblemAttempts(params: {
-		problemSubmissions: Array<Submission>;
-	}): Array<Submission> {
+		problemSubmissions: Array<SubmissionPublic>;
+	}): Array<SubmissionPublic> {
 		const correct = params.problemSubmissions
 			.toSorted((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf())
-			.find((s) => s.state === 'correct');
+			.find((s) => s.displayState === 'correct');
 		return correct !== undefined
 			? params.problemSubmissions.filter((s) => s.createdAt <= correct.createdAt)
 			: params.problemSubmissions;
 	}
 
 	private _getTeamProblemGraphic(params: {
-		problemSubmissions: Array<Submission>;
+		problemSubmissions: Array<SubmissionPublic>;
 	}): ScoreboardTeamProblemGraphic {
-		if (params.problemSubmissions.some((s) => s.state === 'correct')) {
+		if (params.problemSubmissions.some((s) => s.displayState === 'correct')) {
 			return 'correct';
-		} else if (params.problemSubmissions.some((s) => s.state === 'incorrect')) {
+		} else if (params.problemSubmissions.some((s) => s.displayState === 'incorrect')) {
 			return 'incorrect';
 		}
 		return undefined;
@@ -211,11 +211,11 @@ export class ScoreboardService {
 
 	private _getTeamProblemMin(params: {
 		contestStartTime: Date;
-		problemSubmissions: Array<Submission>;
+		problemSubmissions: Array<SubmissionPublic>;
 	}): number | undefined {
 		const correctSubmission = params.problemSubmissions
 			.toSorted((a, b) => a.createdAt.valueOf() - b.createdAt.valueOf())
-			.find((s) => s.state === 'correct');
+			.find((s) => s.displayState === 'correct');
 		if (correctSubmission === undefined) {
 			return undefined;
 		}

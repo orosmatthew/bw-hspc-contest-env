@@ -317,13 +317,13 @@
 					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`, { noScroll: true })}
 					class="{submission.id === data.submission.id
 						? 'specifiedSubmission'
-						: 'otherSubmission'} {submission.state === 'in_review' ? 'inReview' : ''}"
+						: 'otherSubmission'} {submission.state === 'inReview' ? 'inReview' : ''}"
 				>
 					<td><span>#{i + 1}</span></td>
 					<td>
 						{#if submission.state === 'queued'}
 							<span class="badge bg-secondary">Queued</span>
-						{:else if submission.state === 'in_review'}
+						{:else if submission.state === 'inReview'}
 							<span class="badge bg-warning">In Review</span>
 						{:else if submission.state === 'correct'}
 							<span class="badge bg-success">Correct</span>
@@ -331,11 +331,11 @@
 							<span class="badge bg-danger">Incorrect</span>
 						{/if}
 
-						{#if submission.stateReason === 'build_error'}
+						{#if submission.stateReason === 'buildError'}
 							<span class="badge bg-danger opacity-50">Build Error</span>
-						{:else if submission.stateReason === 'time_limit_exceeded'}
+						{:else if submission.stateReason === 'timeLimitExceeded'}
 							<span class="badge bg-danger opacity-50">Time Limit Exceeded</span>
-						{:else if submission.stateReason === 'incorrect_overridden_as_correct'}
+						{:else if submission.stateReason === 'incorrectOverriddenAsCorrect'}
 							<span class="badge bg-success opacity-50">Manually Graded</span>
 						{/if}
 					</td>
@@ -373,7 +373,7 @@
 	</table>
 </div>
 
-{#if data.submission.state === 'in_review'}
+{#if data.submission.state === 'inReview'}
 	<div
 		class="gradingArea mb-3 col-md-auto {correct === null
 			? ''
@@ -447,7 +447,7 @@
 	</div>
 {/if}
 
-{#if data.submission.state === 'incorrect' && (data.submission.stateReason === 'build_error' || data.submission.stateReason === 'time_limit_exceeded' || data.submission.stateReason === 'sandbox_error')}
+{#if data.submission.state === 'incorrect' && (data.submission.stateReason === 'buildError' || data.submission.stateReason === 'timeLimitExceeded' || data.submission.stateReason === 'sandboxError')}
 	<h3 style="text-align:center">{data.submission.stateReason}</h3>
 	<textarea use:stretchTextarea class="code mb-3 form-control" disabled
 		>{data.submission.stateReasonDetails}</textarea

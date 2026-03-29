@@ -1,7 +1,11 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { contestProblemTable, problemTable } from '../db/schema';
-import type { ProblemPrivate, ProblemPublic } from 'bwcontest-shared/types/problem';
+import {
+	problemPublicSchema,
+	type ProblemPrivate,
+	type ProblemPublic
+} from 'bwcontest-shared/types/problem';
 
 export class ProblemRepo {
 	async create(values: {
@@ -36,7 +40,7 @@ export class ProblemRepo {
 	async getByIdPrivate(id: number): Promise<ProblemPrivate | undefined> {
 		try {
 			const problem = (
-				await db.select(this._getPrivateFields()).from(problemTable).where(eq(problemTable.id, id))
+				await db.select(this._getFields()).from(problemTable).where(eq(problemTable.id, id))
 			).at(0);
 			return problem;
 		} catch (e) {
@@ -47,7 +51,7 @@ export class ProblemRepo {
 	async getInContestPrivate(contestId: number): Promise<Array<ProblemPrivate>> {
 		try {
 			const problems = await db
-				.select(this._getPrivateFields())
+				.select(this._getFields())
 				.from(problemTable)
 				.innerJoin(contestProblemTable, eq(contestProblemTable.problemId, problemTable.id))
 				.where(eq(contestProblemTable.contestId, contestId))
@@ -60,24 +64,13 @@ export class ProblemRepo {
 	}
 
 	async getInContestPublic(contestId: number): Promise<Array<ProblemPublic>> {
-		try {
-			const problems = await db
-				.select(this._getPublicFields())
-				.from(problemTable)
-				.innerJoin(contestProblemTable, eq(contestProblemTable.problemId, problemTable.id))
-				.where(eq(contestProblemTable.contestId, contestId))
-				.orderBy(problemTable.friendlyName);
-			return problems;
-		} catch (e) {
-			console.error(e);
-			return [];
-		}
+		return this._ensurePublic(await this.getInContestPrivate(contestId));
 	}
 
 	async getAllPrivate(): Promise<Array<ProblemPrivate>> {
 		try {
 			const problems = await db
-				.select(this._getPrivateFields())
+				.select(this._getFields())
 				.from(problemTable)
 				.orderBy(problemTable.friendlyName);
 			return problems;
@@ -91,7 +84,7 @@ export class ProblemRepo {
 		try {
 			return (
 				await db
-					.select(this._getPrivateFields())
+					.select(this._getFields())
 					.from(problemTable)
 					.where(eq(problemTable.pascalName, pascalName))
 			).at(0);
@@ -142,17 +135,7 @@ export class ProblemRepo {
 		}
 	}
 
-	private _getPublicFields() {
-		return {
-			id: problemTable.id,
-			friendlyName: problemTable.friendlyName,
-			pascalName: problemTable.pascalName,
-			sampleInput: problemTable.sampleInput,
-			sampleOutput: problemTable.sampleOutput
-		};
-	}
-
-	private _getPrivateFields() {
+	private _getFields() {
 		return {
 			id: problemTable.id,
 			friendlyName: problemTable.friendlyName,
@@ -163,5 +146,9 @@ export class ProblemRepo {
 			realOutput: problemTable.realOutput,
 			inputSpec: problemTable.inputSpec
 		};
+	}
+
+	private _ensurePublic(problems: Array<ProblemPublic>): Array<ProblemPublic> {
+		return problems.map((p) => problemPublicSchema.parse(p));
 	}
 }

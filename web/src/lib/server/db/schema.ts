@@ -1,3 +1,7 @@
+import {
+	submissionStateReasonValues,
+	submissionStateValues
+} from 'bwcontest-shared/types/submission';
 import { index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const adminSessionTable = sqliteTable('admin_session', {
@@ -56,14 +60,9 @@ export const submissionTable = sqliteTable(
 		id: integer('id').notNull().primaryKey({ autoIncrement: true }),
 		createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 		gradedAt: integer('graded_at', { mode: 'timestamp' }),
-		state: text('state', { enum: ['queued', 'in_review', 'correct', 'incorrect'] }).notNull(),
+		state: text('state', { enum: submissionStateValues }).notNull(),
 		stateReason: text('state_reason', {
-			enum: [
-				'build_error',
-				'time_limit_exceeded',
-				'incorrect_overridden_as_correct',
-				'sandbox_error'
-			]
+			enum: submissionStateReasonValues
 		}),
 		stateReasonDetails: text('state_reason_details'),
 		actualOutput: text('actual_output'),

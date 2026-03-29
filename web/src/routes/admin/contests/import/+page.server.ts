@@ -190,7 +190,7 @@ export const actions: Actions = {
 		}
 
 		if (form.data.includeSubmissions) {
-			const insertedSubmissions = await submissionRepo.getInContest(contestId);
+			const insertedSubmissions = await submissionRepo.getInContestPrivate(contestId);
 			for (const insertedSubmission of insertedSubmissions) {
 				if (insertedSubmission.actualOutput === null) {
 					continue;
@@ -236,7 +236,7 @@ function convertSubmissionState(submission: SubmissionImportData): SubmissionSta
 		case 'Incorrect':
 			return 'incorrect';
 		default:
-			return 'in_review';
+			return 'inReview';
 	}
 }
 

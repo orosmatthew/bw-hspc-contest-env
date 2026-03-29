@@ -10,7 +10,7 @@ import {
 	teamRepoService
 } from '../services';
 import { ContestTeamState } from '../services/contest-state-sync-service';
-import { Submission, SubmissionState } from 'bwcontest-shared/types/submission';
+import { SubmissionDisplayState, SubmissionPublic } from 'bwcontest-shared/types/submission';
 import { MessageType, SidebarTeamStatus, WebviewMessageType } from '../sidebar-types';
 import { RepoState } from '../common-types';
 
@@ -190,9 +190,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		const teamStatus: SidebarTeamStatus = {
 			contest: params.contestTeamState.teamData.contest,
 			correctProblems: problemsWithSubmissions.filter((p) => p.overallState === 'correct'),
-			processingProblems: problemsWithSubmissions.filter(
-				(p) => p.overallState === 'queued' || p.overallState === 'in_review'
-			),
+			processingProblems: problemsWithSubmissions.filter((p) => p.overallState === 'processing'),
 			incorrectProblems: problemsWithSubmissions.filter((p) => p.overallState === 'incorrect'),
 			notStartedProblems: problemsWithSubmissions.filter((p) => p.overallState === null)
 		};
@@ -306,12 +304,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		});
 	}
 
-	private _calculateOverallState(submissions: Array<Submission>): SubmissionState | undefined {
-		if (submissions.find((s) => s.state === 'correct')) {
+	private _calculateOverallState(
+		submissions: Array<SubmissionPublic>
+	): SubmissionDisplayState | undefined {
+		if (submissions.find((s) => s.displayState === 'correct')) {
 			return 'correct';
-		} else if (submissions.find((s) => s.state === 'queued' || s.state === 'in_review')) {
-			return 'queued';
-		} else if (submissions.find((s) => s.state === 'incorrect')) {
+		} else if (submissions.find((s) => s.displayState === 'processing')) {
+			return 'processing';
+		} else if (submissions.find((s) => s.displayState === 'incorrect')) {
 			return 'incorrect';
 		} else {
 			return undefined;

@@ -1,14 +1,14 @@
 import { outputPanelLog } from '../common/output-panel-log';
 import { apiClient, globalStateService } from '.';
 import { ProblemPublic } from 'bwcontest-shared/types/problem';
-import { Submission } from 'bwcontest-shared/types/submission';
+import { SubmissionPublic } from 'bwcontest-shared/types/submission';
 import * as vscode from 'vscode';
 import { LiteEvent } from '../common/lite-event';
 import { TeamData } from '../common-types';
 
 export type ContestTeamState = {
 	teamData: TeamData;
-	submissionsList: Map<number, Array<Submission>>;
+	submissionsList: Map<number, Array<SubmissionPublic>>;
 };
 
 export type OnSubmissionListStateChangeData = {
@@ -50,7 +50,7 @@ export class ContestStateSyncService {
 		this._latestContestTeamState = undefined;
 	}
 
-	public recordInitialSubmission(submission: Submission): void {
+	public recordInitialSubmission(submission: SubmissionPublic): void {
 		outputPanelLog.trace('Server received new submission, #' + submission.id);
 
 		if (this._latestContestTeamState === undefined) {
@@ -117,11 +117,11 @@ export class ContestStateSyncService {
 					const previousSubmission = cachedSubmissionsForProblem.find(
 						(s) => s.id === currentSubmission.id
 					)!;
-					if (currentSubmission.state !== previousSubmission.state) {
+					if (currentSubmission.displayState !== previousSubmission.displayState) {
 						anythingChanged = true;
 						changedProblemIds.add(problem.id);
 						outputPanelLog.trace(
-							`    Submission state for #${currentSubmission.id} changed from ${previousSubmission.state} (message '${previousSubmission.message}') to ${currentSubmission.state} (message '${currentSubmission.message}')`
+							`    Submission state for #${currentSubmission.id} changed from ${previousSubmission.displayState} (message '${previousSubmission.message}') to ${currentSubmission.displayState} (message '${currentSubmission.message}')`
 						);
 						this._alertForNewState({ problem, currentSubmission });
 					} else if (currentSubmission.message !== previousSubmission.message) {
@@ -137,7 +137,7 @@ export class ContestStateSyncService {
 					anythingChanged = true;
 					changedProblemIds.add(problem.id);
 					outputPanelLog.trace(
-						`    Newly acknowledge submission #${currentSubmission.id} with state ${currentSubmission.state} and message ${currentSubmission.message}`
+						`    Newly acknowledge submission #${currentSubmission.id} with state ${currentSubmission.displayState} and message ${currentSubmission.message}`
 					);
 					this._alertForNewState({ problem, currentSubmission });
 				}
@@ -164,9 +164,9 @@ export class ContestStateSyncService {
 
 	private _createProblemSubmissionsLookup(params: {
 		problems: Array<ProblemPublic>;
-		submissions: Array<Submission>;
-	}): Map<number, Array<Submission>> {
-		const orderedSubmissionsByProblemId = new Map<number, Array<Submission>>();
+		submissions: Array<SubmissionPublic>;
+	}): Map<number, Array<SubmissionPublic>> {
+		const orderedSubmissionsByProblemId = new Map<number, Array<SubmissionPublic>>();
 		for (const problem of params.problems) {
 			orderedSubmissionsByProblemId.set(problem.id, []);
 		}
@@ -178,14 +178,14 @@ export class ContestStateSyncService {
 
 	private _alertForNewState(params: {
 		problem: ProblemPublic;
-		currentSubmission: Submission;
+		currentSubmission: SubmissionPublic;
 	}): void {
 		// Only alert on state changes team cares about
-		if (params.currentSubmission.state === 'correct') {
+		if (params.currentSubmission.displayState === 'correct') {
 			vscode.window.showInformationMessage(
 				`BWContest Judge: CORRECT Submission '${params.problem.friendlyName}'`
 			);
-		} else if (params.currentSubmission.state === 'incorrect') {
+		} else if (params.currentSubmission.displayState === 'incorrect') {
 			const messageDisplayText =
 				params.currentSubmission.message !== null
 					? `Message: ${params.currentSubmission.message}`

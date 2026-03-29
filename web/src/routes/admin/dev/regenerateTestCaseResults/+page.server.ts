@@ -5,11 +5,11 @@ import { numInputCases } from '$lib/common/output-analyzer/input-analyzer';
 import { contestRepo, problemRepo, submissionRepo, teamRepo } from '$lib/server/repos';
 import type { Contest } from 'bwcontest-shared/types/contest';
 import type { TeamPrivate } from 'bwcontest-shared/types/team';
-import type { Submission } from 'bwcontest-shared/types/submission';
 import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
+import type { SubmissionPrivate } from 'bwcontest-shared/types/submission';
 
 export const load: PageServerLoad = async () => {
-	const submissions = await submissionRepo.getAll();
+	const submissions = await submissionRepo.getAllPrivate();
 	return { submissions };
 };
 
@@ -26,7 +26,7 @@ export const actions: Actions = {
 		};
 
 		try {
-			const submissions = (await submissionRepo.getAll()).filter(
+			const submissions = (await submissionRepo.getAllPrivate()).filter(
 				(s) => s.actualOutput !== null && s.testCaseResults !== null
 			);
 			const contests = await contestRepo.getAll();
@@ -67,7 +67,9 @@ export const actions: Actions = {
 		};
 
 		try {
-			const submissions = (await submissionRepo.getAll()).filter((s) => s.actualOutput !== null);
+			const submissions = (await submissionRepo.getAllPrivate()).filter(
+				(s) => s.actualOutput !== null
+			);
 			const contests = await contestRepo.getAll();
 			const teams = await teamRepo.getAllPrivate();
 			const problems = await problemRepo.getAllPrivate();
@@ -99,7 +101,7 @@ export const actions: Actions = {
 async function regenerateTestCaseResultsForSubmissions(params: {
 	contests: Array<Contest>;
 	teams: Array<TeamPrivate>;
-	submissions: Array<Submission>;
+	submissions: Array<SubmissionPrivate>;
 	problems: Array<ProblemPrivate>;
 	log: (text: string) => void;
 	logProblem: (text: string) => void;

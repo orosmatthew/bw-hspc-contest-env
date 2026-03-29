@@ -7,13 +7,13 @@
 		submissionTimestampHoverText
 	} from '$lib/common/utils';
 	import { SvelteMap } from 'svelte/reactivity';
-	import type { Submission } from 'bwcontest-shared/types/submission';
 	import type { Contest } from 'bwcontest-shared/types/contest';
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
+	import type { SubmissionPrivate } from 'bwcontest-shared/types/submission';
 
 	interface Props {
 		contest: Contest;
-		submissions: Array<Submission>;
+		submissions: Array<SubmissionPrivate>;
 		contestProblems: Array<ProblemPrivate>;
 		includesAllAttempts?: boolean;
 		sortDirection: 'newest first' | 'oldest first';
@@ -30,13 +30,13 @@
 	let showOutputColumns = $state(true);
 
 	let historyCounts = new SvelteMap<string, number>();
-	let attemptNumbers = new SvelteMap<Submission, number>();
+	let attemptNumbers = new SvelteMap<SubmissionPrivate, number>();
 
-	function getAttemptText(submission: Submission): string {
+	function getAttemptText(submission: SubmissionPrivate): string {
 		return `${attemptNumbers.get(submission) ?? -1} / ${historyCounts.get(getSubmissionHistoryKey(submission)) ?? -1}`;
 	}
 
-	function getSubmissionHistoryKey(submission: Submission): string {
+	function getSubmissionHistoryKey(submission: SubmissionPrivate): string {
 		return `${submission.contestId};${submission.teamId};${submission.problemId}`;
 	}
 
@@ -119,7 +119,7 @@
 					<td>
 						{#if submission.state === 'queued'}
 							<span class="badge bg-secondary">Queued</span>
-						{:else if submission.state === 'in_review'}
+						{:else if submission.state === 'inReview'}
 							<span class="badge bg-warning">In Review</span>
 						{:else if submission.state === 'correct'}
 							<span class="badge bg-success">Correct</span>
@@ -127,11 +127,11 @@
 							<span class="badge bg-danger">Incorrect</span>
 						{/if}
 
-						{#if submission.stateReason === 'build_error'}
+						{#if submission.stateReason === 'buildError'}
 							<span class="badge bg-danger opacity-50">Build Error</span>
-						{:else if submission.stateReason === 'time_limit_exceeded'}
+						{:else if submission.stateReason === 'timeLimitExceeded'}
 							<span class="badge bg-danger opacity-50">Time Limit Exceeded</span>
-						{:else if submission.stateReason === 'incorrect_overridden_as_correct'}
+						{:else if submission.stateReason === 'incorrectOverriddenAsCorrect'}
 							<span class="badge bg-success opacity-50">Manually Graded</span>
 						{/if}
 					</td>

@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		error(404, { message: 'Contest not found' });
 	}
 	const contestProblems = await problemRepo.getInContestPrivate(contest.id);
-	const submissions = await submissionRepo.getInContest(selectedContestId);
+	const submissions = await submissionRepo.getInContestPrivate(selectedContestId);
 	return {
 		timestamp: new Date(),
 		contest,

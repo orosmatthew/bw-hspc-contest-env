@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (!submissionIdParse.success) {
 		error(400, { message: 'Invalid submission id' });
 	}
-	const submission = await submissionRepo.getById(submissionIdParse.data);
+	const submission = await submissionRepo.getByIdPrivate(submissionIdParse.data);
 	if (submission === undefined) {
 		redirect(307, '/admin/submissions');
 	}
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(500, { message: 'Invalid problem' });
 	}
 	const sourceFiles = await submissionSourceFileRepo.getForSubmission(submission.id);
-	const submissionHistory = await submissionRepo.getInContestForTeamForProblem(
+	const submissionHistory = await submissionRepo.getInContestForTeamForProblemPrivate(
 		submission.contestId,
 		submission.teamId,
 		submission.problemId
@@ -72,14 +72,14 @@ export const actions: Actions = {
 		if (!submissionIdParse.success) {
 			return { success: false, message: 'Invalid submission id' };
 		}
-		const submission = await submissionRepo.getById(submissionIdParse.data);
+		const submission = await submissionRepo.getByIdPrivate(submissionIdParse.data);
 		if (submission === undefined) {
 			return { success: false, message: 'Submission not found' };
 		}
 		const newStateReason: SubmissionStateReason | null =
-			submission.stateReason === 'incorrect_overridden_as_correct' ? null : submission.stateReason;
+			submission.stateReason === 'incorrectOverriddenAsCorrect' ? null : submission.stateReason;
 		const updateSuccess = await submissionRepo.update(submission.id, {
-			state: 'in_review',
+			state: 'inReview',
 			gradedAt: null,
 			message: null,
 			stateReason: newStateReason
@@ -128,7 +128,7 @@ export const actions: Actions = {
 		}
 		const updateSuccess = await submissionRepo.update(submissionIdParse.data, {
 			state: form.data.correct ? 'correct' : 'incorrect',
-			stateReason: form.data.correct ? 'incorrect_overridden_as_correct' : null,
+			stateReason: form.data.correct ? 'incorrectOverriddenAsCorrect' : null,
 			message: form.data.message,
 			gradedAt: new Date()
 		});

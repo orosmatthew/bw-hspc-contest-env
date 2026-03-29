@@ -1,4 +1,4 @@
-import type { Submission } from 'bwcontest-shared/types/submission';
+import type { SubmissionPublic } from 'bwcontest-shared/types/submission';
 import { outputPanelLog } from '../common/output-panel-log';
 import { apiClient, extensionService } from '.';
 import path from 'path';
@@ -12,7 +12,9 @@ export class SubmitService {
 		contestId: number;
 		teamId: number;
 		problemId: number;
-	}): Promise<{ success: true; submission: Submission } | { success: false; message: string }> {
+	}): Promise<
+		{ success: true; submission: SubmissionPublic } | { success: false; message: string }
+	> {
 		outputPanelLog.info(`Submitting problem id #{${params.problemId}}...`);
 
 		let hash: string;
@@ -64,7 +66,6 @@ export class SubmitService {
 				message: `Submission POST failure: ${postRes?.message ?? 'unknown'}`
 			};
 		}
-		// TODO: submission message/reason needs to be formatted. Code was in bwcontest-shared
 		return { success: true, submission: postRes.data.submission };
 	}
 }

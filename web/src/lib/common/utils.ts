@@ -1,6 +1,6 @@
 import { building } from '$app/environment';
 import type { Contest } from 'bwcontest-shared/types/contest';
-import type { Submission } from 'bwcontest-shared/types/submission';
+import type { SubmissionBase } from 'bwcontest-shared/types/submission';
 import z, { json } from 'zod';
 
 export function stretchTextarea(textarea: HTMLTextAreaElement) {
@@ -22,7 +22,7 @@ export function minutesBetweenTimestamps(start: Date, end: Date): number {
 	return (end.getTime() - start.getTime()) / 1000 / 60;
 }
 
-export function submissionTimestampHoverText(contest: Contest, submission: Submission): string {
+export function submissionTimestampHoverText(contest: Contest, submission: SubmissionBase): string {
 	if (contest.startTime === null) {
 		throw new Error("contest.startTime is null when it shouldn't");
 	}

@@ -15,8 +15,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (contest === undefined) {
 		error(404, { message: 'Contest not found' });
 	}
-	const reviewList = await submissionRepo.getInContestWithState(selectedContestId, 'in_review');
-	const queueList = await submissionRepo.getInContestWithState(selectedContestId, 'queued');
+	const reviewList = await submissionRepo.getInContestWithStatePrivate(
+		selectedContestId,
+		'inReview'
+	);
+	const queueList = await submissionRepo.getInContestWithStatePrivate(selectedContestId, 'queued');
 	const contestProblems = await problemRepo.getInContestPrivate(selectedContestId);
 	return {
 		timestamp: new Date(),

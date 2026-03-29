@@ -1,7 +1,7 @@
 import { Contest } from 'bwcontest-shared/types/contest';
 import { RepoState, TeamData } from './common-types';
 import { ProblemPublic } from 'bwcontest-shared/types/problem';
-import { Submission, SubmissionState } from 'bwcontest-shared/types/submission';
+import { SubmissionDisplayState, SubmissionPublic } from 'bwcontest-shared/types/submission';
 
 export type WebviewMessageType =
 	| { msg: 'onLogin'; data: TeamData }
@@ -20,8 +20,8 @@ export type MessageType =
 
 export type SidebarProblemWithSubmissions = {
 	problem: ProblemPublic;
-	overallState: SubmissionState | undefined;
-	submissions: Array<Submission>;
+	overallState: SubmissionDisplayState | undefined;
+	submissions: Array<SubmissionPublic>;
 	modified: boolean;
 };
 

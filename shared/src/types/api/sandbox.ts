@@ -1,10 +1,10 @@
 import z from 'zod';
 import { createApiResultSchema } from './common';
-import { submissionSchema } from '../submission';
 import { problemPrivateSchema } from '../problem';
+import { submissionPrivateSchema } from '../submission';
 
 export const getSubmissionResSchema = createApiResultSchema(
-	z.object({ submission: submissionSchema, problem: problemPrivateSchema }).nullable()
+	z.object({ submission: submissionPrivateSchema, problem: problemPrivateSchema }).nullable()
 );
 export type GetSubmissionRes = z.infer<typeof getSubmissionResSchema>;
 

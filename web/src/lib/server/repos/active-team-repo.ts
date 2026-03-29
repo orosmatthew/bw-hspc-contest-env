@@ -88,14 +88,6 @@ export class ActiveTeamRepo {
 		}
 	}
 
-	private _getFieldsPublic() {
-		return {
-			id: activeTeamTable.id,
-			teamId: activeTeamTable.teamId,
-			contestId: activeTeamTable.contestId
-		};
-	}
-
 	private _getFieldsPrivate() {
 		return {
 			id: activeTeamTable.id,

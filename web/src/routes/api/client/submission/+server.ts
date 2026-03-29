@@ -29,12 +29,12 @@ export const POST: RequestHandler = async ({ request }) => {
 			status: 404
 		});
 	}
-	const submissions = await submissionRepo.getInContestForTeamForProblem(
+	const submissions = await submissionRepo.getInContestForTeamForProblemPublic(
 		activeTeam.contestId,
 		activeTeam.teamId,
 		problem.id
 	);
-	if (submissions.some((s) => s.state === 'correct')) {
+	if (submissions.some((s) => s.displayState === 'correct')) {
 		return json(
 			{
 				success: false,
@@ -66,7 +66,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			{ status: 500 }
 		);
 	}
-	const submission = await submissionRepo.getById(id);
+	const submission = await submissionRepo.getByIdPublic(id);
 	if (submission === undefined) {
 		return json(
 			{ success: false, message: 'Submission is undefined' } satisfies PostSubmissionRes,

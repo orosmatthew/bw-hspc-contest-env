@@ -5,14 +5,14 @@
 		analyzeSubmissionOutput,
 		rehydrateOutputPreview
 	} from '../common/output-analyzer/output-analyzer';
-	import type { Submission } from 'bwcontest-shared/types/submission';
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
+	import type { SubmissionPrivate } from 'bwcontest-shared/types/submission';
 
 	interface Props {
 		problem: ProblemPrivate;
-		submission: Submission;
+		submission: SubmissionPrivate;
 		condensed?: boolean;
-		previousSubmission?: Submission | null;
+		previousSubmission?: SubmissionPrivate | null;
 	}
 
 	let { problem, submission, condensed = false, previousSubmission = null }: Props = $props();

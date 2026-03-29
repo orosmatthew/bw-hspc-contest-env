@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (!contestIdParse.success || !teamIdParse.success || !problemIdParse.success) {
 		error(400, { message: 'Invalid params' });
 	}
-	const submissions = await submissionRepo.getInContestForTeamForProblem(
+	const submissions = await submissionRepo.getInContestForTeamForProblemPrivate(
 		contestIdParse.data,
 		teamIdParse.data,
 		problemIdParse.data
