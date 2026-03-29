@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { TeamData } from '../types';
 import { outputPanelLog } from '../common/output-panel-log';
 import { ProblemPanelProvider } from './problem-panel-provider';
 import { createHtmlForWebview } from '../common/utils';
@@ -10,43 +9,10 @@ import {
 	pollingService,
 	teamRepoService
 } from '../services';
-import { RepoState } from '../services/team-repo-service';
 import { ContestTeamState } from '../services/contest-state-sync-service';
-import { Submission } from 'bwcontest-shared/types/submission';
-import { ProblemPublic } from 'bwcontest-shared/types/problem';
-import { Contest } from 'bwcontest-shared/types/contest';
-
-export type WebviewMessageType =
-	| { msg: 'onLogin'; data: TeamData }
-	| { msg: 'onLogout' }
-	| { msg: 'teamStatusUpdated'; data: SidebarTeamStatus | null }
-	| { msg: 'repoStateUpdated'; data: RepoState };
-
-export type MessageType =
-	| { msg: 'onTestAndSubmit' }
-	| { msg: 'onUIMount' }
-	| { msg: 'onCloneOpenRepo'; data: { contestId: number; teamId: number } }
-	| { msg: 'onCloneRepo'; data: { contestId: number; teamId: number } }
-	| { msg: 'onOpenRepo'; data: { contestId: number; teamId: number } }
-	| { msg: 'onLogin'; data: { teamName: string; password: string } }
-	| { msg: 'onLogout' };
-
-export type SidebarTeamStatus = {
-	contestState: Contest;
-	correctProblems: Array<SidebarProblemWithSubmissions>;
-	processingProblems: Array<SidebarProblemWithSubmissions>;
-	incorrectProblems: Array<SidebarProblemWithSubmissions>;
-	notStartedProblems: Array<SidebarProblemWithSubmissions>;
-};
-
-export type SubmissionDisplayState = 'Processing' | 'Correct' | 'Incorrect';
-
-export type SidebarProblemWithSubmissions = {
-	problem: ProblemPublic;
-	overallState: SubmissionDisplayState | undefined;
-	submissions: Array<Submission>;
-	modified: boolean;
-};
+import { Submission, SubmissionState } from 'bwcontest-shared/types/submission';
+import { MessageType, SidebarTeamStatus, WebviewMessageType } from '../sidebar-types';
+import { RepoState } from '../common-types';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
 	private _webview: vscode.Webview | undefined;
@@ -222,10 +188,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		}));
 
 		const teamStatus: SidebarTeamStatus = {
-			contestState: params.contestTeamState.teamData.contest,
-			correctProblems: problemsWithSubmissions.filter((p) => p.overallState === 'Correct'),
-			processingProblems: problemsWithSubmissions.filter((p) => p.overallState === 'Processing'),
-			incorrectProblems: problemsWithSubmissions.filter((p) => p.overallState === 'Incorrect'),
+			contest: params.contestTeamState.teamData.contest,
+			correctProblems: problemsWithSubmissions.filter((p) => p.overallState === 'correct'),
+			processingProblems: problemsWithSubmissions.filter(
+				(p) => p.overallState === 'queued' || p.overallState === 'in_review'
+			),
+			incorrectProblems: problemsWithSubmissions.filter((p) => p.overallState === 'incorrect'),
 			notStartedProblems: problemsWithSubmissions.filter((p) => p.overallState === null)
 		};
 
@@ -338,15 +306,13 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 		});
 	}
 
-	private _calculateOverallState(
-		submissions: Array<Submission>
-	): SubmissionDisplayState | undefined {
+	private _calculateOverallState(submissions: Array<Submission>): SubmissionState | undefined {
 		if (submissions.find((s) => s.state === 'correct')) {
-			return 'Correct';
+			return 'correct';
 		} else if (submissions.find((s) => s.state === 'queued' || s.state === 'in_review')) {
-			return 'Processing';
+			return 'queued';
 		} else if (submissions.find((s) => s.state === 'incorrect')) {
-			return 'Incorrect';
+			return 'incorrect';
 		} else {
 			return undefined;
 		}

@@ -94,7 +94,7 @@
 		"package": "vsce package",
 		"check": "tsc -noEmit",
 		"esbuild": "esbuild ./src/index.ts --bundle --outfile=dist/index.js --external:vscode --format=cjs --platform=node --sourcemap --minify",
-		"build": "rimraf --glob dist/* && rollup -c && npm run esbuild --minify",
+		"build": "rimraf --glob dist/* && rollup -c && npm run esbuild",
 		"format": "prettier --plugin prettier-plugin-svelte --write .",
 		"watch": "concurrently \"rollup -c -w\" \"npm run esbuild --watch\"",
 		"lint": "prettier --plugin prettier-plugin-svelte --check . && eslint .",

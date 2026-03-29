@@ -6,13 +6,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import SidebarProblemStatus from './SidebarProblemStatus.svelte';
-	import type { TeamData } from '../../src/sharedTypes';
+	import type { RepoState, TeamData } from '../../shared/common-types';
 	import type {
-		WebviewMessageType,
 		MessageType,
-		SidebarTeamStatus
-	} from '../../src/providers/sidebar-provider';
-	import type { RepoState } from '../../src/teamRepoManager';
+		SidebarTeamStatus,
+		WebviewMessageType
+	} from '../../shared/sidebar-types';
 
 	let teamname: string = $state('');
 	let password: string = $state('');
@@ -34,7 +33,7 @@
 		if (teamData) {
 			postMessage({
 				msg: 'onCloneOpenRepo',
-				data: { contestId: teamData.contestId, teamId: teamData.teamId }
+				data: { contestId: teamData.contest.id, teamId: teamData.team.id }
 			});
 		}
 	}
@@ -43,7 +42,7 @@
 		if (teamData) {
 			postMessage({
 				msg: 'onCloneRepo',
-				data: { contestId: teamData.contestId, teamId: teamData.teamId }
+				data: { contestId: teamData.contest.id, teamId: teamData.team.id }
 			});
 		}
 	}
@@ -52,7 +51,7 @@
 		if (teamData) {
 			postMessage({
 				msg: 'onOpenRepo',
-				data: { contestId: teamData.contestId, teamId: teamData.teamId }
+				data: { contestId: teamData.contest.id, teamId: teamData.team.id }
 			});
 		}
 	}
@@ -81,7 +80,7 @@
 	});
 
 	window.addEventListener('message', (event) => {
-		const m = (event as MessageEvent).data as WebviewMessageType;
+		const m = event.data as WebviewMessageType;
 		if (m.msg === 'onLogin') {
 			loggedIn = true;
 			teamData = m.data;
@@ -128,17 +127,17 @@
 		<div class="sidebarSection">
 			<p>
 				<span class="infoLabel">Team:</span>
-				<span class="infoData">{teamData.teamName}</span>
-				<span class="extraInfo"> (#{teamData.teamId})</span>
+				<span class="infoData">{teamData.team.name}</span>
+				<span class="extraInfo"> (#{teamData.team.id})</span>
 			</p>
 			<p>
 				<span class="infoLabel">Contest:</span>
-				<span class="infoData">{teamData.contestName}</span>
-				<span class="extraInfo"> (#{teamData.contestId})</span>
+				<span class="infoData">{teamData.contest.name}</span>
+				<span class="extraInfo"> (#{teamData.contest.id})</span>
 			</p>
 			<p>
 				<span class="infoLabel">Language:</span>
-				<span class="infoData">{teamData.language}</span>
+				<span class="infoData">{teamData.team.language}</span>
 			</p>
 			<div class="buttonContainer">
 				<button onclick={onLogout} class="sidebarButton">Logout</button>
@@ -147,17 +146,17 @@
 
 		<h2 class="sidebarSectionHeader">Actions</h2>
 		<div class="sidebarSection">
-			{#if repoState == 'No Team'}
+			{#if repoState === 'noTeam'}
 				<span>Team not connected, click Refresh at the top of this panel</span>
-			{:else if repoState == 'No Repo'}
+			{:else if repoState === 'noRepo'}
 				<div class="buttonContainer">
 					<button onclick={onCloneOpenRepo} class="sidebarButton">Clone and Open Repo</button>
 				</div>
-			{:else if repoState == 'Repo Exists, Not Open'}
+			{:else if repoState === 'repoExistsNotOpen'}
 				<div class="buttonContainer">
 					<button onclick={onOpenRepo} class="sidebarButton">Open Repo</button>
 				</div>
-			{:else if repoState == 'Repo Open'}
+			{:else if repoState === 'repoOpen'}
 				<div class="buttonContainer">
 					<button onclick={onTestAndSubmit} class="sidebarButton">Test & Submit</button>
 					<button onclick={onCloneRepo} class="sidebarButton">Reset Repo</button>
@@ -176,10 +175,7 @@
 					</div>
 					{#if teamStatus.processingProblems.length > 0}
 						{#each teamStatus.processingProblems as inProgressProblem (JSON.stringify(inProgressProblem))}
-							<SidebarProblemStatus
-								problem={inProgressProblem}
-								contestState={teamStatus.contestState}
-							/>
+							<SidebarProblemStatus problem={inProgressProblem} contest={teamStatus.contest} />
 						{/each}
 					{:else}
 						<div class="problemSectionExplanation">No pending submissions</div>
@@ -194,10 +190,7 @@
 					</div>
 					{#if teamStatus.correctProblems.length > 0}
 						{#each teamStatus.correctProblems as correctProblem (JSON.stringify(correctProblem))}
-							<SidebarProblemStatus
-								problem={correctProblem}
-								contestState={teamStatus.contestState}
-							/>
+							<SidebarProblemStatus problem={correctProblem} contest={teamStatus.contest} />
 						{/each}
 					{:else}
 						<div class="problemSectionExplanation">Solved problems appear here</div>
@@ -212,10 +205,7 @@
 					</div>
 					{#if teamStatus.incorrectProblems.length > 0}
 						{#each teamStatus.incorrectProblems as incorrectProblem (JSON.stringify(incorrectProblem))}
-							<SidebarProblemStatus
-								problem={incorrectProblem}
-								contestState={teamStatus.contestState}
-							/>
+							<SidebarProblemStatus problem={incorrectProblem} contest={teamStatus.contest} />
 						{/each}
 					{:else}
 						<div class="problemSectionExplanation">Attempted problems appear here until solved</div>
@@ -230,10 +220,7 @@
 							>
 						</div>
 						{#each teamStatus.notStartedProblems as notStartedProblem (JSON.stringify(notStartedProblem))}
-							<SidebarProblemStatus
-								problem={notStartedProblem}
-								contestState={teamStatus.contestState}
-							/>
+							<SidebarProblemStatus problem={notStartedProblem} contest={teamStatus.contest} />
 						{/each}
 					</div>
 				{/if}

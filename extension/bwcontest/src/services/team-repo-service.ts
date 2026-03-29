@@ -2,7 +2,7 @@ import { extensionService, globalStateService } from '.';
 import { LiteEvent } from '../common/lite-event';
 import { outputPanelLog } from '../common/output-panel-log';
 import * as vscode from 'vscode';
-import { Result } from '../types';
+import { RepoState, Result } from '../common-types';
 import urlJoin from 'url-join';
 import path from 'path';
 import * as fs from 'fs-extra';
@@ -10,7 +10,6 @@ import git from 'isomorphic-git';
 import * as os from 'os';
 import http from 'isomorphic-git/http/node';
 
-export type RepoState = 'noTeam' | 'noRepo' | 'repoExistsNotOpen' | 'repoOpen';
 export type OnRepoStateChangeData = { state: RepoState };
 
 export class TeamRepoService {

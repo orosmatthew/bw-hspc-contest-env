@@ -1,10 +1,10 @@
 import { outputPanelLog } from '../common/output-panel-log';
 import { apiClient, globalStateService } from '.';
-import { TeamData } from '../types';
 import { ProblemPublic } from 'bwcontest-shared/types/problem';
 import { Submission } from 'bwcontest-shared/types/submission';
 import * as vscode from 'vscode';
 import { LiteEvent } from '../common/lite-event';
+import { TeamData } from '../common-types';
 
 export type ContestTeamState = {
 	teamData: TeamData;

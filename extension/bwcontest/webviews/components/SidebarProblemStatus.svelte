@@ -26,48 +26,48 @@
 </script>
 
 <script lang="ts">
-	import type { SidebarProblemWithSubmissions } from '../../src/providers/sidebar-provider';
-	import type {
-		ContestStateForExtension,
-		SubmissionForExtension,
-		SubmissionStateForExtension
-	} from 'bwcontest-shared/types/contestMonitorTypes';
+	import type { Submission, SubmissionState } from 'bwcontest-shared/types/submission';
+	import type { SidebarProblemWithSubmissions } from '../sidebar-types';
+	import type { Contest } from 'bwcontest-shared/types/contest';
 
 	interface Props {
-		contestState: ContestStateForExtension;
+		contest: Contest;
 		problem: SidebarProblemWithSubmissions;
 	}
 
-	let { contestState, problem }: Props = $props();
+	let { contest, problem }: Props = $props();
 
-	const sortedSubmissions = problem.submissions
-		? problem.submissions.sort(
-				(s1, s2) => Date.parse(s1.createdAt.toString()) - Date.parse(s2.createdAt.toString())
-			)
-		: [];
+	const sortedSubmissions = $derived(
+		problem.submissions.sort(
+			(s1, s2) => Date.parse(s1.createdAt.toString()) - Date.parse(s2.createdAt.toString())
+		)
+	);
 
-	const highlightClasses = `${problem.modified ? 'highlight' : ''} ${problem.overallState?.toLowerCase()}`;
+	const highlightClasses = $derived(
+		`${problem.modified ? 'highlight' : ''} ${problem.overallState?.toLowerCase()}`
+	);
 
-	function getStatusImageUrl(overallState: SubmissionStateForExtension | null): string {
+	function getStatusImageUrl(overallState: SubmissionState | undefined): string {
 		switch (overallState) {
-			case 'Correct':
+			case 'correct':
 				return correctSubmissionImageUrl;
-			case 'Incorrect':
+			case 'incorrect':
 				return incorrectSubmissionImageUrl;
-			case 'Processing':
+			case 'queued':
+			case 'in_review':
 				return pendingSubmissionImageUrl;
 			default:
 				return watSubmissionsImageUrl;
 		}
 	}
 
-	function getContestOffsetDisplay(submission: SubmissionForExtension): string {
-		if (!contestState.startTime) {
+	function getContestOffsetDisplay(submission: Submission): string {
+		if (contest.startTime === null) {
 			return '?';
 		}
 
 		try {
-			const contestStartAbsoluteMillis = Date.parse(contestState.startTime.toString());
+			const contestStartAbsoluteMillis = Date.parse(contest.startTime.toString());
 			const submissionTimeAbsoluteMillis = Date.parse(submission.createdAt.toString());
 			const submissionRelativeMillis = submissionTimeAbsoluteMillis - contestStartAbsoluteMillis;
 			const minutesFromContestStart = Math.ceil(submissionRelativeMillis / 1000 / 60);
@@ -91,7 +91,7 @@
 			alt={problem.overallState}
 		/>
 		<div class="problemHeader">
-			{#if problem.submissions.length == 0}
+			{#if problem.submissions.length === 0}
 				<span class="problemHeaderName">{problem.problem.friendlyName}</span>
 			{:else}
 				<span class="problemHeaderName">{problem.problem.friendlyName}</span>
@@ -99,22 +99,23 @@
 					{problem.submissions.length}
 					{pluralize(problem.submissions.length, 'attempt', 'attempts')}</span
 				>
-				{#if problem.submissions.filter((s) => s.state === 'Processing').length > 0}
+				{#if problem.submissions.some((s) => s.state === 'queued' || s.state === 'in_review')}
 					<span
-						>({problem.submissions.filter((s) => s.state === 'Processing').length} pending...)</span
+						>({problem.submissions.filter((s) => s.state === 'queued' || s.state === 'in_review')
+							.length} pending...)</span
 					>
 				{/if}
-				{#if problem.overallState === 'Correct'}
+				{#if problem.overallState === 'correct'}
 					<span class="individualSubmissionAttemptTime">
 						@ {getContestOffsetDisplay(
-							problem.submissions.filter((s) => s.state === 'Correct')[0]
+							problem.submissions.filter((s) => s.state === 'correct')[0]
 						)}</span
 					>
 				{/if}
 			{/if}
 		</div>
 	</div>
-	{#if problem.overallState !== 'Correct'}
+	{#if problem.overallState !== 'correct'}
 		{#each sortedSubmissions as submission, i (submission.id)}
 			<div class="individualSubmissionDiv">
 				<span class="individualSubmissionAttemptNumber">Submit #{i + 1}: </span>

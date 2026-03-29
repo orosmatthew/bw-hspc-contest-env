@@ -5,7 +5,8 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { WebviewMessageType, MessageType, ProblemData } from '../../src/problemPanel';
+	import type { ProblemPublic } from 'bwcontest-shared/types/problem';
+	import type { MessageType, WebviewMessageType } from '../../shared/problem-panel-types';
 
 	function postMessage(message: MessageType) {
 		vscode.postMessage(message);
@@ -14,7 +15,7 @@
 	// let savedInputs: Map<number, { input: string; output: string }> = new Map();
 
 	let activeProblemIndex = $state(0);
-	let problemData: ProblemData | undefined = $state();
+	let problemData: Array<ProblemPublic> | undefined = $state();
 
 	let sampleInputValue: string = $state('');
 	let outputValue: string = $state('');
@@ -71,7 +72,7 @@
 	});
 
 	window.addEventListener('message', async (event) => {
-		const m = (event as MessageEvent).data as WebviewMessageType;
+		const m = event.data as WebviewMessageType;
 		if (m.msg === 'onProblemData') {
 			problemData = m.data;
 			updateTextBoxes();
@@ -103,14 +104,15 @@
 				}}
 				id={`problem_${problem.id}`}
 				type="button"
-				class={'tab ' + (activeProblemIndex === i ? 'active' : 'inactive')}>{problem.name}</button
+				class={'tab ' + (activeProblemIndex === i ? 'active' : 'inactive')}
+				>{problem.friendlyName}</button
 			>
 		{/each}
 	</div>
 {/if}
 
 {#if problemData !== undefined}
-	<h2>{problemData[activeProblemIndex].name}</h2>
+	<h2>{problemData[activeProblemIndex].friendlyName}</h2>
 	<div style="display:flex">
 		<div style="flex:1; margin-right:20px">
 			<h3>Sample Input (You can edit this!)</h3>

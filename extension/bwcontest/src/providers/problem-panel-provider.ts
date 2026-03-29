@@ -1,34 +1,16 @@
 import * as vscode from 'vscode';
-import urlJoin from 'url-join';
 import { join } from 'path';
 import { outputPanelLog } from '../common/output-panel-log';
-import { TeamData } from '../types';
-import { extensionService, globalStateService, submitService } from '../services';
+import { TeamData } from '../common-types';
+import { apiClient, extensionService, globalStateService, submitService } from '../services';
 import { runJava } from 'bwcontest-shared/submission-runner/java';
 import { runCSharp } from 'bwcontest-shared/submission-runner/csharp';
 import { runCpp } from 'bwcontest-shared/submission-runner/cpp';
 import { runPython } from 'bwcontest-shared/submission-runner/python';
 import { RunnerResult, RunResult } from 'bwcontest-shared/submission-runner/common';
 import { createHtmlForWebview } from '../common/utils';
-
-export type ProblemData = Array<{
-	id: number;
-	name: string;
-	pascalName: string;
-	sampleInput: string;
-	sampleOutput: string;
-}>;
-
-export type MessageType =
-	| { msg: 'onRequestProblemData' }
-	| { msg: 'onRun'; data: { problemId: number; input: string } }
-	| { msg: 'onKill' }
-	| { msg: 'onSubmit'; data: { problemId: number } };
-export type WebviewMessageType =
-	| { msg: 'onProblemData'; data: ProblemData }
-	| { msg: 'onRunning' }
-	| { msg: 'onRunningDone' }
-	| { msg: 'onRunningOutput'; data: string };
+import { ProblemPublic } from 'bwcontest-shared/types/problem';
+import { MessageType, WebviewMessageType } from '../problem-panel-types';
 
 type RunningProgram = {
 	problemId: number;
@@ -39,26 +21,23 @@ type RunningProgram = {
 type ContestContext = {
 	token: string | undefined;
 	teamData: TeamData | undefined;
-	problem: ProblemData[number] | undefined;
+	problem: ProblemPublic | undefined;
 };
 
 export class ProblemPanelProvider {
 	public static currentProvider: ProblemPanelProvider | undefined;
 
 	private _runningProgram: RunningProgram | undefined;
-	private _problemData: ProblemData | undefined;
-	private readonly _context: vscode.ExtensionContext;
+	private _problemData: Array<ProblemPublic> | undefined;
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
 	private readonly _webUrl: string;
 
 	private constructor(params: {
-		context: vscode.ExtensionContext;
 		panel: vscode.WebviewPanel;
 		extensionUri: vscode.Uri;
 		webUrl: string;
 	}) {
-		this._context = params.context;
 		this._panel = params.panel;
 		this._extensionUri = params.extensionUri;
 		this._webUrl = params.webUrl;
@@ -88,7 +67,6 @@ export class ProblemPanelProvider {
 			]
 		});
 		ProblemPanelProvider.currentProvider = new ProblemPanelProvider({
-			context,
 			panel,
 			extensionUri: context.extensionUri,
 			webUrl
@@ -132,7 +110,7 @@ export class ProblemPanelProvider {
 		}
 		await vscode.workspace.saveAll();
 		const answer = await vscode.window.showInformationMessage(
-			`Are you sure you want to submit '${problem.name}'?`,
+			`Are you sure you want to submit '${problem.friendlyName}'?`,
 			{ modal: true },
 			'Yes'
 		);
@@ -147,8 +125,10 @@ export class ProblemPanelProvider {
 			teamId: teamData.team.id
 		});
 		if (!submitResult.success) {
-			vscode.window.showErrorMessage(`Web error submitting '${problem.name}'`);
-			outputPanelLog.error(`Web error submitting '${problem.name}': ${submitResult.message}`);
+			vscode.window.showErrorMessage(`Web error submitting '${problem.friendlyName}'`);
+			outputPanelLog.error(
+				`Web error submitting '${problem.friendlyName}': ${submitResult.message}`
+			);
 		}
 	}
 
@@ -283,17 +263,10 @@ export class ProblemPanelProvider {
 	}
 
 	private async _handleRequestProblemData(): Promise<void> {
-		const token = globalStateService.getToken();
-		if (token !== undefined) {
-			const res = await fetch(urlJoin(this._webUrl, `/api/contest/${token}`));
-			const data = await res.json();
-			if (data.success === true) {
-				this._problemData = data.problems;
-				this._webviewPostMessage({
-					msg: 'onProblemData',
-					data: data.problems
-				});
-			}
+		const dataRes = await apiClient.getData();
+		if (dataRes.success) {
+			this._problemData = dataRes.data.problems;
+			this._webviewPostMessage({ msg: 'onProblemData', data: dataRes.data.problems });
 		}
 	}
 

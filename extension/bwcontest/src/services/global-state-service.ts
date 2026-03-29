@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TeamData } from '../types';
+import { TeamData } from '../common-types';
 
 export class GlobalStateService {
 	private _context: vscode.ExtensionContext | undefined;
