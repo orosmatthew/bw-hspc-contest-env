@@ -21,8 +21,8 @@ npm run dev
 ### Database
 
 ```bash
-npx drizzle-kit push # for ad-hoc changes
-npx drizzle-kit migrate # for using migrations
+npx drizzle-kit push # for pushing ad-hoc changes for dev. Will also initialize db.
+npx drizzle-kit migrate # for applying migrations. Will also initialize db.
 npx drizzle-kit generate --name my_cool_migration # for creating migrations
 ```
 
