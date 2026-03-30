@@ -12,6 +12,7 @@ services:
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: bw123
       DATABASE_URL: file:db/data.db
+      GIT_PORT: 7006
     volumes:
       - ./repo:/app/web/repo
       - ./db:/app/web/db
