@@ -51,5 +51,16 @@ export const actions: Actions = {
 			return { success: false, message: 'Unable to update problem' };
 		}
 		return { success: true };
+	},
+	delete: async ({ params }) => {
+		const problemIdParse = z.coerce.number().int().safeParse(params.problemId);
+		if (!problemIdParse.success) {
+			error(400, { message: 'Invalid problem id' });
+		}
+		const deleteSuccess = await problemRepo.deleteById(problemIdParse.data);
+		if (!deleteSuccess) {
+			return { success: false, message: 'Unable to delete problem' };
+		}
+		redirect(303, '/admin/problems');
 	}
 };

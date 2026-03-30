@@ -19,7 +19,8 @@
 <h1 style="text-align:center" class="mb-1"><i class="bi"></i>Dev Tools</h1>
 
 <p>
-	<a href="/admin/dev/all-annotated-outputs">Show All Annotated Outputs (slow / memory intensive)</a>
+	<a href="/admin/dev/all-annotated-outputs">Show All Annotated Outputs (slow / memory intensive)</a
+	>
 </p>
 
 <p>

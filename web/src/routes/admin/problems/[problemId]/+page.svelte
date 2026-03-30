@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
 	import { stretchTextarea } from '$lib/common/utils';
 	import type { ActionData, PageData } from './$types';
+	import { enhance } from '$app/forms';
 
 	let editing = $state(false);
 	let error = $state(false);
@@ -15,24 +14,6 @@
 	}
 
 	let { data, form }: Props = $props();
-
-	async function deleteProblem() {
-		if (confirmModal === undefined) {
-			console.error('confirmModal is undefined, aborting');
-			return;
-		}
-		const sure = await confirmModal.prompt('Are you sure?');
-		if (sure !== true) {
-			return;
-		}
-		const res = await fetch(page.url, { method: 'DELETE' });
-		const data = await res.json();
-		if (data.success === true) {
-			void goto('/admin/problems');
-		} else {
-			error = true;
-		}
-	}
 
 	let confirmModal: ConfirmModal | undefined = $state();
 
@@ -63,7 +44,28 @@
 		<a href="/admin/problems" class="btn btn-outline-primary">All Problems</a>
 	</div>
 	<div class="col-6 text-end">
-		<button onclick={deleteProblem} type="button" class="btn btn-danger">Delete</button>
+		<form
+			action="?/delete"
+			method="POST"
+			class="d-inline"
+			use:enhance={async ({ cancel }) => {
+				if (confirmModal === undefined) {
+					console.error('confirmModal is undefined, aborting');
+					cancel();
+					return;
+				}
+				const sure = await confirmModal.prompt('Are you sure?');
+				if (sure !== true) {
+					cancel();
+					return;
+				}
+				return async ({ update }) => {
+					await update();
+				};
+			}}
+		>
+			<button type="submit" class="btn btn-danger">Delete</button>
+		</form>
 		{#if !editing}
 			<button
 				onclick={() => {

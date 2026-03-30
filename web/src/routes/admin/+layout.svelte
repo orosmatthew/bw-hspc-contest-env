@@ -4,6 +4,7 @@
 	import { theme } from '$lib/components/ThemeProvider.svelte';
 	import urlJoin from 'url-join';
 	import type { FormEventHandler } from 'svelte/elements';
+	import { enhance } from '$app/forms';
 
 	interface Props {
 		data: LayoutData;
@@ -102,17 +103,9 @@
 				aria-label="theme"
 				class="btn"><i class={`bi bi-${theme.value === 'light' ? 'sun' : 'moon'}`}></i></button
 			>
-			<button
-				onclick={async () => {
-					const res = await fetch('/logout', { method: 'POST' });
-					const data = await res.json();
-					if (data.success === true) {
-						void goto('/login');
-					}
-				}}
-				type="button"
-				class="btn btn-outline-secondary">Logout</button
-			>
+			<form action="?/logout" method="POST" class="d-inline" use:enhance>
+				<button type="submit" class="btn btn-outline-secondary">Logout</button>
+			</form>
 		</div>
 	</nav>
 	{@render children?.()}
