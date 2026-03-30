@@ -1,6 +1,6 @@
 import { redirect, type Handle, type ServerInit } from '@sveltejs/kit';
 import { startGitServer } from '$lib/server/git-server';
-import { adminSessionRepo, contestRepo } from '$lib/server/repos';
+import { adminSessionRepo } from '$lib/server/repos';
 
 export const init: ServerInit = async () => {
 	console.log('Runtime initialization...');
@@ -27,39 +27,6 @@ export const handle = (async ({ event, resolve }) => {
 		const session = await adminSessionRepo.getValid(token);
 		if (session === undefined) {
 			redirect(307, '/login');
-		}
-		const contestParam = event.url.searchParams.get('c');
-		const contestCookie = event.cookies.get('selectedContest');
-		if (contestParam !== null) {
-			const selectedContest = parseInt(contestParam);
-			if (isNaN(selectedContest)) {
-				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
-				event.locals.selectedContest = null;
-			} else {
-				const contest = await contestRepo.getById(selectedContest);
-				if (contest !== undefined) {
-					event.cookies.set('selectedContest', contestParam, { path: '/admin', secure: false });
-					event.locals.selectedContest = selectedContest;
-				} else {
-					event.cookies.delete('selectedContest', { path: '/admin', secure: false });
-					event.locals.selectedContest = null;
-				}
-			}
-		} else if (contestCookie !== undefined) {
-			const selectedContest = parseInt(contestCookie);
-			if (isNaN(selectedContest)) {
-				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
-				event.locals.selectedContest = null;
-			}
-			const contest = await contestRepo.getById(selectedContest);
-			if (contest !== undefined) {
-				event.locals.selectedContest = selectedContest;
-			} else {
-				event.cookies.delete('selectedContest', { path: '/admin', secure: false });
-				event.locals.selectedContest = null;
-			}
-		} else {
-			event.locals.selectedContest = null;
 		}
 	}
 	const res = await resolve(event);

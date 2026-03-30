@@ -3,15 +3,18 @@ import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { submissionRepo } from '$lib/server/repos';
 
-export const load: PageServerLoad = async ({ params }) => {
-	const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
+export const load: PageServerLoad = async ({ parent, params }) => {
+	const { contest } = await parent();
+	if (contest === undefined) {
+		error(404, { message: 'Contest not found' });
+	}
 	const teamIdParse = z.coerce.number().int().safeParse(params.teamId);
 	const problemIdParse = z.coerce.number().int().safeParse(params.problemId);
-	if (!contestIdParse.success || !teamIdParse.success || !problemIdParse.success) {
+	if (!teamIdParse.success || !problemIdParse.success) {
 		error(400, { message: 'Invalid params' });
 	}
 	const submissions = await submissionRepo.getInContestForTeamForProblemPrivate(
-		contestIdParse.data,
+		contest.id,
 		teamIdParse.data,
 		problemIdParse.data
 	);

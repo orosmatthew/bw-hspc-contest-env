@@ -2,6 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
+	import urlJoin from 'url-join';
 
 	interface Props {
 		data: PageData;
@@ -29,28 +30,30 @@
 	<title>Admin Scoreboards</title>
 </svelte:head>
 
-{#if data.contest !== null}
+{#if data.contest !== undefined}
 	<div class="pb-2 d-flex flex-row-reverse">
 		<a
-			href={`/admin/scoreboard/json/${data.contest.id}`}
+			href={urlJoin('/admin/contests', data.contest.id.toString(), '/scoreboard/json')}
 			target="_blank"
 			class="btn btn-outline-secondary btn-sm">JSON Export</a
 		>
 	</div>
 {/if}
 
-<div class="text-end">
-	{#if data.isFrozen}
-		<span class="badge bg-info">Frozen</span>
-	{/if}
-	{#if updating}
-		<div class="spinner-border spinner-border-sm text-secondary"></div>
-	{/if}
-	<strong>Last Updated: </strong>{data.timestamp.toLocaleTimeString()}
-</div>
+{#if data.scoreboard !== undefined}
+	<div class="d-flex flex-row justify-content-end gap-1">
+		{#if data.scoreboard.isFrozen}
+			<span class="badge bg-info">Frozen</span>
+		{/if}
+		{#if updating}
+			<div class="spinner-border spinner-border-sm text-secondary"></div>
+		{/if}
+		<strong>Last Updated:</strong><span>{data.scoreboard.timestamp.toLocaleTimeString()}</span>
+	</div>
+{/if}
 
-{#if data.contest !== null}
-	<h2 style="text-align:center">{data.contest.name}</h2>
+{#if data.scoreboard !== undefined}
+	<h2 style="text-align:center">{data.scoreboard.contest.name}</h2>
 	<div class="mb-3 row">
 		<div class="text-end"></div>
 	</div>
@@ -62,19 +65,19 @@
 				<th>Team Name</th>
 				<th>Solves</th>
 				<th>Time</th>
-				{#each data.contest.problems as problem (problem.id)}
+				{#each data.scoreboard.contest.problems as problem (problem.id)}
 					<th>{problem.friendlyName}</th>
 				{/each}
 			</tr>
 		</thead>
 		<tbody>
-			{#each data.contest.teams as team, i (team.id)}
+			{#each data.scoreboard.contest.teams as team, i (team.id)}
 				<tr>
 					<td style="text-align:center; font-size:24px;"><strong>{i + 1}</strong></td>
 					<td style="font-size:18px">{team.name}</td>
 					<td style="font-size:18px">{team.solves}</td>
 					<td style="font-size:18px">{team.time.toFixed(0)}</td>
-					{#each data.contest.problems as problem (problem.id)}
+					{#each data.scoreboard.contest.problems as problem (problem.id)}
 						<td>
 							<div class="row">
 								<div class="col-3">
@@ -98,7 +101,13 @@
 									})?.attempts !== 0}
 										<a
 											style="text-decoration: initial;"
-											href="/admin/submissions/latest/{data.contest.id}/{team.id}/{problem.id}"
+											href={urlJoin(
+												'/admin/contests',
+												data.scoreboard.contest.id.toString(),
+												'/submissions/latest',
+												team.id.toString(),
+												problem.id.toString()
+											)}
 										>
 											{team.problems.find((p) => {
 												return p.id === problem.id;
@@ -127,7 +136,7 @@
 		</tbody>
 	</table>
 {:else}
-	<h2 class="text-center">Scoreboard - Select Contest</h2>
+	<h2 class="text-center">No Scoreboard Data</h2>
 {/if}
 
 <style lang="scss">

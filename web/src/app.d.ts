@@ -3,9 +3,7 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		interface Locals {
-			selectedContest: number | null;
-		}
+		// interface Locals {}
 		// interface PageData {}
 		// interface Platform {}
 	}

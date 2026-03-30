@@ -1,13 +1,9 @@
-<script lang="ts" module>
-	export let selectedContest: { id: number | null } = $state({ id: null });
-</script>
-
 <script lang="ts">
-	import { beforeNavigate, goto } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import type { LayoutData } from './$types';
-	import { page } from '$app/state';
-	import { untrack } from 'svelte';
 	import { theme } from '$lib/components/ThemeProvider.svelte';
+	import urlJoin from 'url-join';
+	import type { FormEventHandler } from 'svelte/elements';
 
 	interface Props {
 		data: LayoutData;
@@ -16,37 +12,12 @@
 
 	let { data, children }: Props = $props();
 
-	selectedContest.id = untrack(() => data.selectedContestId);
-
-	beforeNavigate(({ to }) => {
-		if (
-			selectedContest.id !== null &&
-			to !== null &&
-			to.url.pathname.startsWith('/admin') &&
-			!isNaN(selectedContest.id)
-		) {
-			to.url.searchParams.set('c', selectedContest.id.toString());
-		} else {
-			selectedContest.id = null;
+	const onSelectContestInput: FormEventHandler<HTMLSelectElement> = async (event) => {
+		if (event.currentTarget.value === '') {
+			await goto('/admin');
 		}
-	});
-
-	let selectContestValue: number | null = $state(selectedContest.id);
-	function onSelectContest() {
-		if (selectContestValue === null) {
-			selectedContest.id = null;
-		} else {
-			selectedContest.id = selectContestValue;
-		}
-		const url = page.url;
-		if (typeof selectedContest.id === 'number') {
-			url.searchParams.delete('c');
-			url.searchParams.append('c', selectedContest.id.toString());
-		} else {
-			url.searchParams.delete('c');
-		}
-		void goto(url, { replaceState: true, noScroll: true, keepFocus: true, invalidateAll: true });
-	}
+		await goto(urlJoin('/admin/contests', event.currentTarget.value));
+	};
 </script>
 
 <div class="container">
@@ -69,45 +40,60 @@
 						<a href="/admin" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
 					</li>
 					<li class="nav-item">
-						<a href="/admin/teams" class="nav-link"><i class="bi bi-people"></i> Teams</a>
-					</li>
-					<li class="nav-item">
-						<a href="/admin/reviews" class="nav-link"><i class="bi bi-eye"></i> Reviews</a>
-					</li>
-					<li class="nav-item">
-						<a href="/admin/submissions" class="nav-link"
-							><i class="bi bi-envelope-paper"></i> Submissions</a
-						>
-					</li>
-					<li class="nav-item">
 						<a href="/admin/problems" class="nav-link"
 							><i class="bi bi-question-circle"></i> Problems</a
 						>
 					</li>
 					<li class="nav-item">
-						<a href="/admin/scoreboard" class="nav-link"><i class="bi bi-trophy"></i> Scoreboards</a
-						>
+						<a href="/admin/teams" class="nav-link"><i class="bi bi-people"></i> Teams</a>
 					</li>
 					<li class="nav-item">
 						<a href="/admin/contests" class="nav-link"><i class="bi bi-flag"></i> Contests</a>
 					</li>
+					<select
+						class="form-control form-select w-auto"
+						value={data.contest?.id ?? ''}
+						oninput={onSelectContestInput}
+					>
+						<option value="" selected={data.contest === undefined}>Select Contest</option>
+						{#each data.contests as contest (contest.id)}
+							<option value={contest.id}>{contest.name}</option>
+						{/each}
+					</select>
+					{#if data.contest !== undefined}
+						<li class="nav-item">
+							<a
+								href={urlJoin('/admin/contests', data.contest.id.toString(), '/reviews')}
+								class="nav-link"
+							>
+								<i class="bi bi-eye"></i>
+								Reviews
+							</a>
+						</li>
+						<li class="nav-item">
+							<a
+								href={urlJoin('/admin/contests', data.contest.id.toString(), '/submissions')}
+								class="nav-link"
+							>
+								<i class="bi bi-envelope-paper"></i>
+								Submissions
+							</a>
+						</li>
+						<li class="nav-item">
+							<a
+								href={urlJoin('/admin/contests', data.contest.id.toString(), '/scoreboard')}
+								class="nav-link"
+							>
+								<i class="bi bi-trophy"></i>
+								Scoreboards
+							</a>
+						</li>
+					{/if}
 				</ul>
 			</div>
 		</div>
 
 		<div class="nav-sticky-right">
-			<select
-				class="form-control form-select w-auto"
-				bind:value={selectContestValue}
-				onchange={onSelectContest}
-			>
-				{#if selectedContest.id === null}
-					<option value={null}>Select Contest</option>
-				{/if}
-				{#each data.contests as contest (contest.id)}
-					<option value={contest.id}>{contest.name}</option>
-				{/each}
-			</select>
 			<button
 				onclick={() => {
 					theme.value = theme.value === 'light' ? 'dark' : 'light';
