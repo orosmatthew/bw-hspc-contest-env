@@ -9,13 +9,17 @@ export class AdminSessionRepo {
 	private _adminPassword: string;
 	private _expiresMinutes: number;
 
-	constructor(params: { adminUsername: string; adminPassword: string; expiresMinutes: number }) {
+	public constructor(params: {
+		adminUsername: string;
+		adminPassword: string;
+		expiresMinutes: number;
+	}) {
 		this._adminUsername = params.adminUsername.trim();
 		this._adminPassword = params.adminPassword;
 		this._expiresMinutes = params.expiresMinutes;
 	}
 
-	async login(params: { username: string; password: string }): Promise<string | undefined> {
+	public async create(params: { username: string; password: string }): Promise<string | undefined> {
 		if (params.username.trim() !== this._adminUsername || params.password !== this._adminPassword) {
 			return undefined;
 		}
@@ -32,7 +36,7 @@ export class AdminSessionRepo {
 		}
 	}
 
-	async logout(token: string): Promise<void> {
+	public async deleteByToken(token: string): Promise<void> {
 		try {
 			await db.delete(adminSessionTable).where(eq(adminSessionTable.token, token));
 		} catch (e) {
@@ -40,14 +44,18 @@ export class AdminSessionRepo {
 		}
 	}
 
-	async getValidSession(token: string): Promise<AdminSession | undefined> {
+	public async getValid(token: string): Promise<AdminSession | undefined> {
 		try {
-			const cutoff = new Date(new Date().valueOf() - 1000 * 60 * this._expiresMinutes);
 			const session = (
 				await db
 					.select()
 					.from(adminSessionTable)
-					.where(and(eq(adminSessionTable.token, token), gt(adminSessionTable.createdAt, cutoff)))
+					.where(
+						and(
+							eq(adminSessionTable.token, token),
+							gt(adminSessionTable.createdAt, this._getCutoff())
+						)
+					)
 			).at(0);
 			return session;
 		} catch (e) {
@@ -55,12 +63,15 @@ export class AdminSessionRepo {
 		}
 	}
 
-	async deleteExpired() {
-		const cutoff = new Date(new Date().valueOf() - 1000 * 60 * this._expiresMinutes);
+	public async deleteExpired() {
 		try {
-			await db.delete(adminSessionTable).where(lte(adminSessionTable.createdAt, cutoff));
+			await db.delete(adminSessionTable).where(lte(adminSessionTable.createdAt, this._getCutoff()));
 		} catch (e) {
 			console.error(e);
 		}
+	}
+
+	private _getCutoff() {
+		return new Date(Date.now() - 1000 * 60 * this._expiresMinutes);
 	}
 }

@@ -3,12 +3,13 @@ import { db } from '../db';
 import { contestProblemTable, problemTable } from '../db/schema';
 import {
 	problemPublicSchema,
+	type ProblemBase,
 	type ProblemPrivate,
 	type ProblemPublic
 } from 'bwcontest-shared/types/problem';
 
 export class ProblemRepo {
-	async create(values: {
+	public async create(values: {
 		friendlyName: string;
 		pascalName: string;
 		sampleInput: string;
@@ -37,7 +38,7 @@ export class ProblemRepo {
 		}
 	}
 
-	async getByIdPrivate(id: number): Promise<ProblemPrivate | undefined> {
+	public async getByIdPrivate(id: number): Promise<ProblemPrivate | undefined> {
 		try {
 			const problem = (
 				await db.select(this._getFields()).from(problemTable).where(eq(problemTable.id, id))
@@ -48,7 +49,7 @@ export class ProblemRepo {
 		}
 	}
 
-	async getInContestPrivate(contestId: number): Promise<Array<ProblemPrivate>> {
+	public async getInContestPrivate(contestId: number): Promise<Array<ProblemPrivate>> {
 		try {
 			const problems = await db
 				.select(this._getFields())
@@ -63,11 +64,11 @@ export class ProblemRepo {
 		}
 	}
 
-	async getInContestPublic(contestId: number): Promise<Array<ProblemPublic>> {
+	public async getInContestPublic(contestId: number): Promise<Array<ProblemPublic>> {
 		return this._ensurePublic(await this.getInContestPrivate(contestId));
 	}
 
-	async getAllPrivate(): Promise<Array<ProblemPrivate>> {
+	public async getAllPrivate(): Promise<Array<ProblemPrivate>> {
 		try {
 			const problems = await db
 				.select(this._getFields())
@@ -80,7 +81,7 @@ export class ProblemRepo {
 		}
 	}
 
-	async getByPascalNamePrivate(pascalName: string): Promise<ProblemPrivate | undefined> {
+	public async getByPascalNamePrivate(pascalName: string): Promise<ProblemPrivate | undefined> {
 		try {
 			return (
 				await db
@@ -93,7 +94,7 @@ export class ProblemRepo {
 		}
 	}
 
-	async update(
+	public async updateById(
 		id: number,
 		values: {
 			friendlyName?: string;
@@ -125,7 +126,7 @@ export class ProblemRepo {
 		}
 	}
 
-	async delete(id: number): Promise<boolean> {
+	public async deleteById(id: number): Promise<boolean> {
 		try {
 			await db.delete(problemTable).where(eq(problemTable.id, id));
 			return true;
@@ -148,7 +149,7 @@ export class ProblemRepo {
 		};
 	}
 
-	private _ensurePublic(problems: Array<ProblemPublic>): Array<ProblemPublic> {
+	private _ensurePublic(problems: Array<ProblemBase>): Array<ProblemPublic> {
 		return problems.map((p) => problemPublicSchema.parse(p));
 	}
 }

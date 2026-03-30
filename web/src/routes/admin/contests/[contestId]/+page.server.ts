@@ -82,10 +82,9 @@ export const actions: Actions = {
 		if (activeTeamCreateResult !== true) {
 			return { success: false, message: 'Unable to create active teams' };
 		}
-		const updateStartTimeSuccess = await contestRepo.updateStartTime(
-			contestIdParse.data,
-			new Date()
-		);
+		const updateStartTimeSuccess = await contestRepo.updateById(contestIdParse.data, {
+			startTime: new Date()
+		});
 		if (updateStartTimeSuccess !== true) {
 			return { success: false, message: 'Unable to update contest start time' };
 		}
@@ -131,7 +130,9 @@ export const actions: Actions = {
 		if (!contestIdParse.success) {
 			return { success: false, message: 'Invalid contest id' };
 		}
-		const updateSuccess = await contestRepo.updateFreezeTime(contestIdParse.data, new Date());
+		const updateSuccess = await contestRepo.updateById(contestIdParse.data, {
+			freezeTime: new Date()
+		});
 		if (updateSuccess !== true) {
 			return { success: false, message: 'Unable to update freeze time' };
 		}
@@ -142,7 +143,7 @@ export const actions: Actions = {
 		if (!contestIdParse.success) {
 			return { success: false, message: 'Invalid contest id' };
 		}
-		const updateSuccess = await contestRepo.updateFreezeTime(contestIdParse.data, null);
+		const updateSuccess = await contestRepo.updateById(contestIdParse.data, { freezeTime: null });
 		if (updateSuccess !== true) {
 			return { success: false, message: 'Unable to update freeze time' };
 		}

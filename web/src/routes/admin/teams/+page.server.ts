@@ -57,7 +57,7 @@ export const actions: Actions = {
 		if (!form.success) {
 			return { success: false, message: 'Invalid form data' };
 		}
-		const updateSuccess = await teamRepo.update(form.data.id, {
+		const updateSuccess = await teamRepo.updateById(form.data.id, {
 			name: form.data.name,
 			language: form.data.lang,
 			password: form.data.password

@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 	}
 	const token = randomUUID();
-	const updateSuccess = await activeTeamRepo.update(activeTeam.id, {
+	const updateSuccess = await activeTeamRepo.updateById(activeTeam.id, {
 		sessionToken: token,
 		sessionCreatedAt: new Date()
 	});

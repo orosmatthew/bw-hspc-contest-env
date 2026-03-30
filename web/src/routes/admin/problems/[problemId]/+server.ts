@@ -8,7 +8,7 @@ export const DELETE: RequestHandler = async ({ params }) => {
 	if (!problemIdParse.success) {
 		error(400, { message: 'Invalid problem id' });
 	}
-	const deleteSuccess = await problemRepo.delete(problemIdParse.data);
+	const deleteSuccess = await problemRepo.deleteById(problemIdParse.data);
 	if (!deleteSuccess) {
 		return json({ success: false });
 	}

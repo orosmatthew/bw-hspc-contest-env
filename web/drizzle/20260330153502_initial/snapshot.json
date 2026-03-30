@@ -1,7 +1,7 @@
 {
 	"version": "7",
 	"dialect": "sqlite",
-	"id": "72bde1f4-7e2f-4e9e-815c-fcfa09ee8c20",
+	"id": "42d6f54c-0a0b-4ff0-9a3b-d866331a292b",
 	"prevIds": ["00000000-0000-0000-0000-000000000000"],
 	"ddl": [
 		{
@@ -537,7 +537,7 @@
 			"tableTo": "contest",
 			"columnsTo": ["id"],
 			"onUpdate": "NO ACTION",
-			"onDelete": "RESTRICT",
+			"onDelete": "CASCADE",
 			"nameExplicit": false,
 			"name": "fk_contest_problem_contest_id_contest_id_fk",
 			"entityType": "fks",
@@ -559,7 +559,7 @@
 			"tableTo": "contest",
 			"columnsTo": ["id"],
 			"onUpdate": "NO ACTION",
-			"onDelete": "RESTRICT",
+			"onDelete": "CASCADE",
 			"nameExplicit": false,
 			"name": "fk_contest_team_contest_id_contest_id_fk",
 			"entityType": "fks",
@@ -614,7 +614,7 @@
 			"tableTo": "contest",
 			"columnsTo": ["id"],
 			"onUpdate": "NO ACTION",
-			"onDelete": "RESTRICT",
+			"onDelete": "CASCADE",
 			"nameExplicit": false,
 			"name": "fk_submission_contest_id_contest_id_fk",
 			"entityType": "fks",
@@ -686,20 +686,6 @@
 		{
 			"columns": [
 				{
-					"value": "team_id",
-					"isExpression": false
-				}
-			],
-			"isUnique": false,
-			"where": null,
-			"origin": "manual",
-			"name": "idx_active_team_team_id",
-			"entityType": "indexes",
-			"table": "active_team"
-		},
-		{
-			"columns": [
-				{
 					"value": "contest_id",
 					"isExpression": false
 				}
@@ -707,23 +693,23 @@
 			"isUnique": false,
 			"where": null,
 			"origin": "manual",
-			"name": "idx_active_team_contest_id",
+			"name": "active_team_contest_id_idx",
 			"entityType": "indexes",
 			"table": "active_team"
 		},
 		{
 			"columns": [
 				{
-					"value": "contest_id",
+					"value": "created_at",
 					"isExpression": false
 				}
 			],
 			"isUnique": false,
 			"where": null,
 			"origin": "manual",
-			"name": "idx_contest_problem_contest_id",
+			"name": "admin_session_created_at_idx",
 			"entityType": "indexes",
-			"table": "contest_problem"
+			"table": "admin_session"
 		},
 		{
 			"columns": [
@@ -735,23 +721,9 @@
 			"isUnique": false,
 			"where": null,
 			"origin": "manual",
-			"name": "idx_contest_problem_problem_id",
+			"name": "contest_problem_problem_id_idx",
 			"entityType": "indexes",
 			"table": "contest_problem"
-		},
-		{
-			"columns": [
-				{
-					"value": "contest_id",
-					"isExpression": false
-				}
-			],
-			"isUnique": false,
-			"where": null,
-			"origin": "manual",
-			"name": "idx_contest_team_contest_id",
-			"entityType": "indexes",
-			"table": "contest_team"
 		},
 		{
 			"columns": [
@@ -763,7 +735,7 @@
 			"isUnique": false,
 			"where": null,
 			"origin": "manual",
-			"name": "idx_contest_team_team_id",
+			"name": "contest_team_team_id_idx",
 			"entityType": "indexes",
 			"table": "contest_team"
 		},
@@ -777,9 +749,49 @@
 			"isUnique": false,
 			"where": null,
 			"origin": "manual",
-			"name": "idx_submission_source_file_submission_id",
+			"name": "submission_source_file_submission_id_idx",
 			"entityType": "indexes",
 			"table": "submission_source_file"
+		},
+		{
+			"columns": [
+				{
+					"value": "state",
+					"isExpression": false
+				},
+				{
+					"value": "created_at",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "submission_state_created_at_idx",
+			"entityType": "indexes",
+			"table": "submission"
+		},
+		{
+			"columns": [
+				{
+					"value": "contest_id",
+					"isExpression": false
+				},
+				{
+					"value": "team_id",
+					"isExpression": false
+				},
+				{
+					"value": "problem_id",
+					"isExpression": false
+				}
+			],
+			"isUnique": false,
+			"where": null,
+			"origin": "manual",
+			"name": "submission_contest_team_problem_idx",
+			"entityType": "indexes",
+			"table": "submission"
 		},
 		{
 			"columns": [
@@ -791,7 +803,7 @@
 			"isUnique": false,
 			"where": null,
 			"origin": "manual",
-			"name": "idx_submission_team_id",
+			"name": "submission_team_id_idx",
 			"entityType": "indexes",
 			"table": "submission"
 		},
@@ -805,23 +817,16 @@
 			"isUnique": false,
 			"where": null,
 			"origin": "manual",
-			"name": "idx_submission_problem_id",
+			"name": "submission_problem_id_idx",
 			"entityType": "indexes",
 			"table": "submission"
 		},
 		{
-			"columns": [
-				{
-					"value": "contest_id",
-					"isExpression": false
-				}
-			],
-			"isUnique": false,
-			"where": null,
-			"origin": "manual",
-			"name": "idx_submission_contest_id",
-			"entityType": "indexes",
-			"table": "submission"
+			"columns": ["team_id"],
+			"nameExplicit": false,
+			"name": "active_team_team_id_unique",
+			"entityType": "uniques",
+			"table": "active_team"
 		},
 		{
 			"columns": ["session_token"],

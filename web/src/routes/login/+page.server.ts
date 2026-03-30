@@ -6,7 +6,7 @@ import z from 'zod';
 export const load: PageServerLoad = async ({ cookies }) => {
 	const token = cookies.get('session');
 	if (token !== undefined) {
-		const session = await adminSessionRepo.getValidSession(token);
+		const session = await adminSessionRepo.getValid(token);
 		if (session !== undefined) {
 			redirect(307, '/admin');
 		}
@@ -24,7 +24,7 @@ export const actions: Actions = {
 		if (!form.success) {
 			return { success: false, message: 'Invalid form data' };
 		}
-		const token = await adminSessionRepo.login({
+		const token = await adminSessionRepo.create({
 			username: form.data.username,
 			password: form.data.password
 		});

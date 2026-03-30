@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			status: 401
 		});
 	}
-	const updateSuccess = await activeTeamRepo.update(activeTeam.id, {
+	const updateSuccess = await activeTeamRepo.updateById(activeTeam.id, {
 		sessionToken: null,
 		sessionCreatedAt: null
 	});

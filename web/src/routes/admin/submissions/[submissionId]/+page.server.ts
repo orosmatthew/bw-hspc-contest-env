@@ -78,7 +78,7 @@ export const actions: Actions = {
 		}
 		const newStateReason: SubmissionStateReason | null =
 			submission.stateReason === 'incorrectOverriddenAsCorrect' ? null : submission.stateReason;
-		const updateSuccess = await submissionRepo.update(submission.id, {
+		const updateSuccess = await submissionRepo.updateById(submission.id, {
 			state: 'inReview',
 			gradedAt: null,
 			message: null,
@@ -100,7 +100,7 @@ export const actions: Actions = {
 		if (sourceFilesDeleteSuccess !== true) {
 			return { success: false, message: 'Unable to delete submission source files' };
 		}
-		const updateSuccess = await submissionRepo.update(submissionIdParse.data, {
+		const updateSuccess = await submissionRepo.updateById(submissionIdParse.data, {
 			state: 'queued',
 			stateReason: null,
 			stateReasonDetails: null,
@@ -126,7 +126,7 @@ export const actions: Actions = {
 		if (!form.success) {
 			return { success: false, message: 'Invalid form data' };
 		}
-		const updateSuccess = await submissionRepo.update(submissionIdParse.data, {
+		const updateSuccess = await submissionRepo.updateById(submissionIdParse.data, {
 			state: form.data.correct ? 'correct' : 'incorrect',
 			stateReason: form.data.correct ? 'incorrectOverriddenAsCorrect' : null,
 			message: form.data.message,

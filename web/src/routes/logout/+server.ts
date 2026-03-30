@@ -5,7 +5,7 @@ import { adminSessionRepo } from '$lib/server/repos';
 export const POST = (async ({ cookies }) => {
 	const token = cookies.get('session');
 	if (token !== undefined) {
-		await adminSessionRepo.logout(token);
+		await adminSessionRepo.deleteByToken(token);
 	}
 	return json({ success: true });
 }) satisfies RequestHandler;

@@ -22,7 +22,7 @@ export const GET: RequestHandler = async ({ request }) => {
 			status: 401
 		});
 	}
-	const submission = await submissionRepo.getLatestQueuedPrivate();
+	const submission = await submissionRepo.getNextQueuedPrivate();
 	if (submission === undefined) {
 		return json({ success: true, data: null } satisfies GetSubmissionRes);
 	}
@@ -73,13 +73,13 @@ export const POST: RequestHandler = async ({ request }) => {
 		);
 	}
 	if (req.data.result.sourceFiles !== undefined) {
-		for (const sourceFile of req.data.result.sourceFiles) {
-			await submissionSourceFileRepo.create({
-				pathFromRootProblem: sourceFile.pathFromProblemRoot,
-				content: sourceFile.content,
-				submissionId: submission.id
-			});
-		}
+		await submissionSourceFileRepo.createMany(
+			req.data.result.sourceFiles.map((s) => ({
+				submissionId: submission.id,
+				pathFromProblemRoot: s.pathFromProblemRoot,
+				content: s.content
+			}))
+		);
 	}
 	const teamOutput =
 		req.data.result.output !== undefined ? normalizeNewlines(req.data.result.output) : null;
@@ -93,7 +93,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	switch (req.data.result.kind) {
 		case 'completed':
 			if (autoJudgeResponse(problem.realOutput, teamOutput ?? '') === 'correct') {
-				await submissionRepo.update(req.data.submissionId, {
+				await submissionRepo.updateById(req.data.submissionId, {
 					state: 'correct',
 					gradedAt: new Date(),
 					actualOutput: teamOutput,
@@ -111,7 +111,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					problem.realOutput,
 					teamOutput ?? ''
 				);
-				await submissionRepo.update(req.data.submissionId, {
+				await submissionRepo.updateById(req.data.submissionId, {
 					state: 'inReview',
 					diff,
 					actualOutput: teamOutput,
@@ -125,7 +125,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			}
 		case 'compileFailed':
 			console.log('compile failed...');
-			await submissionRepo.update(req.data.submissionId, {
+			await submissionRepo.updateById(req.data.submissionId, {
 				state: 'incorrect',
 				gradedAt: new Date(),
 				stateReason: 'buildError',
@@ -134,7 +134,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			});
 			return json({ success: true, data: undefined } satisfies PostSubmissionRes);
 		case 'timeLimitExceeded':
-			await submissionRepo.update(req.data.submissionId, {
+			await submissionRepo.updateById(req.data.submissionId, {
 				state: 'incorrect',
 				gradedAt: new Date(),
 				actualOutput: teamOutput,
@@ -148,7 +148,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: true, data: undefined } satisfies PostSubmissionRes);
 		case 'runError':
 			// TODO: Raise to admins somehow. For now, just mark stateReason so it *could* be observed
-			await submissionRepo.update(req.data.submissionId, {
+			await submissionRepo.updateById(req.data.submissionId, {
 				stateReason: 'sandboxError',
 				stateReasonDetails: req.data.result.resultKindReason
 			});

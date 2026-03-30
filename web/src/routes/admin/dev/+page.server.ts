@@ -12,7 +12,7 @@ export const actions = {
 		try {
 			const problems = await problemRepo.getAllPrivate();
 			for (const problem of problems) {
-				await problemRepo.update(problem.id, {
+				await problemRepo.updateById(problem.id, {
 					sampleInput: normalizeNewlines(problem.sampleInput),
 					sampleOutput: normalizeNewlines(problem.sampleOutput),
 					realInput: normalizeNewlines(problem.realInput),

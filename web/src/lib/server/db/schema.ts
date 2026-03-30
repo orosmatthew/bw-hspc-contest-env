@@ -4,10 +4,14 @@ import {
 } from 'bwcontest-shared/types/submission';
 import { index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
-export const adminSessionTable = sqliteTable('admin_session', {
-	token: text('token').notNull().primaryKey(),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
-});
+export const adminSessionTable = sqliteTable(
+	'admin_session',
+	{
+		token: text('token').notNull().primaryKey(),
+		createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
+	},
+	(table) => [index('admin_session_created_at_idx').on(table.createdAt)]
+);
 
 export const problemTable = sqliteTable('problem', {
 	id: integer('id').notNull().primaryKey({ autoIncrement: true }),
@@ -48,10 +52,7 @@ export const activeTeamTable = sqliteTable(
 			.notNull()
 			.references(() => contestTable.id, { onDelete: 'restrict' })
 	},
-	(table) => [
-		index('idx_active_team_team_id').on(table.teamId),
-		index('idx_active_team_contest_id').on(table.contestId)
-	]
+	(table) => [index('active_team_contest_id_idx').on(table.contestId)]
 );
 
 export const submissionTable = sqliteTable(
@@ -83,9 +84,10 @@ export const submissionTable = sqliteTable(
 			.references(() => contestTable.id, { onDelete: 'cascade' })
 	},
 	(table) => [
-		index('idx_submission_team_id').on(table.teamId),
-		index('idx_submission_problem_id').on(table.problemId),
-		index('idx_submission_contest_id').on(table.contestId)
+		index('submission_state_created_at_idx').on(table.state, table.createdAt),
+		index('submission_contest_team_problem_idx').on(table.contestId, table.teamId, table.problemId),
+		index('submission_team_id_idx').on(table.teamId),
+		index('submission_problem_id_idx').on(table.problemId)
 	]
 );
 
@@ -99,7 +101,7 @@ export const submissionSourceFileTable = sqliteTable(
 		pathFromProblemRoot: text('path_from_problem_root').notNull(),
 		content: text('content').notNull()
 	},
-	(table) => [index('idx_submission_source_file_submission_id').on(table.submissionId)]
+	(table) => [index('submission_source_file_submission_id_idx').on(table.submissionId)]
 );
 
 export const contestProblemTable = sqliteTable(
@@ -114,8 +116,7 @@ export const contestProblemTable = sqliteTable(
 	},
 	(table) => [
 		primaryKey({ columns: [table.contestId, table.problemId] }),
-		index('idx_contest_problem_contest_id').on(table.contestId),
-		index('idx_contest_problem_problem_id').on(table.problemId)
+		index('contest_problem_problem_id_idx').on(table.problemId)
 	]
 );
 
@@ -131,7 +132,6 @@ export const contestTeamTable = sqliteTable(
 	},
 	(table) => [
 		primaryKey({ columns: [table.contestId, table.teamId] }),
-		index('idx_contest_team_contest_id').on(table.contestId),
-		index('idx_contest_team_team_id').on(table.teamId)
+		index('contest_team_team_id_idx').on(table.teamId)
 	]
 );

@@ -1,6 +1,6 @@
 CREATE TABLE `active_team` (
 	`id` integer PRIMARY KEY AUTOINCREMENT,
-	`team_id` integer NOT NULL,
+	`team_id` integer NOT NULL UNIQUE,
 	`session_token` text UNIQUE,
 	`session_created_at` integer,
 	`contest_id` integer NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE `contest_problem` (
 	`contest_id` integer NOT NULL,
 	`problem_id` integer NOT NULL,
 	CONSTRAINT `contest_problem_pk` PRIMARY KEY(`contest_id`, `problem_id`),
-	CONSTRAINT `fk_contest_problem_contest_id_contest_id_fk` FOREIGN KEY (`contest_id`) REFERENCES `contest`(`id`) ON DELETE RESTRICT,
+	CONSTRAINT `fk_contest_problem_contest_id_contest_id_fk` FOREIGN KEY (`contest_id`) REFERENCES `contest`(`id`) ON DELETE CASCADE,
 	CONSTRAINT `fk_contest_problem_problem_id_problem_id_fk` FOREIGN KEY (`problem_id`) REFERENCES `problem`(`id`) ON DELETE RESTRICT
 );
 --> statement-breakpoint
@@ -32,7 +32,7 @@ CREATE TABLE `contest_team` (
 	`contest_id` integer NOT NULL,
 	`team_id` integer NOT NULL,
 	CONSTRAINT `contest_team_pk` PRIMARY KEY(`contest_id`, `team_id`),
-	CONSTRAINT `fk_contest_team_contest_id_contest_id_fk` FOREIGN KEY (`contest_id`) REFERENCES `contest`(`id`) ON DELETE RESTRICT,
+	CONSTRAINT `fk_contest_team_contest_id_contest_id_fk` FOREIGN KEY (`contest_id`) REFERENCES `contest`(`id`) ON DELETE CASCADE,
 	CONSTRAINT `fk_contest_team_team_id_team_id_fk` FOREIGN KEY (`team_id`) REFERENCES `team`(`id`) ON DELETE RESTRICT
 );
 --> statement-breakpoint
@@ -74,7 +74,7 @@ CREATE TABLE `submission` (
 	`contest_id` integer NOT NULL,
 	CONSTRAINT `fk_submission_team_id_team_id_fk` FOREIGN KEY (`team_id`) REFERENCES `team`(`id`) ON DELETE RESTRICT,
 	CONSTRAINT `fk_submission_problem_id_problem_id_fk` FOREIGN KEY (`problem_id`) REFERENCES `problem`(`id`) ON DELETE RESTRICT,
-	CONSTRAINT `fk_submission_contest_id_contest_id_fk` FOREIGN KEY (`contest_id`) REFERENCES `contest`(`id`) ON DELETE RESTRICT
+	CONSTRAINT `fk_submission_contest_id_contest_id_fk` FOREIGN KEY (`contest_id`) REFERENCES `contest`(`id`) ON DELETE CASCADE
 );
 --> statement-breakpoint
 CREATE TABLE `team` (
@@ -84,13 +84,12 @@ CREATE TABLE `team` (
 	`language` text NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX `idx_active_team_team_id` ON `active_team` (`team_id`);--> statement-breakpoint
-CREATE INDEX `idx_active_team_contest_id` ON `active_team` (`contest_id`);--> statement-breakpoint
-CREATE INDEX `idx_contest_problem_contest_id` ON `contest_problem` (`contest_id`);--> statement-breakpoint
-CREATE INDEX `idx_contest_problem_problem_id` ON `contest_problem` (`problem_id`);--> statement-breakpoint
-CREATE INDEX `idx_contest_team_contest_id` ON `contest_team` (`contest_id`);--> statement-breakpoint
-CREATE INDEX `idx_contest_team_team_id` ON `contest_team` (`team_id`);--> statement-breakpoint
-CREATE INDEX `idx_submission_source_file_submission_id` ON `submission_source_file` (`submission_id`);--> statement-breakpoint
-CREATE INDEX `idx_submission_team_id` ON `submission` (`team_id`);--> statement-breakpoint
-CREATE INDEX `idx_submission_problem_id` ON `submission` (`problem_id`);--> statement-breakpoint
-CREATE INDEX `idx_submission_contest_id` ON `submission` (`contest_id`);
+CREATE INDEX `active_team_contest_id_idx` ON `active_team` (`contest_id`);--> statement-breakpoint
+CREATE INDEX `admin_session_created_at_idx` ON `admin_session` (`created_at`);--> statement-breakpoint
+CREATE INDEX `contest_problem_problem_id_idx` ON `contest_problem` (`problem_id`);--> statement-breakpoint
+CREATE INDEX `contest_team_team_id_idx` ON `contest_team` (`team_id`);--> statement-breakpoint
+CREATE INDEX `submission_source_file_submission_id_idx` ON `submission_source_file` (`submission_id`);--> statement-breakpoint
+CREATE INDEX `submission_state_created_at_idx` ON `submission` (`state`,`created_at`);--> statement-breakpoint
+CREATE INDEX `submission_contest_team_problem_idx` ON `submission` (`contest_id`,`team_id`,`problem_id`);--> statement-breakpoint
+CREATE INDEX `submission_team_id_idx` ON `submission` (`team_id`);--> statement-breakpoint
+CREATE INDEX `submission_problem_id_idx` ON `submission` (`problem_id`);

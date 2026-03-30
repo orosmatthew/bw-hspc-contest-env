@@ -4,7 +4,7 @@ import { activeTeamTable, contestProblemTable, contestTable, contestTeamTable } 
 import type { Contest } from 'bwcontest-shared/types/contest';
 
 export class ContestRepo {
-	async create(values: {
+	public async create(values: {
 		name: string;
 		startTime: Date | null;
 		freezeTime: Date | null;
@@ -25,9 +25,8 @@ export class ContestRepo {
 		}
 	}
 
-	async getById(id: number): Promise<Contest | undefined> {
+	public async getById(id: number): Promise<Contest | undefined> {
 		try {
-			const activeTeamsCountSubquery = this._getActiveTeamsCountSubquery();
 			const contest = (
 				await db
 					.select({
@@ -35,14 +34,12 @@ export class ContestRepo {
 						name: contestTable.name,
 						startTime: contestTable.startTime,
 						freezeTime: contestTable.freezeTime,
-						activeTeamsCount: activeTeamsCountSubquery.activeTeamsCount
+						activeTeamsCount: count(activeTeamTable.id)
 					})
 					.from(contestTable)
-					.innerJoin(
-						activeTeamsCountSubquery,
-						eq(activeTeamsCountSubquery.contestId, contestTable.id)
-					)
+					.leftJoin(activeTeamTable, eq(activeTeamTable.contestId, contestTable.id))
 					.where(eq(contestTable.id, id))
+					.groupBy(contestTable.id)
 			).at(0);
 			if (contest === undefined) {
 				return undefined;
@@ -57,22 +54,19 @@ export class ContestRepo {
 		}
 	}
 
-	async getAll(): Promise<Array<Contest>> {
+	public async getAll(): Promise<Array<Contest>> {
 		try {
-			const activeTeamsCountSubquery = this._getActiveTeamsCountSubquery();
 			const contests = await db
 				.select({
 					id: contestTable.id,
 					name: contestTable.name,
 					startTime: contestTable.startTime,
 					freezeTime: contestTable.freezeTime,
-					activeTeamsCount: activeTeamsCountSubquery.activeTeamsCount
+					activeTeamsCount: count(activeTeamTable.id)
 				})
 				.from(contestTable)
-				.innerJoin(
-					activeTeamsCountSubquery,
-					eq(activeTeamsCountSubquery.contestId, contestTable.id)
-				)
+				.leftJoin(activeTeamTable, eq(activeTeamTable.contestId, contestTable.id))
+				.groupBy(contestTable.id)
 				.orderBy(contestTable.name);
 			return contests.map((c) => ({
 				...c,
@@ -85,7 +79,7 @@ export class ContestRepo {
 		}
 	}
 
-	async deleteById(contestId: number): Promise<boolean> {
+	public async deleteById(contestId: number): Promise<boolean> {
 		try {
 			await db.delete(contestTable).where(eq(contestTable.id, contestId));
 			return true;
@@ -95,22 +89,15 @@ export class ContestRepo {
 		}
 	}
 
-	async updateStartTime(contestId: number, value: Date | null): Promise<boolean> {
-		try {
-			await db.update(contestTable).set({ startTime: value }).where(eq(contestTable.id, contestId));
-			return true;
-		} catch (e) {
-			console.error(e);
-			return false;
-		}
-	}
-
-	async updateFreezeTime(contestId: number, value: Date | null): Promise<boolean> {
+	public async updateById(
+		id: number,
+		values: { startTime?: Date | null; freezeTime?: Date | null }
+	): Promise<boolean> {
 		try {
 			await db
 				.update(contestTable)
-				.set({ freezeTime: value })
-				.where(eq(contestTable.id, contestId));
+				.set({ startTime: values.startTime, freezeTime: values.freezeTime })
+				.where(eq(contestTable.id, id));
 			return true;
 		} catch (e) {
 			console.error(e);
@@ -118,12 +105,14 @@ export class ContestRepo {
 		}
 	}
 
-	async assignProblemIds(contestId: number, problemIds: Array<number>): Promise<boolean> {
+	public async assignProblemIds(contestId: number, problemIds: Array<number>): Promise<boolean> {
 		try {
 			await db.transaction(async (tx) => {
 				await tx.delete(contestProblemTable).where(eq(contestProblemTable.contestId, contestId));
-				for (const problemId of problemIds) {
-					await tx.insert(contestProblemTable).values({ contestId, problemId });
+				if (problemIds.length > 0) {
+					await tx
+						.insert(contestProblemTable)
+						.values(problemIds.map((id) => ({ contestId, problemId: id })));
 				}
 			});
 			return true;
@@ -133,12 +122,14 @@ export class ContestRepo {
 		}
 	}
 
-	async assignTeamIds(contestId: number, teamIds: Array<number>): Promise<boolean> {
+	public async assignTeamIds(contestId: number, teamIds: Array<number>): Promise<boolean> {
 		try {
 			await db.transaction(async (tx) => {
 				await tx.delete(contestTeamTable).where(eq(contestTeamTable.contestId, contestId));
-				for (const teamId of teamIds) {
-					await tx.insert(contestTeamTable).values({ contestId, teamId });
+				if (teamIds.length > 0) {
+					await tx
+						.insert(contestTeamTable)
+						.values(teamIds.map((id) => ({ contestId, teamId: id })));
 				}
 			});
 			return true;
@@ -150,17 +141,5 @@ export class ContestRepo {
 
 	private _calcIsFrozen(freezeTime: Date | null) {
 		return freezeTime === null ? false : new Date() >= freezeTime;
-	}
-
-	private _getActiveTeamsCountSubquery() {
-		return db
-			.select({
-				contestId: contestTable.id,
-				activeTeamsCount: count(activeTeamTable.id).as('active_teams_count')
-			})
-			.from(contestTable)
-			.leftJoin(activeTeamTable, eq(activeTeamTable.contestId, contestTable.id))
-			.groupBy(contestTable.id)
-			.as('active_teams_count_subquery');
 	}
 }

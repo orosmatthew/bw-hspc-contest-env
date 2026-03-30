@@ -27,7 +27,7 @@ export const handle = (async ({ event, resolve }) => {
 		if (token === undefined) {
 			redirect(307, '/login');
 		}
-		const session = await adminSessionRepo.getValidSession(token);
+		const session = await adminSessionRepo.getValid(token);
 		if (session === undefined) {
 			redirect(307, '/login');
 		}

@@ -168,11 +168,13 @@ export const actions: Actions = {
 				return fail(500, { message: 'Unable to create a submission' });
 			}
 			if (submission.Code !== null) {
-				const submissionSourceFileId = await submissionSourceFileRepo.create({
-					submissionId: submissionId,
-					pathFromRootProblem: 'importedCode.txt',
-					content: submission.Code
-				});
+				const submissionSourceFileId = await submissionSourceFileRepo.createMany([
+					{
+						submissionId: submissionId,
+						pathFromProblemRoot: 'importedCode.txt',
+						content: submission.Code
+					}
+				]);
 				if (submissionSourceFileId === undefined) {
 					return fail(500, { message: 'Unable to create a submission source file' });
 				}
@@ -185,7 +187,7 @@ export const actions: Actions = {
 				(p) => p.ShortName === problem.pascalName
 			)?.InputSpec;
 			if (importedInputSpec !== undefined) {
-				await problemRepo.update(problem.id, { inputSpec: importedInputSpec });
+				await problemRepo.updateById(problem.id, { inputSpec: importedInputSpec });
 			}
 		}
 
@@ -202,7 +204,7 @@ export const actions: Actions = {
 				const testCaseResultString =
 					analyzeSubmissionOutput(problem, insertedSubmission.actualOutput)?.databaseString ??
 					'Unknown';
-				await submissionRepo.update(insertedSubmission.id, {
+				await submissionRepo.updateById(insertedSubmission.id, {
 					testCaseResults: testCaseResultString
 				});
 			}
@@ -216,7 +218,7 @@ export const actions: Actions = {
 				form.data.jsonText.Teams.length > 0
 			) {
 				if (contest.startTime !== null) {
-					await contestRepo.updateStartTime(contest.id, new Date());
+					await contestRepo.updateById(contest.id, { startTime: new Date() });
 				}
 				const teams = await teamRepo.getInContestPrivate(contest.id);
 				await activeTeamRepo.createMany(

@@ -3,13 +3,14 @@ import { db } from '../db';
 import { activeTeamTable, contestTeamTable, teamTable } from '../db/schema';
 import {
 	teamPublicSchema,
+	type TeamBase,
 	type TeamLanguage,
 	type TeamPrivate,
 	type TeamPublic
 } from 'bwcontest-shared/types/team';
 
 export class TeamRepo {
-	async create(values: {
+	public async create(values: {
 		name: string;
 		password: string;
 		language: TeamLanguage;
@@ -29,25 +30,19 @@ export class TeamRepo {
 		}
 	}
 
-	async getByIdPublic(id: number): Promise<TeamPublic | undefined> {
+	public async getByIdPublic(id: number): Promise<TeamPublic | undefined> {
 		return this._ensurePublicSingle(await this.getByIdPrivate(id));
 	}
 
-	async getByIdPrivate(id: number): Promise<TeamPrivate | undefined> {
+	public async getByIdPrivate(id: number): Promise<TeamPrivate | undefined> {
 		try {
-			return (
-				await db
-					.select(this._getFields())
-					.from(teamTable)
-					.innerJoin(contestTeamTable, eq(contestTeamTable.teamId, teamTable.id))
-					.where(eq(teamTable.id, id))
-			).at(0);
+			return (await db.select(this._getFields()).from(teamTable).where(eq(teamTable.id, id))).at(0);
 		} catch (e) {
 			console.error(e);
 		}
 	}
 
-	async getInContestPrivate(contestId: number): Promise<Array<TeamPrivate>> {
+	public async getInContestPrivate(contestId: number): Promise<Array<TeamPrivate>> {
 		try {
 			const teams = await db
 				.select(this._getFields())
@@ -62,11 +57,11 @@ export class TeamRepo {
 		}
 	}
 
-	async getInContestPublic(contestId: number): Promise<Array<TeamPublic>> {
+	public async getInContestPublic(contestId: number): Promise<Array<TeamPublic>> {
 		return this._ensurePublic(await this.getInContestPrivate(contestId));
 	}
 
-	async getAllPrivate(): Promise<Array<TeamPrivate>> {
+	public async getAllPrivate(): Promise<Array<TeamPrivate>> {
 		try {
 			const teams = await db.select(this._getFields()).from(teamTable).orderBy(teamTable.name);
 			return teams;
@@ -76,7 +71,7 @@ export class TeamRepo {
 		}
 	}
 
-	async getByNamePrivate(name: string): Promise<TeamPrivate | undefined> {
+	public async getByNamePrivate(name: string): Promise<TeamPrivate | undefined> {
 		try {
 			return (
 				await db.select(this._getFields()).from(teamTable).where(eq(teamTable.name, name))
@@ -86,7 +81,7 @@ export class TeamRepo {
 		}
 	}
 
-	async update(
+	public async updateById(
 		id: number,
 		values: { name?: string; language?: TeamLanguage; password?: string }
 	): Promise<boolean> {
@@ -102,7 +97,7 @@ export class TeamRepo {
 		}
 	}
 
-	async deleteById(id: number): Promise<boolean> {
+	public async deleteById(id: number): Promise<boolean> {
 		try {
 			await db.delete(teamTable).where(eq(teamTable.id, id));
 			return true;
@@ -128,14 +123,14 @@ export class TeamRepo {
 		};
 	}
 
-	private _ensurePublicSingle(team: TeamPublic | undefined): TeamPublic | undefined {
+	private _ensurePublicSingle(team: TeamBase | undefined): TeamPublic | undefined {
 		if (team === undefined) {
 			return undefined;
 		}
 		return teamPublicSchema.parse(team);
 	}
 
-	private _ensurePublic(teams: Array<TeamPublic>): Array<TeamPublic> {
+	private _ensurePublic(teams: Array<TeamBase>): Array<TeamPublic> {
 		return teams.map((p) => teamPublicSchema.parse(p));
 	}
 }

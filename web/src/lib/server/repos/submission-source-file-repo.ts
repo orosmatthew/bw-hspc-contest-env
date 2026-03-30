@@ -4,28 +4,32 @@ import { submissionSourceFileTable } from '../db/schema';
 import type { SubmissionSourceFile } from 'bwcontest-shared/types/submission-source-file';
 
 export class SubmissionSourceFileRepo {
-	async create(values: {
-		submissionId: number;
-		pathFromRootProblem: string;
-		content: string;
-	}): Promise<number | undefined> {
+	public async createMany(
+		values: Array<{
+			submissionId: number;
+			pathFromProblemRoot: string;
+			content: string;
+		}>
+	): Promise<boolean> {
 		try {
-			return (
-				await db
-					.insert(submissionSourceFileTable)
-					.values({
-						submissionId: values.submissionId,
-						pathFromProblemRoot: values.pathFromRootProblem,
-						content: values.content
-					})
-					.returning({ id: submissionSourceFileTable.id })
-			).at(0)?.id;
+			if (values.length === 0) {
+				return true;
+			}
+			await db.insert(submissionSourceFileTable).values(
+				values.map((v) => ({
+					submissionId: v.submissionId,
+					pathFromProblemRoot: v.pathFromProblemRoot,
+					content: v.content
+				}))
+			);
+			return true;
 		} catch (e) {
 			console.error(e);
+			return false;
 		}
 	}
 
-	async getForSubmission(submissionId: number): Promise<Array<SubmissionSourceFile>> {
+	public async getForSubmission(submissionId: number): Promise<Array<SubmissionSourceFile>> {
 		try {
 			return await db
 				.select({
@@ -42,7 +46,7 @@ export class SubmissionSourceFileRepo {
 		}
 	}
 
-	async deleteForSubmission(submissionId: number): Promise<boolean> {
+	public async deleteForSubmission(submissionId: number): Promise<boolean> {
 		try {
 			await db
 				.delete(submissionSourceFileTable)

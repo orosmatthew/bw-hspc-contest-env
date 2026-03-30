@@ -3,6 +3,7 @@ import { db } from '../db';
 import { submissionTable, teamTable } from '../db/schema';
 import {
 	submissionPublicSchema,
+	type SubmissionBase,
 	type SubmissionDisplayState,
 	type SubmissionPrivate,
 	type SubmissionPublic,
@@ -11,7 +12,7 @@ import {
 } from 'bwcontest-shared/types/submission';
 
 export class SubmissionRepo {
-	async create(values: {
+	public async create(values: {
 		createdAt: Date;
 		gradedAt: Date | null;
 		state: SubmissionState;
@@ -55,7 +56,7 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getByIdPrivate(id: number): Promise<SubmissionPrivate | undefined> {
+	public async getByIdPrivate(id: number): Promise<SubmissionPrivate | undefined> {
 		try {
 			const submission = (
 				await db
@@ -73,11 +74,11 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getByIdPublic(id: number): Promise<SubmissionPublic | undefined> {
+	public async getByIdPublic(id: number): Promise<SubmissionPublic | undefined> {
 		return this._ensurePublicSingle(await this.getByIdPrivate(id));
 	}
 
-	async getAllPrivate(): Promise<Array<SubmissionPrivate>> {
+	public async getAllPrivate(): Promise<Array<SubmissionPrivate>> {
 		try {
 			const submissions = await db
 				.select(this._getFields())
@@ -91,7 +92,7 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getLatestQueuedPrivate(): Promise<SubmissionPrivate | undefined> {
+	public async getNextQueuedPrivate(): Promise<SubmissionPrivate | undefined> {
 		try {
 			const submission = (
 				await db
@@ -111,7 +112,7 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getInContestPrivate(contestId: number): Promise<Array<SubmissionPrivate>> {
+	public async getInContestPrivate(contestId: number): Promise<Array<SubmissionPrivate>> {
 		try {
 			const submissions = await db
 				.select(this._getFields())
@@ -126,11 +127,11 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getInContestPublic(contestId: number): Promise<Array<SubmissionPublic>> {
+	public async getInContestPublic(contestId: number): Promise<Array<SubmissionPublic>> {
 		return this._ensurePublic(await this.getInContestPrivate(contestId));
 	}
 
-	async getInContestWithStatePrivate(
+	public async getInContestWithStatePrivate(
 		contestId: number,
 		state: SubmissionState
 	): Promise<Array<SubmissionPrivate>> {
@@ -148,7 +149,7 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getInContestForTeamWithStatePrivate(
+	public async getInContestForTeamWithStatePrivate(
 		contestId: number,
 		teamId: number,
 		state: SubmissionState
@@ -173,7 +174,7 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getInContestForTeamPrivate(
+	public async getInContestForTeamPrivate(
 		contestId: number,
 		teamId: number
 	): Promise<Array<SubmissionPrivate>> {
@@ -191,14 +192,14 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getInContestForTeamPublic(
+	public async getInContestForTeamPublic(
 		contestId: number,
 		teamId: number
 	): Promise<Array<SubmissionPublic>> {
 		return this._ensurePublic(await this.getInContestForTeamPrivate(contestId, teamId));
 	}
 
-	async getInContestForTeamForProblemPrivate(
+	public async getInContestForTeamForProblemPrivate(
 		contestId: number,
 		teamId: number,
 		problemId: number
@@ -223,7 +224,7 @@ export class SubmissionRepo {
 		}
 	}
 
-	async getInContestForTeamForProblemPublic(
+	public async getInContestForTeamForProblemPublic(
 		contestId: number,
 		teamId: number,
 		problemId: number
@@ -233,7 +234,7 @@ export class SubmissionRepo {
 		);
 	}
 
-	async update(
+	public async updateById(
 		id: number,
 		values: {
 			gradedAt?: Date | null;
@@ -273,7 +274,7 @@ export class SubmissionRepo {
 		}
 	}
 
-	async deleteInContest(contestId: number): Promise<boolean> {
+	public async deleteInContest(contestId: number): Promise<boolean> {
 		try {
 			await db.delete(submissionTable).where(eq(submissionTable.contestId, contestId));
 			return true;
@@ -283,7 +284,7 @@ export class SubmissionRepo {
 		}
 	}
 
-	async deleteById(id: number): Promise<boolean> {
+	public async deleteById(id: number): Promise<boolean> {
 		try {
 			await db.delete(submissionTable).where(eq(submissionTable.id, id));
 			return true;
@@ -328,7 +329,7 @@ export class SubmissionRepo {
 	}
 
 	private _ensurePublicSingle(
-		submission: SubmissionPublic | undefined
+		submission: SubmissionBase | undefined
 	): SubmissionPublic | undefined {
 		if (submission === undefined) {
 			return undefined;
@@ -336,7 +337,7 @@ export class SubmissionRepo {
 		return submissionPublicSchema.parse(submission);
 	}
 
-	private _ensurePublic(submissions: Array<SubmissionPublic>): Array<SubmissionPublic> {
+	private _ensurePublic(submissions: Array<SubmissionBase>): Array<SubmissionPublic> {
 		return submissions.map((p) => submissionPublicSchema.parse(p));
 	}
 }

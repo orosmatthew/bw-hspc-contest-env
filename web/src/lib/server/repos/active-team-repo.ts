@@ -4,15 +4,14 @@ import { activeTeamTable } from '../db/schema';
 import type { ActiveTeamPrivate } from 'bwcontest-shared/types/active-team';
 
 export class ActiveTeamRepo {
-	async createMany(values: Array<{ teamId: number; contestId: number }>): Promise<boolean> {
+	public async createMany(values: Array<{ teamId: number; contestId: number }>): Promise<boolean> {
 		try {
-			await db.transaction(async (tx) => {
-				for (const entry of values) {
-					await tx
-						.insert(activeTeamTable)
-						.values({ teamId: entry.teamId, contestId: entry.contestId });
-				}
-			});
+			if (values.length === 0) {
+				return true;
+			}
+			await db
+				.insert(activeTeamTable)
+				.values(values.map((v) => ({ teamId: v.teamId, contestId: v.contestId })));
 			return true;
 		} catch (e) {
 			console.error(e);
@@ -20,7 +19,9 @@ export class ActiveTeamRepo {
 		}
 	}
 
-	async getBySessionTokenPrivate(sessionToken: string): Promise<ActiveTeamPrivate | undefined> {
+	public async getBySessionTokenPrivate(
+		sessionToken: string
+	): Promise<ActiveTeamPrivate | undefined> {
 		try {
 			return (
 				await db
@@ -33,7 +34,7 @@ export class ActiveTeamRepo {
 		}
 	}
 
-	async getForTeamPrivate(teamId: number): Promise<ActiveTeamPrivate | undefined> {
+	public async getForTeamPrivate(teamId: number): Promise<ActiveTeamPrivate | undefined> {
 		try {
 			return (
 				await db
@@ -47,7 +48,7 @@ export class ActiveTeamRepo {
 		}
 	}
 
-	async getInContestCount(contestId: number): Promise<number> {
+	public async getInContestCount(contestId: number): Promise<number> {
 		try {
 			const result = (
 				await db
@@ -62,7 +63,7 @@ export class ActiveTeamRepo {
 		}
 	}
 
-	async update(
+	public async updateById(
 		id: number,
 		values: { sessionToken?: string | null; sessionCreatedAt?: Date | null }
 	): Promise<boolean> {
@@ -78,7 +79,7 @@ export class ActiveTeamRepo {
 		}
 	}
 
-	async deleteInContest(contestId: number): Promise<boolean> {
+	public async deleteInContest(contestId: number): Promise<boolean> {
 		try {
 			await db.delete(activeTeamTable).where(eq(activeTeamTable.contestId, contestId));
 			return true;

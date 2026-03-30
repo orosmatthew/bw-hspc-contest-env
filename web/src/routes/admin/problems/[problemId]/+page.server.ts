@@ -38,7 +38,7 @@ export const actions: Actions = {
 		if (!form.success) {
 			return { success: false, message: 'Invalid form data' };
 		}
-		const updateSuccess = await problemRepo.update(problemIdParse.data, {
+		const updateSuccess = await problemRepo.updateById(problemIdParse.data, {
 			friendlyName: form.data.friendlyName,
 			pascalName: form.data.pascalName,
 			sampleInput: form.data.sampleInput,
