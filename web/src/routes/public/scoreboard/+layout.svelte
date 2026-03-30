@@ -5,9 +5,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { writable } from 'svelte/store';
-	import { theme } from '../../stores';
 	import type { PageData } from './$types';
 	import { contestId } from './stores';
+	import { theme } from '$lib/components/ThemeProvider.svelte';
 	interface Props {
 		data: PageData;
 		children?: import('svelte').Snippet;
@@ -31,12 +31,12 @@
 		<div class="col d-flex flex-row-reverse gap-3">
 			<button
 				onclick={() => {
-					$theme = $theme === 'light' ? 'dark' : 'light';
+					theme.value = theme.value === 'light' ? 'dark' : 'light';
 				}}
 				type="button"
 				aria-label="theme"
 				class="btn btn-outline-secondary"
-				><i class={`bi bi-${$theme === 'light' ? 'sun' : 'moon'}`}></i></button
+				><i class={`bi bi-${theme.value === 'light' ? 'sun' : 'moon'}`}></i></button
 			>
 			<div class="form-check form-switch align-self-center">
 				<input

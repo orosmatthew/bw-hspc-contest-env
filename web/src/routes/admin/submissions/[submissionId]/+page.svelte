@@ -10,7 +10,7 @@
 	import SubmissionCodeAndOutput from '$lib/components/SubmissionCodeAndOutput.svelte';
 	import { goto } from '$app/navigation';
 	import TestCaseResults from '$lib/components/TestCaseResults.svelte';
-	import { theme } from '../../../../routes/stores';
+	import { theme } from '$lib/components/ThemeProvider.svelte';
 
 	interface Props {
 		data: PageData;
@@ -299,7 +299,7 @@
 </div>
 
 <div class="table-responsive">
-	<table class="table table-bordered table-hover" data-bs-theme={$theme}>
+	<table class="table table-bordered table-hover" data-bs-theme={theme.value}>
 		<thead>
 			<tr>
 				<th></th>
@@ -380,7 +380,6 @@
 			: correct
 				? 'pendingCorrect'
 				: 'pendingIncorrect'}"
-		data-bs-theme={$theme}
 	>
 		<h3 class="pb-1">
 			Grade Attempt #{data.submissionHistory.map((s) => s.id).indexOf(data.submission.id) + 1}

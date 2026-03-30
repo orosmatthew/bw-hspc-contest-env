@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { CaseResult } from '../common/output-analyzer/analyzer-types';
-	import { theme } from '../../routes/stores';
 	import {
 		analyzeSubmissionOutput,
 		rehydrateOutputPreview
 	} from '../common/output-analyzer/output-analyzer';
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 	import type { SubmissionPrivate } from 'bwcontest-shared/types/submission';
+	import { theme } from './ThemeProvider.svelte';
 
 	interface Props {
 		problem: ProblemPrivate;
@@ -78,7 +78,7 @@
 	}
 </script>
 
-<table class="result-stable" data-bs-theme={$theme}>
+<table class="result-stable" data-bs-theme={theme.value}>
 	<tbody>
 		{#if currentSubmitResults}
 			{@const numCases = currentSubmitResults.testCases.length}

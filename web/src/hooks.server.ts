@@ -8,9 +8,6 @@ export const init: ServerInit = async () => {
 };
 
 export const handle = (async ({ event, resolve }) => {
-	const theme = event.cookies.get('theme') as 'light' | 'dark' | undefined;
-	event.locals.theme = theme ?? 'dark';
-
 	if (event.request.method === 'OPTIONS') {
 		return new Response('ok', {
 			headers: {
@@ -65,8 +62,6 @@ export const handle = (async ({ event, resolve }) => {
 			event.locals.selectedContest = null;
 		}
 	}
-	const res = await resolve(event, {
-		transformPageChunk: ({ html }) => html.replace('%theme%', event.locals.theme)
-	});
+	const res = await resolve(event);
 	return res;
 }) satisfies Handle;

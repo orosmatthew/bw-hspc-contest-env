@@ -4,10 +4,10 @@
 
 <script lang="ts">
 	import { beforeNavigate, goto } from '$app/navigation';
-	import { theme } from '../stores';
 	import type { LayoutData } from './$types';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
+	import { theme } from '$lib/components/ThemeProvider.svelte';
 
 	interface Props {
 		data: LayoutData;
@@ -110,11 +110,11 @@
 			</select>
 			<button
 				onclick={() => {
-					$theme = $theme === 'light' ? 'dark' : 'light';
+					theme.value = theme.value === 'light' ? 'dark' : 'light';
 				}}
 				type="button"
 				aria-label="theme"
-				class="btn"><i class={`bi bi-${$theme === 'light' ? 'sun' : 'moon'}`}></i></button
+				class="btn"><i class={`bi bi-${theme.value === 'light' ? 'sun' : 'moon'}`}></i></button
 			>
 			<button
 				onclick={async () => {

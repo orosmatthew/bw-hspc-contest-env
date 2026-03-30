@@ -1,32 +1,21 @@
 <script lang="ts">
 	import 'bootstrap/dist/css/bootstrap.min.css';
 	import '$lib/styles/global.css';
-	import { onMount, untrack } from 'svelte';
-	import type { LayoutData } from './$types';
-	import { theme } from './stores';
-	import { browser } from '$app/environment';
-	import Cookies from 'js-cookie';
+	import { onMount } from 'svelte';
 	import 'bootstrap-icons/font/bootstrap-icons.min.css';
+	import ThemeProvider from '$lib/components/ThemeProvider.svelte';
 
 	onMount(async () => {
 		await import('bootstrap');
 	});
 
 	interface Props {
-		data: LayoutData;
 		children?: import('svelte').Snippet;
 	}
 
-	let { data, children }: Props = $props();
-
-	$theme = untrack(() => data.theme);
-
-	if (browser) {
-		theme.subscribe((value) => {
-			document.getElementById('html-element')?.setAttribute('data-bs-theme', value);
-			Cookies.set('theme', value, { sameSite: 'strict' });
-		});
-	}
+	let { children }: Props = $props();
 </script>
+
+<ThemeProvider />
 
 {@render children?.()}

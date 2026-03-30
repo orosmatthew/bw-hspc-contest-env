@@ -4,10 +4,10 @@
 	import { Diff2HtmlUI } from 'diff2html/lib/ui/js/diff2html-ui-base';
 	import { onMount } from 'svelte';
 	import * as Diff from 'diff';
-	import { theme } from '../../routes/stores';
 	import { analyzeSubmissionOutput } from '../common/output-analyzer/output-analyzer';
 	import { newline, trimmedLines } from '../common/output-analyzer/analyzer-utils';
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
+	import { theme } from './ThemeProvider.svelte';
 
 	interface Props {
 		expectedOutput: string;
@@ -170,8 +170,8 @@
 <div
 	class="mt-3 diffView"
 	id={`diff_${kind}`}
-	class:d2h-dark-color-scheme={$theme === 'dark'}
-	class:d2h-light-color-scheme={$theme === 'light'}
+	class:d2h-dark-color-scheme={theme.value === 'dark'}
+	class:d2h-light-color-scheme={theme.value === 'light'}
 ></div>
 
 <style>

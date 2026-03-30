@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { numInputCases, parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
 
-	import { theme } from '../../routes/stores';
 	import { analyzeSubmissionOutput } from '../common/output-analyzer/output-analyzer';
 	import type { CaseResult } from '../common/output-analyzer/analyzer-types';
 	import { normalizeInputLines } from '../common/output-analyzer/analyzer-utils';
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
+	import { theme } from './ThemeProvider.svelte';
 
 	interface Props {
 		problem: ProblemPrivate;
@@ -78,7 +78,7 @@
 {/if}
 
 <div class="pt-2 table-resonsive">
-	<table class="table table-hover table-bordered" data-bs-theme={$theme}>
+	<table class="table table-hover table-bordered" data-bs-theme={theme.value}>
 		<thead>
 			<tr>
 				<td class="text-center" colspan="2">

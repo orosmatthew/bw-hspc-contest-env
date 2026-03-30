@@ -4,7 +4,6 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			theme: 'light' | 'dark';
 			selectedContest: number | null;
 		}
 		// interface PageData {}
