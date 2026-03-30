@@ -1,10 +1,10 @@
 sandbox/node_modules
-sandbox/build
+sandbox/dist
 sandbox/.env
 
 web/.DS_Store
 web/node_modules
-web/build
+web/dist
 web/.svelte-kit
 web/package
 web/.env
@@ -16,7 +16,7 @@ web/temp
 web/db
 
 shared/submissionRunner/node_modules
-shared/submissionRunner/build
+shared/submissionRunner/dist
 
 shared/extensionWeb/node_modules
-shared/extensionWeb/build
+shared/extensionWeb/dist
