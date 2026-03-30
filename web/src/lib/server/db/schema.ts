@@ -80,7 +80,7 @@ export const submissionTable = sqliteTable(
 			.references(() => problemTable.id, { onDelete: 'restrict' }),
 		contestId: integer('contest_id')
 			.notNull()
-			.references(() => contestTable.id, { onDelete: 'restrict' })
+			.references(() => contestTable.id, { onDelete: 'cascade' })
 	},
 	(table) => [
 		index('idx_submission_team_id').on(table.teamId),
@@ -107,7 +107,7 @@ export const contestProblemTable = sqliteTable(
 	{
 		contestId: integer('contest_id')
 			.notNull()
-			.references(() => contestTable.id, { onDelete: 'restrict' }),
+			.references(() => contestTable.id, { onDelete: 'cascade' }),
 		problemId: integer('problem_id')
 			.notNull()
 			.references(() => problemTable.id, { onDelete: 'restrict' })
@@ -124,7 +124,7 @@ export const contestTeamTable = sqliteTable(
 	{
 		contestId: integer('contest_id')
 			.notNull()
-			.references(() => contestTable.id, { onDelete: 'restrict' }),
+			.references(() => contestTable.id, { onDelete: 'cascade' }),
 		teamId: integer('team_id')
 			.notNull()
 			.references(() => teamTable.id, { onDelete: 'restrict' })
