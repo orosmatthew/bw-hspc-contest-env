@@ -18,6 +18,14 @@ npm i
 npm run dev
 ```
 
+### Database
+
+```bash
+npx drizzle-kit push # for ad-hoc changes
+npx drizzle-kit migrate # for using migrations
+npx drizzle-kit generate --name my_cool_migration # for creating migrations
+```
+
 ### For Production
 
 ```bash
