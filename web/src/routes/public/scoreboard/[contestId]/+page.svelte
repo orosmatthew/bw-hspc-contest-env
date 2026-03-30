@@ -5,6 +5,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import { autoScrollEnabled } from '../+layout.svelte';
 	import { page } from '$app/state';
+	import correctImg from '$lib/images/correct.png';
+	import incorrectImg from '$lib/images/incorrect.png';
 
 	$contestId = page.params.contestId === undefined ? null : parseInt(page.params.contestId);
 	interface Props {
@@ -109,8 +111,8 @@
 									src={team.problems.find((p) => {
 										return p.id === problem.id;
 									})?.graphic === 'correct'
-										? '/correct.png'
-										: '/incorrect.png'}
+										? correctImg
+										: incorrectImg}
 									alt="check or X"
 									width="30px"
 									height="30px"

@@ -3,6 +3,8 @@
 	import type { PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
 	import urlJoin from 'url-join';
+	import correctImg from '$lib/images/correct.png';
+	import incorrectImg from '$lib/images/incorrect.png';
 
 	interface Props {
 		data: PageData;
@@ -88,8 +90,8 @@
 											src={team.problems.find((p) => {
 												return p.id === problem.id;
 											})?.graphic === 'correct'
-												? '/correct.png'
-												: '/incorrect.png'}
+												? correctImg
+												: incorrectImg}
 											alt="check or X"
 											width="30px"
 										/>

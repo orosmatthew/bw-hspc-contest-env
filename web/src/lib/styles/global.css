@@ -1,6 +1,6 @@
 @font-face {
 	font-family: JetbrainsMono;
-	src: url('/JetBrainsMono-Regular.woff2');
+	src: url('$lib/fonts/jetbrains-mono-regular.woff2');
 }
 
 .code {
