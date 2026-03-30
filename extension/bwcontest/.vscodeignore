@@ -6,3 +6,4 @@ node_modules/
 tsconfig.json
 rollup.config.mjs
 eslint.config.mjs
+../../shared

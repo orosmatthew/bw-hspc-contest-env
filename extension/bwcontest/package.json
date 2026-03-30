@@ -4,7 +4,7 @@
 	"description": "The student extension for BW's HSPC",
 	"version": "0.0.1",
 	"engines": {
-		"vscode": "^1.97.0"
+		"vscode": "^1.110.0"
 	},
 	"categories": [
 		"Other"
@@ -91,7 +91,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run build",
-		"package": "vsce package",
+		"package": "vsce package --allow-missing-repository",
 		"check": "tsc -noEmit; svelte-check --tsconfig ./webviews/tsconfig.json",
 		"esbuild": "esbuild ./src/index.ts --bundle --outfile=dist/index.js --external:vscode --format=cjs --platform=node --sourcemap --minify",
 		"build": "rimraf --glob dist/* && rollup -c && npm run esbuild",
