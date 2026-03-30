@@ -7,6 +7,7 @@
 	import { page } from '$app/state';
 	import correctImg from '$lib/images/correct.png';
 	import incorrectImg from '$lib/images/incorrect.png';
+	import type { ScoreboardTeamProblem } from '$lib/server/services/scoreboard-service';
 
 	$contestId = page.params.contestId === undefined ? null : parseInt(page.params.contestId);
 	interface Props {
@@ -67,6 +68,30 @@
 	}
 </script>
 
+{#snippet problemStatus(teamProblem: ScoreboardTeamProblem | undefined)}
+	<div class="d-flex flex-row align-items-center gap-3">
+		{#if teamProblem?.graphic !== undefined}
+			<img
+				src={teamProblem.graphic === 'correct' ? correctImg : incorrectImg}
+				alt={teamProblem.graphic === 'correct' ? 'check' : 'X'}
+				width="30"
+				height="30"
+			/>
+		{:else}
+			<div class="dummy-status-image"></div>
+		{/if}
+		<div class="d-flex flex-column flex-grow-1 align-items-center">
+			{#if teamProblem?.attempts}
+				{teamProblem.attempts}
+				{teamProblem.attempts === 1 ? 'Attempt' : 'Attempts'}<br />
+				{#if teamProblem?.min}
+					<span style="color:rgb(102,102,102)">{teamProblem.min.toFixed(0)} min</span>
+				{/if}
+			{/if}
+		</div>
+	</div>
+{/snippet}
+
 <h2 style="text-align:center">{data.scoreboard.contest.name}</h2>
 <div class="row">
 	<div class="text-end"></div>
@@ -102,47 +127,9 @@
 				<td style="font-size:18px">{team.solves}</td>
 				<td style="font-size:18px">{team.time.toFixed(0)}</td>
 				{#each data.scoreboard.contest.problems as problem (problem.id)}
+					{@const teamProblem = team.problems.find((p) => p.id === problem.id)}
 					<td>
-						<div class="d-flex flex-row align-items-center gap-3">
-							{#if team.problems.find((p) => {
-								return p.id === problem.id;
-							})?.graphic !== undefined}
-								<img
-									src={team.problems.find((p) => {
-										return p.id === problem.id;
-									})?.graphic === 'correct'
-										? correctImg
-										: incorrectImg}
-									alt="check or X"
-									width="30px"
-									height="30px"
-								/>
-							{:else}
-								<div class="dummy-status-image"></div>
-							{/if}
-							<div class="d-flex flex-column flex-grow-1 align-items-center">
-								{#if team.problems.find((p) => {
-									return p.id === problem.id;
-								})?.attempts !== 0}
-									{team.problems.find((p) => {
-										return p.id === problem.id;
-									})?.attempts}
-									{team.problems.find((p) => {
-										return p.id === problem.id;
-									})?.attempts === 1
-										? 'Attempt'
-										: 'Attempts'}<br />{#if team.problems.find((p) => {
-										return p.id === problem.id;
-									})?.min}<span style="color:rgb(102,102,102)"
-											>{team.problems
-												.find((p) => {
-													return p.id === problem.id;
-												})
-												?.min?.toFixed(0)} min</span
-										>{/if}
-								{/if}
-							</div>
-						</div>
+						{@render problemStatus(teamProblem)}
 					</td>
 				{/each}
 			</tr>
