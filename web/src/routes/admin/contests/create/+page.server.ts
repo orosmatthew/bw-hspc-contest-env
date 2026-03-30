@@ -2,7 +2,7 @@ import { contestRepo, problemRepo, teamRepo } from '$lib/server/repos';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
 import { stringToJsonSchema } from '$lib/common/utils';
-import { createRepos } from '$lib/server/git-repos';
+import { gitRepoService } from '$lib/server/services';
 
 export const load: PageServerLoad = async () => {
 	const teams = await teamRepo.getAllPrivate();
@@ -41,7 +41,7 @@ export const actions: Actions = {
 		if (assignProblemsSuccess !== true) {
 			return { success: false, message: 'Unable to assign problems to contest' };
 		}
-		await createRepos({ contestId: contestId, teamIds: form.data.teamIds });
+		await gitRepoService.createRepos({ contestId: contestId, teamIds: form.data.teamIds });
 		return { success: true };
 	}
 };

@@ -4,7 +4,6 @@ import { normalizeNewlines } from '$lib/common/output-analyzer/analyzer-utils';
 import { analyzeSubmissionOutput } from '$lib/common/output-analyzer/output-analyzer';
 import z from 'zod';
 import { checkboxSchema, genTeamPassword, stringToJsonSchema } from '$lib/common/utils';
-import { createRepos } from '$lib/server/git-repos';
 import {
 	activeTeamRepo,
 	contestRepo,
@@ -15,6 +14,7 @@ import {
 } from '$lib/server/repos';
 import type { SubmissionState } from 'bwcontest-shared/types/submission';
 import type { TeamLanguage } from 'bwcontest-shared/types/team';
+import { gitRepoService } from '$lib/server/services';
 
 export const load: PageServerLoad = async () => {};
 
@@ -224,7 +224,10 @@ export const actions: Actions = {
 				await activeTeamRepo.createMany(
 					teams.map((t) => ({ contestId: contest.id, teamId: t.id }))
 				);
-				await createRepos({ contestId: contest.id, teamIds: teams.map((t) => t.id) });
+				await gitRepoService.createRepos({
+					contestId: contest.id,
+					teamIds: teams.map((t) => t.id)
+				});
 			}
 			return redirect(303, '/admin/contests');
 		}

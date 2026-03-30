@@ -11,7 +11,7 @@ import {
 	teamRepo
 } from '$lib/server/repos';
 import { stringToJsonSchema } from '$lib/common/utils';
-import { createRepos } from '$lib/server/git-repos';
+import { gitRepoService } from '$lib/server/services';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
@@ -122,7 +122,7 @@ export const actions: Actions = {
 			const repoPath = join('repo', contest.id.toString(), `${teamId.toString()}.git`);
 			await fs.remove(repoPath);
 		}
-		await createRepos({ contestId: contest.id, teamIds: form.data.teamIds });
+		await gitRepoService.createRepos({ contestId: contest.id, teamIds: form.data.teamIds });
 		return { success: true };
 	},
 	freeze: async ({ params }) => {

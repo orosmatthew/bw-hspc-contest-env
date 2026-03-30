@@ -1,11 +1,18 @@
 import { redirect, type Handle, type ServerInit } from '@sveltejs/kit';
-import { startGitServer } from '$lib/server/git-server';
 import { adminSessionRepo } from '$lib/server/repos';
-import { jobService } from '$lib/server/services';
+import { gitServerService, jobService } from '$lib/server/services';
+import { db } from '$lib/server/db';
 
 export const init: ServerInit = async () => {
-	startGitServer();
+	gitServerService.start();
 	await jobService.startDeleteExpiredAdminSessionsJob();
+
+	process.on('sveltekit:shutdown', async () => {
+		console.log('Shutting down...');
+		await jobService.stopAll();
+		await gitServerService.stop();
+		db.$client.close();
+	});
 };
 
 export const handle = (async ({ event, resolve }) => {
