@@ -6,8 +6,8 @@
 
 ```bash
 npm i
-npm run compile
-npm run watch
+npm run build
+# or npm run watch
 ```
 
 You must be using VSCode, then press `F5` to debug the extension 
