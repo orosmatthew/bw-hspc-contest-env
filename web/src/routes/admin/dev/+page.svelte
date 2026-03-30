@@ -19,11 +19,11 @@
 <h1 style="text-align:center" class="mb-1"><i class="bi"></i>Dev Tools</h1>
 
 <p>
-	<a href="/admin/dev/allAnnotatedOutputs">Show All Annotated Outputs (slow / memory intensive)</a>
+	<a href="/admin/dev/all-annotated-outputs">Show All Annotated Outputs (slow / memory intensive)</a>
 </p>
 
 <p>
-	<a href="/admin/dev/regenerateTestCaseResults">Regenerate selected Test Case Results...</a>
+	<a href="/admin/dev/regenerate-test-case-results">Regenerate selected Test Case Results...</a>
 </p>
 
 <form action="?/fixProblemNewlines" method="POST" use:enhance class="mb-2">
