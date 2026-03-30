@@ -14,13 +14,13 @@ The entire codebase assumes a Linux environment.
   - `cd shared`
     - `npm ci` - Install shared dependencies
     - `npm run build` - Build shared component
-  - `cd extension/bwcontest`
+  - `cd extension`
     - `npm ci` - Install extension dependencies
     - `npm run build` - Build extension
 - Development
   - `cd shared`
     - `npm run watch` - Watch for changes in shared component
-  - `cd extension/bwcontest`
+  - `cd extension`
     - `npm run watch` - Watch for changes in extension
     - Press `F5` or run in VSCode to run extension
 - Pre-Commit
@@ -28,7 +28,7 @@ The entire codebase assumes a Linux environment.
 - Deployment
   - `cd shared`
     - `npm run build` - Build shared component
-  - `cd extension/bwcontest`
+  - `cd extension`
     - `npx vsce package` - Create `.vsix` extension file
 
 ### Sandbox
