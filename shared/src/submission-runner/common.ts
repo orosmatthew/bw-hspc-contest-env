@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
-const runResultKindSchema = z.enum(['CompileFailed', 'TimeLimitExceeded', 'Completed', 'RunError']);
+export const runResultKindSchema = z.enum([
+	'compileFailed',
+	'timeLimitExceeded',
+	'completed',
+	'runError'
+]);
+export type RunResultKind = z.infer<typeof runResultKindSchema>;
 
 export const sourceFileWithTextSchema = z
 	.object({
@@ -11,19 +17,14 @@ export const sourceFileWithTextSchema = z
 
 export type SourceFileWithText = z.infer<typeof sourceFileWithTextSchema>;
 
-export type RunResultKind = z.infer<typeof runResultKindSchema>;
-
-export const runResultSchema = z
-	.object({
-		kind: runResultKindSchema,
-		output: z.string().optional(),
-		exitCode: z.number().optional(),
-		runtimeMilliseconds: z.number().optional(),
-		resultKindReason: z.string().optional(),
-		sourceFiles: z.array(sourceFileWithTextSchema).optional()
-	})
-	.strict();
-
+export const runResultSchema = z.object({
+	kind: runResultKindSchema,
+	output: z.string().optional(),
+	exitCode: z.number().optional(),
+	runtimeMilliseconds: z.number().optional(),
+	resultKindReason: z.string().optional(),
+	sourceFiles: z.array(sourceFileWithTextSchema).optional()
+});
 export type RunResult = z.infer<typeof runResultSchema>;
 
 export interface RunnerParams {

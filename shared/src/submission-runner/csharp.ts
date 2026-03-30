@@ -49,7 +49,7 @@ export const runCSharp: Runner = async function (params: RunnerParams): Promise<
 		return {
 			success: false,
 			runResult: {
-				kind: 'CompileFailed',
+				kind: 'compileFailed',
 				resultKindReason: buildResult.errorText,
 				exitCode: buildResult.exitCode ?? undefined,
 				sourceFiles
@@ -100,7 +100,7 @@ export const runCSharp: Runner = async function (params: RunnerParams): Promise<
 					if (completedNormally) {
 						clearTimeout(timeoutHandle);
 						resolve({
-							kind: 'Completed',
+							kind: 'completed',
 							output: outputBuffer,
 							exitCode: child.exitCode ?? undefined,
 							runtimeMilliseconds,
@@ -109,7 +109,7 @@ export const runCSharp: Runner = async function (params: RunnerParams): Promise<
 					} else {
 						console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
 						resolve({
-							kind: 'TimeLimitExceeded',
+							kind: 'timeLimitExceeded',
 							output: outputBuffer,
 							resultKindReason: `Timeout after ${timeoutSeconds} seconds`,
 							sourceFiles
@@ -141,6 +141,6 @@ export const runCSharp: Runner = async function (params: RunnerParams): Promise<
 		};
 	} catch (error) {
 		console.error(error);
-		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
+		return { success: false, runResult: { kind: 'runError', sourceFiles } };
 	}
 };

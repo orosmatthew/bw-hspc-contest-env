@@ -26,7 +26,7 @@
 </script>
 
 <script lang="ts">
-	import type { Submission, SubmissionState } from 'bwcontest-shared/types/submission';
+	import type { SubmissionDisplayState, SubmissionPublic } from 'bwcontest-shared/types/submission';
 	import type { SidebarProblemWithSubmissions } from '../sidebar-types';
 	import type { Contest } from 'bwcontest-shared/types/contest';
 
@@ -38,7 +38,7 @@
 	let { contest, problem }: Props = $props();
 
 	const sortedSubmissions = $derived(
-		problem.submissions.sort(
+		problem.submissions.toSorted(
 			(s1, s2) => Date.parse(s1.createdAt.toString()) - Date.parse(s2.createdAt.toString())
 		)
 	);
@@ -47,21 +47,20 @@
 		`${problem.modified ? 'highlight' : ''} ${problem.overallState?.toLowerCase()}`
 	);
 
-	function getStatusImageUrl(overallState: SubmissionState | undefined): string {
+	function getStatusImageUrl(overallState: SubmissionDisplayState | undefined): string {
 		switch (overallState) {
 			case 'correct':
 				return correctSubmissionImageUrl;
 			case 'incorrect':
 				return incorrectSubmissionImageUrl;
-			case 'queued':
-			case 'in_review':
+			case 'processing':
 				return pendingSubmissionImageUrl;
 			default:
 				return watSubmissionsImageUrl;
 		}
 	}
 
-	function getContestOffsetDisplay(submission: Submission): string {
+	function getContestOffsetDisplay(submission: SubmissionPublic): string {
 		if (contest.startTime === null) {
 			return '?';
 		}
@@ -99,16 +98,15 @@
 					{problem.submissions.length}
 					{pluralize(problem.submissions.length, 'attempt', 'attempts')}</span
 				>
-				{#if problem.submissions.some((s) => s.state === 'queued' || s.state === 'in_review')}
+				{#if problem.submissions.some((s) => s.displayState === 'processing')}
 					<span
-						>({problem.submissions.filter((s) => s.state === 'queued' || s.state === 'in_review')
-							.length} pending...)</span
+						>({problem.submissions.filter((s) => s.displayState === 'processing').length} pending...)</span
 					>
 				{/if}
 				{#if problem.overallState === 'correct'}
 					<span class="individualSubmissionAttemptTime">
 						@ {getContestOffsetDisplay(
-							problem.submissions.filter((s) => s.state === 'correct')[0]
+							problem.submissions.filter((s) => s.displayState === 'correct')[0]
 						)}</span
 					>
 				{/if}
@@ -121,11 +119,11 @@
 				<span class="individualSubmissionAttemptNumber">Submit #{i + 1}: </span>
 				<img
 					class="individualSubmissionStatusImage"
-					src={getStatusImageUrl(submission.state)}
-					alt={submission.state}
+					src={getStatusImageUrl(submission.displayState)}
+					alt={submission.displayState}
 				/>
-				<span class="individualSubmissionResult {submission.state.toLowerCase()}">
-					{submission.state}
+				<span class="individualSubmissionResult {submission.displayState.toLowerCase()}">
+					{submission.displayState}
 				</span>
 				<span class="individualSubmissionAttemptTime">
 					@ {getContestOffsetDisplay(submission)}</span

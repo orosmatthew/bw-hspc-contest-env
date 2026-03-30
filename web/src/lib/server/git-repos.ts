@@ -93,7 +93,7 @@ export async function createRepos(params: { contestId: number; teamIds: number[]
 		.filter((t) => params.teamIds.includes(t.id))
 		.forEach(async (team) => {
 			fs.mkdirSync(team.id.toString(), { recursive: true });
-			await git.init({ fs: fs, bare: false, defaultBranch: 'master', dir: team.id.toString() });
+			await git.init({ fs: fs, bare: false, defaultBranch: 'main', dir: team.id.toString() });
 			if (team.language === 'java') {
 				await addProblemsJava({ fs, dir: team.id.toString(), problems: contestProblems });
 			} else if (team.language === 'csharp') {

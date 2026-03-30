@@ -41,6 +41,6 @@ COPY ./sandbox/ .
 # Build/Run
 
 WORKDIR /app/sandbox
-RUN npm run build
+RUN npm run dist
 RUN chmod +x ./docker/entry.sh
 CMD ["./docker/entry.sh"]

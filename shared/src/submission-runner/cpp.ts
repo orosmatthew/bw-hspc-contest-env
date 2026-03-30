@@ -58,7 +58,7 @@ export const runCpp: Runner<RunnerParamsCpp> = async function (
 		console.log('Configure errors: ' + reason);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: reason, sourceFiles }
+			runResult: { kind: 'compileFailed', resultKindReason: reason, sourceFiles }
 		};
 	}
 
@@ -70,7 +70,7 @@ export const runCpp: Runner<RunnerParamsCpp> = async function (
 		console.log('Build errors: ' + reason);
 		return {
 			success: false,
-			runResult: { kind: 'CompileFailed', resultKindReason: reason, sourceFiles }
+			runResult: { kind: 'compileFailed', resultKindReason: reason, sourceFiles }
 		};
 	}
 
@@ -122,7 +122,7 @@ export const runCpp: Runner<RunnerParamsCpp> = async function (
 					if (completedNormally) {
 						clearTimeout(timeoutHandle);
 						resolve({
-							kind: 'Completed',
+							kind: 'completed',
 							output: outputBuffer,
 							exitCode: child.exitCode ?? undefined,
 							runtimeMilliseconds,
@@ -131,7 +131,7 @@ export const runCpp: Runner<RunnerParamsCpp> = async function (
 					} else {
 						console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
 						resolve({
-							kind: 'TimeLimitExceeded',
+							kind: 'timeLimitExceeded',
 							output: outputBuffer,
 							resultKindReason: `Timeout after ${timeoutSeconds} seconds`,
 							sourceFiles
@@ -165,6 +165,6 @@ export const runCpp: Runner<RunnerParamsCpp> = async function (
 		};
 	} catch (error) {
 		console.error(error);
-		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
+		return { success: false, runResult: { kind: 'runError', sourceFiles } };
 	}
 };

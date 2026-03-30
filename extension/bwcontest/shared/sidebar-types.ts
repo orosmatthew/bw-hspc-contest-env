@@ -1,7 +1,7 @@
-import { Contest } from 'bwcontest-shared/types/contest';
-import { RepoState, TeamData } from './common-types';
-import { ProblemPublic } from 'bwcontest-shared/types/problem';
-import { SubmissionDisplayState, SubmissionPublic } from 'bwcontest-shared/types/submission';
+import type { Contest } from 'bwcontest-shared/types/contest';
+import type { RepoState, TeamData } from './common-types';
+import type { ProblemPublic } from 'bwcontest-shared/types/problem';
+import type { SubmissionDisplayState, SubmissionPublic } from 'bwcontest-shared/types/submission';
 
 export type WebviewMessageType =
 	| { msg: 'onLogin'; data: TeamData }

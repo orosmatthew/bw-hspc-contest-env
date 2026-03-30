@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		);
 	}
 	const id = await submissionRepo.create({
-		state: 'correct',
+		state: 'queued',
 		commitHash: req.data.commitHash,
 		teamId: activeTeam.teamId,
 		problemId: problem.id,

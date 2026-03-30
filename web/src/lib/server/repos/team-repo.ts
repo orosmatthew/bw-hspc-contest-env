@@ -113,9 +113,9 @@ export class TeamRepo {
 	}
 
 	private _getHasActiveTeamExpression() {
-		return sql<boolean>`exists(
+		return sql`exists(
             select 1 from ${activeTeamTable}
-            where ${activeTeamTable.teamId} = ${teamTable.id})`;
+            where ${activeTeamTable.teamId} = ${teamTable.id})`.mapWith(Boolean);
 	}
 
 	private _getFields() {

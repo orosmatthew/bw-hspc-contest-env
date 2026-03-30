@@ -92,7 +92,7 @@
 	"scripts": {
 		"vscode:prepublish": "npm run build",
 		"package": "vsce package",
-		"check": "tsc -noEmit",
+		"check": "tsc -noEmit; svelte-check --tsconfig ./webviews/tsconfig.json",
 		"esbuild": "esbuild ./src/index.ts --bundle --outfile=dist/index.js --external:vscode --format=cjs --platform=node --sourcemap --minify",
 		"build": "rimraf --glob dist/* && rollup -c && npm run esbuild",
 		"format": "prettier --plugin prettier-plugin-svelte --write .",

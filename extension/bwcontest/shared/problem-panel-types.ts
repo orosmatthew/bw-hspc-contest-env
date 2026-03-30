@@ -1,4 +1,4 @@
-import { ProblemPublic } from 'bwcontest-shared/types/problem';
+import type { ProblemPublic } from 'bwcontest-shared/types/problem';
 
 export type MessageType =
 	| { msg: 'onRequestProblemData' }

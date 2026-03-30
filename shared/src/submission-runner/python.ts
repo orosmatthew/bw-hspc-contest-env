@@ -61,7 +61,7 @@ export const runPython: Runner<RunnerParamsPython> = async function (
 					if (completedNormally) {
 						clearTimeout(timeoutHandle);
 						resolve({
-							kind: 'Completed',
+							kind: 'completed',
 							output: outputBuffer,
 							exitCode: child.exitCode ?? undefined,
 							runtimeMilliseconds,
@@ -70,7 +70,7 @@ export const runPython: Runner<RunnerParamsPython> = async function (
 					} else {
 						console.log(`Process terminated, total sandbox time: ${runtimeMilliseconds}ms`);
 						resolve({
-							kind: 'TimeLimitExceeded',
+							kind: 'timeLimitExceeded',
 							output: outputBuffer,
 							resultKindReason: `Timeout after ${timeoutSeconds} seconds`,
 							sourceFiles
@@ -102,6 +102,6 @@ export const runPython: Runner<RunnerParamsPython> = async function (
 		};
 	} catch (error) {
 		console.error(error);
-		return { success: false, runResult: { kind: 'RunError', sourceFiles } };
+		return { success: false, runResult: { kind: 'runError', sourceFiles } };
 	}
 };

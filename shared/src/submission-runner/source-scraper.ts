@@ -4,8 +4,8 @@ import fs from 'fs-extra';
 
 export async function getSourceFilesWithText(
 	studentCodeRootForProblem: string,
-	...extensions: string[]
-): Promise<SourceFileWithText[]> {
+	...extensions: Array<string>
+): Promise<Array<SourceFileWithText>> {
 	const normalizedExtensions = extensions.map((ext) => ext.toLowerCase());
 
 	console.log(`- SCAN: ${studentCodeRootForProblem}`);

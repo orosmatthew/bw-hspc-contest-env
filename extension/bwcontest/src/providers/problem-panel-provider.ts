@@ -218,7 +218,7 @@ export class ProblemPanelProvider {
 
 			runResponse.runResult
 				.then((runResult) => {
-					if (runResult.kind === 'TimeLimitExceeded') {
+					if (runResult.kind === 'timeLimitExceeded') {
 						this._postOutputWithTimeLimitExceededNotice(outputBuffer);
 					}
 				})
@@ -246,9 +246,9 @@ export class ProblemPanelProvider {
 
 	private _formatRunResultMessage(runResult: RunResult): string {
 		switch (runResult.kind) {
-			case 'CompileFailed':
+			case 'compileFailed':
 				return 'Compilation Error:\n' + runResult.resultKindReason;
-			case 'RunError':
+			case 'runError':
 				return 'Environment Error:\n' + runResult.resultKindReason;
 			default:
 				return `${runResult.kind}:\n${runResult.output}`;

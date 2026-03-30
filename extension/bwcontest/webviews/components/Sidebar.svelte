@@ -168,7 +168,7 @@
 
 		<h2 class="sidebarSectionHeader">Problem Progress</h2>
 		<div class="sidebarSection">
-			{#if teamStatus}
+			{#if teamStatus !== null}
 				<div class="problemResultsSection">
 					<div>
 						<span class="problemResultsSectionHeader inProgress">Pending Judgment </span>

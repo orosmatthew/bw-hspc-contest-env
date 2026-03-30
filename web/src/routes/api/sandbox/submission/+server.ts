@@ -8,7 +8,7 @@ import {
 	autoJudgeResponse
 } from '$lib/common/output-analyzer/output-analyzer';
 import { getBearerToken } from '$lib/common/utils';
-import { problemRepo, submissionRepo, submissionSourceFileRepo } from '$lib/server/repos';
+import { problemRepo, submissionRepo, submissionSourceFileRepo, teamRepo } from '$lib/server/repos';
 import {
 	postSubmissionReqSchema,
 	type GetSubmissionRes,
@@ -32,7 +32,13 @@ export const GET: RequestHandler = async ({ request }) => {
 			status: 500
 		});
 	}
-	return json({ success: true, data: { submission, problem } } satisfies GetSubmissionRes);
+	const team = await teamRepo.getByIdPrivate(submission.teamId);
+	if (team === undefined) {
+		return json({ success: false, message: 'Team is undefined' } satisfies GetSubmissionRes, {
+			status: 500
+		});
+	}
+	return json({ success: true, data: { submission, problem, team } } satisfies GetSubmissionRes);
 };
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -66,17 +72,17 @@ export const POST: RequestHandler = async ({ request }) => {
 			{ status: 400 }
 		);
 	}
-	if (req.data.result.sourceFiles !== null) {
+	if (req.data.result.sourceFiles !== undefined) {
 		for (const sourceFile of req.data.result.sourceFiles) {
 			await submissionSourceFileRepo.create({
 				pathFromRootProblem: sourceFile.pathFromProblemRoot,
-				content: sourceFile.contest,
+				content: sourceFile.content,
 				submissionId: submission.id
 			});
 		}
 	}
 	const teamOutput =
-		req.data.result.output !== null ? normalizeNewlines(req.data.result.output) : null;
+		req.data.result.output !== undefined ? normalizeNewlines(req.data.result.output) : null;
 
 	const testCaseResults =
 		teamOutput !== null
