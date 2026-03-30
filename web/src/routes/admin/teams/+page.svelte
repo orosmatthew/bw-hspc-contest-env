@@ -4,7 +4,7 @@
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import Modal from '$lib/components/Modal.svelte';
-	import type { TeamLanguage } from 'bwcontest-shared/types/team';
+	import type { TeamLanguage, TeamPrivate } from 'bwcontest-shared/types/team';
 	import type { ActionData, PageData } from './$types';
 
 	interface Props {
@@ -15,14 +15,18 @@
 	let { data, form }: Props = $props();
 
 	function editGenPassword() {
-		(document.getElementById('editTeamPassword') as HTMLInputElement).value = genTeamPassword();
+		if (editTeamPasswordInput !== undefined) {
+			editTeamPasswordInput.value = genTeamPassword();
+		}
 	}
 
 	let addModal: Modal | undefined = $state();
 	let confirmModal: ConfirmModal | undefined = $state();
 	let editModal: Modal | undefined = $state();
+	let editTeamPasswordInput = $state<HTMLInputElement | undefined>();
 
-	let editTeam: PageData['teams'][number] | undefined = $state();
+	let editTeam: TeamPrivate | undefined = $state();
+
 	$effect(() => {
 		if (form) {
 			addModal?.hide();
@@ -81,6 +85,7 @@
 					<label class="mt-1 form-label" for="editTeamPassword">Password</label>
 					<div class="input-group">
 						<input
+							bind:this={editTeamPasswordInput}
 							name="password"
 							id="editTeamPassword"
 							type="text"

@@ -19,6 +19,7 @@
 
 	let { expectedOutput, output, diff, kind, problem }: Props = $props();
 
+	let element: HTMLDivElement | undefined;
 	let localDiff: string | null = null;
 
 	function drawBestMatchDiff() {
@@ -31,12 +32,8 @@
 			);
 		}
 
-		if (localDiff !== null) {
-			const e = document.getElementById(`diff_${kind}`);
-			if (e === null) {
-				throw new Error('Cannot find diff element');
-			}
-			const diff2htmlUi = new Diff2HtmlUI(e, localDiff, {
+		if (localDiff !== null && element !== undefined) {
+			const diff2htmlUi = new Diff2HtmlUI(element, localDiff, {
 				drawFileList: false,
 				matching: 'words',
 				diffStyle: 'word',
@@ -74,12 +71,8 @@
 			}
 		}
 
-		if (localDiff) {
-			const e = document.getElementById(`diff_${kind}`);
-			if (e === null) {
-				throw new Error('Cannot find diff element');
-			}
-			const diff2htmlUi = new Diff2HtmlUI(e, localDiff, {
+		if (localDiff && element !== undefined) {
+			const diff2htmlUi = new Diff2HtmlUI(element, localDiff, {
 				drawFileList: false,
 				matching: 'none',
 				diffStyle: 'word',
@@ -134,12 +127,8 @@
 			}
 		}
 
-		if (localDiff) {
-			const e = document.getElementById(`diff_${kind}`);
-			if (e === null) {
-				throw new Error('Cannot find diff element');
-			}
-			const diff2htmlUi = new Diff2HtmlUI(e, localDiff, {
+		if (localDiff && element !== undefined) {
+			const diff2htmlUi = new Diff2HtmlUI(element, localDiff, {
 				drawFileList: false,
 				matching: 'none',
 				diffStyle: 'word',
@@ -169,7 +158,7 @@
 
 <div
 	class="mt-3 diffView"
-	id={`diff_${kind}`}
+	bind:this={element}
 	class:d2h-dark-color-scheme={theme.value === 'dark'}
 	class:d2h-light-color-scheme={theme.value === 'light'}
 ></div>
