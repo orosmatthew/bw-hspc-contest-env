@@ -12,7 +12,7 @@ import {
 	templateCSharpProblemProj,
 	templateJavaProblem,
 	templatePythonProblem
-} from '../templates';
+} from '$lib/data/templates';
 import http from 'isomorphic-git/http/node';
 import { env } from '$env/dynamic/private';
 
