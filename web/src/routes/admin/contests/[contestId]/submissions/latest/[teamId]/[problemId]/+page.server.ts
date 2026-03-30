@@ -2,6 +2,7 @@ import z from 'zod';
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { submissionRepo } from '$lib/server/repos';
+import urlJoin from 'url-join';
 
 export const load: PageServerLoad = async ({ parent, params }) => {
 	const { contest } = await parent();
@@ -22,5 +23,8 @@ export const load: PageServerLoad = async ({ parent, params }) => {
 		error(404, 'No submissions found');
 	}
 	const lastSubmission = submissions[submissions.length - 1];
-	redirect(307, `/admin/submissions/${lastSubmission.id}`);
+	redirect(
+		307,
+		urlJoin('/admin/contests', contest.id.toString(), '/submissions', lastSubmission.id.toString())
+	);
 };

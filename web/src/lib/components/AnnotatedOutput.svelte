@@ -5,7 +5,6 @@
 	import type { CaseResult } from '../common/output-analyzer/analyzer-types';
 	import { normalizeInputLines } from '../common/output-analyzer/analyzer-utils';
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
-	import { theme } from './ThemeProvider.svelte';
 
 	interface Props {
 		problem: ProblemPrivate;
@@ -78,7 +77,7 @@
 {/if}
 
 <div class="pt-2 table-resonsive">
-	<table class="table table-hover table-bordered" data-bs-theme={theme.value}>
+	<table class="table table-hover table-bordered">
 		<thead>
 			<tr>
 				<td class="text-center" colspan="2">
@@ -165,7 +164,7 @@
 		--judge-background: #e3e3e3;
 	}
 
-	[data-bs-theme='dark'] {
+	:global(html[data-bs-theme='dark']) {
 		--correct: #003c00;
 		--correct-judgment: #006f00;
 		--incorrect: #440000;

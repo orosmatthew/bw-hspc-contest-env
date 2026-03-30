@@ -6,10 +6,11 @@
 		minutesFromContestStart,
 		submissionTimestampHoverText
 	} from '$lib/common/utils';
-	import { SvelteMap } from 'svelte/reactivity';
 	import type { Contest } from 'bwcontest-shared/types/contest';
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 	import type { SubmissionPrivate } from 'bwcontest-shared/types/submission';
+	import { SvelteMap } from 'svelte/reactivity';
+	import urlJoin from 'url-join';
 
 	interface Props {
 		contest: Contest;
@@ -27,30 +28,30 @@
 		sortDirection
 	}: Props = $props();
 
-	let showOutputColumns = $state(true);
-
-	let historyCounts = new SvelteMap<string, number>();
-	let attemptNumbers = new SvelteMap<SubmissionPrivate, number>();
-
 	function getAttemptText(submission: SubmissionPrivate): string {
-		return `${attemptNumbers.get(submission) ?? -1} / ${historyCounts.get(getSubmissionHistoryKey(submission)) ?? -1}`;
+		return `${stats.attemptNumbers.get(submission) ?? -1} / ${stats.historyCounts.get(getSubmissionHistoryKey(submission)) ?? -1}`;
 	}
 
 	function getSubmissionHistoryKey(submission: SubmissionPrivate): string {
 		return `${submission.contestId};${submission.teamId};${submission.problemId}`;
 	}
 
-	$effect(() => {
-		showOutputColumns = submissions.some((s) => s.state !== 'queued');
+	const showOutputColumns = $derived(submissions.some((s) => s.state !== 'queued'));
 
-		submissions.sort(
-			(s1, s2) =>
-				(s1.createdAt.getTime() - s2.createdAt.getTime()) *
+	const sortedSubmissions = $derived(
+		submissions.toSorted(
+			(a, b) =>
+				(a.createdAt.getTime() - b.createdAt.getTime()) *
 				(sortDirection === 'oldest first' ? 1 : -1)
-		);
+		)
+	);
 
-		historyCounts.clear();
-		attemptNumbers.clear();
+	const stats = $derived.by<{
+		historyCounts: Map<string, number>;
+		attemptNumbers: Map<SubmissionPrivate, number>;
+	}>(() => {
+		const historyCounts = new SvelteMap<string, number>();
+		const attemptNumbers = new SvelteMap<SubmissionPrivate, number>();
 
 		if (includesAllAttempts) {
 			const submissionsInChronologicalOrder = submissions.toSorted((a, b) => {
@@ -59,22 +60,14 @@
 
 			for (let submission of submissionsInChronologicalOrder) {
 				let key = getSubmissionHistoryKey(submission);
-				if (!historyCounts.has(key)) {
-					historyCounts.set(key, 0);
-				}
 
-				const h1 = historyCounts.get(key);
-				if (h1 === undefined) {
-					throw new Error("historyCounts.get(key) is undefined when it shouldn't");
-				}
-				historyCounts.set(key, h1 + 1);
-				const h2 = historyCounts.get(key);
-				if (h2 === undefined) {
-					throw new Error("historyCounts.get(key) is undefined when it shouldn't");
-				}
-				attemptNumbers.set(submission, h2);
+				const currentCount = (historyCounts.get(key) ?? 0) + 1;
+				historyCounts.set(key, currentCount);
+				attemptNumbers.set(submission, currentCount);
 			}
 		}
+
+		return { historyCounts, attemptNumbers };
 	});
 </script>
 
@@ -97,11 +90,19 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each submissions as submission (submission.id)}
+			{#each sortedSubmissions as submission (submission.id)}
 				{@const problem = contestProblems.find((p) => p.id === submission.problemId)}
 				<tr
 					class="submissionRow"
-					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`)}
+					onclick={() =>
+						goto(
+							urlJoin(
+								'/admin/contests',
+								submission.contestId.toString(),
+								'/submissions',
+								submission.id.toString()
+							)
+						)}
 				>
 					<td>
 						{submission.teamName}<br />

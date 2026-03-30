@@ -6,7 +6,6 @@
 	} from '../common/output-analyzer/output-analyzer';
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 	import type { SubmissionPrivate } from 'bwcontest-shared/types/submission';
-	import { theme } from './ThemeProvider.svelte';
 
 	interface Props {
 		problem: ProblemPrivate;
@@ -78,7 +77,7 @@
 	}
 </script>
 
-<table class="result-stable" data-bs-theme={theme.value}>
+<table class="result-stable">
 	<tbody>
 		{#if currentSubmitResults}
 			{@const numCases = currentSubmitResults.testCases.length}
@@ -134,7 +133,7 @@
 		--changed-border-color: #6e6ecf;
 	}
 
-	[data-bs-theme='dark'] {
+	:global(html[data-bs-theme='dark']) {
 		--correct-color: #2c951b;
 		--formatting-issue-color: #c8d500;
 		--labelling-issue-color: #d5a800;

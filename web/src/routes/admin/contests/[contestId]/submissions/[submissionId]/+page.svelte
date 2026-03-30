@@ -10,7 +10,7 @@
 	import SubmissionCodeAndOutput from '$lib/components/SubmissionCodeAndOutput.svelte';
 	import { goto } from '$app/navigation';
 	import TestCaseResults from '$lib/components/TestCaseResults.svelte';
-	import { theme } from '$lib/components/ThemeProvider.svelte';
+	import urlJoin from 'url-join';
 
 	interface Props {
 		data: PageData;
@@ -211,7 +211,10 @@
 
 <div class="row">
 	<div class="col-4">
-		<a href="/admin/submissions" class="mb-3 btn btn-outline-primary">All Submissions</a>
+		<a
+			href={urlJoin('/admin/contests', data.contest.id.toString(), '/submissions')}
+			class="mb-3 btn btn-outline-primary">All Submissions</a
+		>
 	</div>
 	<div class="col-8 text-end">
 		<div>
@@ -299,7 +302,7 @@
 </div>
 
 <div class="table-responsive">
-	<table class="table table-bordered table-hover" data-bs-theme={theme.value}>
+	<table class="table table-bordered table-hover">
 		<thead>
 			<tr>
 				<th></th>
@@ -314,7 +317,16 @@
 		<tbody>
 			{#each data.submissionHistory as submission, i (submission.id)}
 				<tr
-					onclick={() => goto(`/admin/submissions/${submission.id.toString()}`, { noScroll: true })}
+					onclick={() =>
+						goto(
+							urlJoin(
+								'/admin/contests',
+								submission.contestId.toString(),
+								'/submissions',
+								submission.id.toString()
+							),
+							{ noScroll: true }
+						)}
 					class="{submission.id === data.submission.id
 						? 'specifiedSubmission'
 						: 'otherSubmission'} {submission.state === 'inReview' ? 'inReview' : ''}"
@@ -483,7 +495,7 @@
 		--specifiedSubmissionInReviewPendingIncorrect-border-color: red;
 	}
 
-	[data-bs-theme='dark'] {
+	:global(html[data-bs-theme='dark']) {
 		--specifiedSubmission-border-color: #3e3eb9;
 		--specifiedSubmission-background-color: #050531;
 
