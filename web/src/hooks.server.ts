@@ -1,10 +1,11 @@
 import { redirect, type Handle, type ServerInit } from '@sveltejs/kit';
 import { startGitServer } from '$lib/server/git-server';
 import { adminSessionRepo } from '$lib/server/repos';
+import { jobService } from '$lib/server/services';
 
 export const init: ServerInit = async () => {
-	console.log('Runtime initialization...');
 	startGitServer();
+	await jobService.startDeleteExpiredAdminSessionsJob();
 };
 
 export const handle = (async ({ event, resolve }) => {

@@ -1,20 +1,15 @@
-FROM ubuntu:22.04
+FROM node:24-trixie
 
 # Setup
 
 RUN apt-get update
 RUN apt-get install curl -y 
 
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt-get install nodejs git -y
-
 RUN git config --global user.name "Admin"
 RUN git config --global user.email noemail@example.com
 
 # Prep Shared
 
-WORKDIR /app
-RUN mkdir shared
 WORKDIR /app/shared
 COPY ./shared/package*.json ./
 RUN npm ci
@@ -23,7 +18,6 @@ RUN npm run build
 
 # Prep Web
 
-RUN mkdir web
 WORKDIR /app/web
 COPY ./web/package*.json ./
 RUN npm ci
