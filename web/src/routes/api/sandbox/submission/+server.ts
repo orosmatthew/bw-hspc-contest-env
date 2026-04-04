@@ -17,7 +17,7 @@ import {
 
 export const GET: RequestHandler = async ({ request }) => {
 	const token = getBearerToken(request.headers);
-	if (token === undefined || token !== env.WEB_SANDBOX_SECRET) {
+	if (token === undefined || token !== env.SANDBOX_SECRET) {
 		return json({ success: false, message: 'Unauthorized' } satisfies GetSubmissionRes, {
 			status: 401
 		});
@@ -43,7 +43,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
 export const POST: RequestHandler = async ({ request }) => {
 	const token = getBearerToken(request.headers);
-	if (token === undefined || token !== env.WEB_SANDBOX_SECRET) {
+	if (token === undefined || token !== env.SANDBOX_SECRET) {
 		return json({ success: false, message: 'Unauthorized' } satisfies PostSubmissionRes, {
 			status: 401
 		});
