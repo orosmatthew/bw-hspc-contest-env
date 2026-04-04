@@ -4,9 +4,9 @@ services:
       context: ../
       dockerfile: ./sandbox/Dockerfile
     environment:
-      - ADMIN_URL=${ADMIN_URL}
-      - REPO_URL=${REPO_URL}
-      - WEB_SANDBOX_SECRET=${WEB_SANDBOX_SECRET}
+      WEB_URL: ${WEB_URL}
+      REPO_URL: ${REPO_URL}
+      SANDBOX_SECRET: ${SANDBOX_SECRET}
     network_mode: 'host'
     deploy:
       resources:
