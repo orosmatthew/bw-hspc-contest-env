@@ -34,7 +34,7 @@ export class GitRepoService {
 
 		for (const team of teams) {
 			fs.mkdirSync(team.id.toString(), { recursive: true });
-			await git.init({ fs, bare: false, defaultBranch: 'main', dir: team.id.toString() });
+			await git.init({ fs, bare: false, defaultBranch: 'master', dir: team.id.toString() });
 			switch (team.language) {
 				case 'java':
 					this._addProblemsJava({ fs, dir: team.id.toString(), problems });
