@@ -10,7 +10,7 @@ npm run build
 # or npm run watch
 ```
 
-You must be using VSCode, then press `F5` to debug the extension 
+You must be using VSCode, then press `F5` to debug the extension
 
 ### For Production
 
