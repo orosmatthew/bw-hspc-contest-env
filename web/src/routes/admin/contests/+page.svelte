@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import type { PageData } from './$types';
 
@@ -18,8 +19,8 @@
 <FormAlert />
 
 <div class="d-flex flex-row justify-content-end">
-	<a href="/admin/contests/create" class="btn btn-outline-success m-1">Create</a>
-	<a href="/admin/contests/import" class="btn btn-outline-success m-1">Import</a>
+	<a href={resolve('/admin/contests/create')} class="btn btn-outline-success m-1">Create</a>
+	<a href={resolve('/admin/contests/import')} class="btn btn-outline-success m-1">Import</a>
 </div>
 
 <div class="mt-3 table-responsive">
@@ -46,7 +47,7 @@
 					</td>
 					<td
 						><a
-							href={`/admin/contests/${contest.id.toString()}`}
+							href={resolve('/admin/contests/[contestId]', { contestId: contest.id.toString() })}
 							class="btn btn-sm btn-outline-secondary">Details</a
 						></td
 					>

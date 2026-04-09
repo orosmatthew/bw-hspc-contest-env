@@ -1,6 +1,7 @@
 import { adminSessionRepo } from '$lib/server/repos';
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async () => {};
 
@@ -10,6 +11,6 @@ export const actions: Actions = {
 		if (token !== undefined) {
 			await adminSessionRepo.deleteByToken(token);
 		}
-		redirect(303, '/login');
+		redirect(303, resolve('/login'));
 	}
 };

@@ -2,6 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import z from 'zod';
 import { problemRepo } from '$lib/server/repos';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const problemIdParse = z.coerce.number().int().safeParse(params.problemId);
@@ -10,7 +11,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 	const problem = await problemRepo.getByIdPrivate(problemIdParse.data);
 	if (problem === undefined) {
-		redirect(307, '/admin/problems');
+		redirect(307, resolve('/admin/problems'));
 	}
 	return { problem };
 };
@@ -61,6 +62,6 @@ export const actions: Actions = {
 		if (!deleteSuccess) {
 			return { success: false, message: 'Unable to delete problem' };
 		}
-		redirect(303, '/admin/problems');
+		redirect(303, resolve('/admin/problems'));
 	}
 };

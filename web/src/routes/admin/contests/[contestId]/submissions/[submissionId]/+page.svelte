@@ -10,7 +10,7 @@
 	import SubmissionCodeAndOutput from '$lib/components/SubmissionCodeAndOutput.svelte';
 	import { goto } from '$app/navigation';
 	import TestCaseResults from '$lib/components/TestCaseResults.svelte';
-	import urlJoin from 'url-join';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		data: PageData;
@@ -23,7 +23,9 @@
 
 	$effect(() => {
 		if (form && form.success) {
-			void goto('/admin/reviews');
+			void goto(
+				resolve('/admin/contests/[contestId]/reviews', { contestId: data.contest.id.toString() })
+			);
 		}
 	});
 
@@ -212,7 +214,9 @@
 <div class="row">
 	<div class="col-4">
 		<a
-			href={urlJoin('/admin/contests', data.contest.id.toString(), '/submissions')}
+			href={resolve('/admin/contests/[contestId]/submissions', {
+				contestId: data.contest.id.toString()
+			})}
 			class="mb-3 btn btn-outline-primary">All Submissions</a
 		>
 	</div>
@@ -319,12 +323,10 @@
 				<tr
 					onclick={() =>
 						goto(
-							urlJoin(
-								'/admin/contests',
-								submission.contestId.toString(),
-								'/submissions',
-								submission.id.toString()
-							),
+							resolve('/admin/contests/[contestId]/submissions/[submissionId]', {
+								contestId: submission.contestId.toString(),
+								submissionId: submission.id.toString()
+							}),
 							{ noScroll: true }
 						)}
 					class="{submission.id === data.submission.id

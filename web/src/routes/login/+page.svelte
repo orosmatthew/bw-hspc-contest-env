@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { ActionData } from './$types';
 	import { slide, fly } from 'svelte/transition';
 
@@ -15,7 +16,7 @@
 	$effect(() => {
 		if (form) {
 			if (form.success) {
-				void goto('/admin');
+				void goto(resolve('/admin'));
 			}
 			dismissed = false;
 		}
@@ -66,7 +67,7 @@
 			<label for="passwordInput">Password</label>
 		</div>
 		<div class="d-flex flex-row mt-4 mb-4 justify-content-between">
-			<a href="/public/scoreboard" class="btn btn-outline-secondary"
+			<a href={resolve('/public/scoreboard')} class="btn btn-outline-secondary"
 				><i class="bi bi-link-45deg"></i> Public Scoreboard</a
 			>
 			<button type="submit" class="btn btn-primary">Login</button>

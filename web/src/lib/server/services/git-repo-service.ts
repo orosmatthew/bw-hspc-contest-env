@@ -57,7 +57,7 @@ export class GitRepoService {
 				fs,
 				dir: team.id.toString(),
 				message: 'Initial',
-				author: { name: 'Admin' },
+				author: { name: 'Admin' }
 			});
 			await git.push({
 				fs,

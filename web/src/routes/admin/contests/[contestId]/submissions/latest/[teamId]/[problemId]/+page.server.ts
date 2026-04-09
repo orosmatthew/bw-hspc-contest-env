@@ -2,7 +2,7 @@ import z from 'zod';
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { submissionRepo } from '$lib/server/repos';
-import urlJoin from 'url-join';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async ({ parent, params }) => {
 	const { contest } = await parent();
@@ -25,6 +25,9 @@ export const load: PageServerLoad = async ({ parent, params }) => {
 	const lastSubmission = submissions[submissions.length - 1];
 	redirect(
 		307,
-		urlJoin('/admin/contests', contest.id.toString(), '/submissions', lastSubmission.id.toString())
+		resolve('/admin/contests/[contestId]/submissions/[submissionId]', {
+			contestId: contest.id.toString(),
+			submissionId: lastSubmission.id.toString()
+		})
 	);
 };

@@ -1,3 +1,7 @@
+<script>
+	import { resolve } from '$app/paths';
+</script>
+
 <svelte:head>
 	<title>Dashboard</title>
 </svelte:head>
@@ -10,7 +14,7 @@
 			target="_blank"
 			class="card stats-card bg-body-tertiary stats-card-link stats-card-action"
 			draggable="false"
-			href="/public/scoreboard"
+			href={resolve('/public/scoreboard')}
 		>
 			<h4><i class="bi bi-link-45deg"></i> Public Scoreboard</h4>
 		</a>

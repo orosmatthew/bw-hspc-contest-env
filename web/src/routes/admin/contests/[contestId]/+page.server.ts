@@ -12,6 +12,7 @@ import {
 } from '$lib/server/repos';
 import { stringToJsonSchema } from '$lib/common/utils';
 import { gitRepoService } from '$lib/server/services';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 	const contest = await contestRepo.getById(contestIdParse.data);
 	if (contest === undefined) {
-		redirect(307, '/admin/contests');
+		redirect(307, resolve('/admin/contests'));
 	}
 	const problems = await problemRepo.getInContestPrivate(contest.id);
 	const teams = await teamRepo.getInContestPrivate(contest.id);
@@ -50,7 +51,7 @@ export const actions: Actions = {
 		if (contestDeleteSuccess !== true) {
 			return { success: false, message: 'Unable to delete contest' };
 		}
-		redirect(303, '/admin/contests');
+		redirect(303, resolve('/admin/contests'));
 	},
 	start: async ({ params }) => {
 		const contestIdParse = z.coerce.number().int().safeParse(params.contestId);

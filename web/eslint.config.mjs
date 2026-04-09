@@ -45,7 +45,6 @@ export default defineConfig(
 	},
 	{
 		rules: {
-			'svelte/no-navigation-without-resolve': 'off',
 			eqeqeq: 'error',
 			'@typescript-eslint/no-floating-promises': 'error',
 			'@typescript-eslint/strict-boolean-expressions': 'error',

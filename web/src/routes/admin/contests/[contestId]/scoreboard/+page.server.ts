@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { scoreboardService } from '$lib/server/services';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	const { contest } = await parent();
@@ -12,7 +13,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 	}
 	const scoreboard = await scoreboardService.getForContest(contest.id);
 	if (scoreboard === undefined) {
-		redirect(307, '/admin');
+		redirect(307, resolve('/admin'));
 	}
 	return { scoreboard };
 };

@@ -4,6 +4,7 @@
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { ActionData, PageData } from './$types';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		data: PageData;
@@ -14,7 +15,7 @@
 
 	$effect(() => {
 		if (form && form.success) {
-			void goto('/admin/contests');
+			void goto(resolve('/admin/contests'));
 		}
 	});
 
@@ -126,7 +127,7 @@
 		</div>
 	</div>
 	<div class="d-flex flex-row justify-content-end gap-2">
-		<a href="/admin/contests" class="btn btn-outline-secondary">Cancel</a>
+		<a href={resolve('/admin/contests')} class="btn btn-outline-secondary">Cancel</a>
 		<button type="submit" class="btn btn-success">Create</button>
 	</div>
 </form>

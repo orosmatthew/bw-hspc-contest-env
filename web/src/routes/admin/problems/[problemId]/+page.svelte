@@ -4,6 +4,7 @@
 	import { stretchTextarea } from '$lib/common/utils';
 	import type { ActionData, PageData } from './$types';
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 
 	let editing = $state(false);
 	let error = $state(false);
@@ -41,7 +42,7 @@
 
 <div class="row">
 	<div class="col-6">
-		<a href="/admin/problems" class="btn btn-outline-primary">All Problems</a>
+		<a href={resolve('/admin/problems')} class="btn btn-outline-primary">All Problems</a>
 	</div>
 	<div class="col-6 text-end">
 		<form

@@ -2,10 +2,10 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { invalidateAll } from '$app/navigation';
-	import urlJoin from 'url-join';
 	import correctImg from '$lib/images/correct.png';
 	import incorrectImg from '$lib/images/incorrect.png';
 	import type { ScoreboardTeamProblem } from '$lib/server/services/scoreboard-service';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		data: PageData;
@@ -53,13 +53,11 @@
 			{#if teamProblem?.attempts}
 				<a
 					style="text-decoration: initial;"
-					href={urlJoin(
-						'/admin/contests',
-						contestId.toString(),
-						'/submissions/latest',
-						teamId.toString(),
-						problemId.toString()
-					)}
+					href={resolve('/admin/contests/[contestId]/submissions/latest/[teamId]/[problemId]', {
+						contestId: contestId.toString(),
+						teamId: teamId.toString(),
+						problemId: problemId.toString()
+					})}
 				>
 					{teamProblem.attempts}
 					{teamProblem.attempts === 1 ? 'Attempt' : 'Attempts'}
@@ -75,7 +73,9 @@
 {#if data.contest !== undefined}
 	<div class="pb-2 d-flex flex-row-reverse">
 		<a
-			href={urlJoin('/admin/contests', data.contest.id.toString(), '/scoreboard/json')}
+			href={resolve('/admin/contests/[contestId]/scoreboard/json', {
+				contestId: data.contest.id.toString()
+			})}
 			target="_blank"
 			class="btn btn-outline-secondary btn-sm"
 		>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { ActionData } from './$types';
 
 	interface Props {
@@ -11,7 +12,7 @@
 
 	$effect(() => {
 		if (form && form.success) {
-			void goto('/admin/problems');
+			void goto(resolve('/admin/problems'));
 		}
 	});
 </script>
@@ -24,7 +25,7 @@
 
 <div class="row">
 	<div class="col-6">
-		<a href="/admin/problems" class="btn btn-outline-primary">Back</a>
+		<a href={resolve('/admin/problems')} class="btn btn-outline-primary">Back</a>
 	</div>
 </div>
 

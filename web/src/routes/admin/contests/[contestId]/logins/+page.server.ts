@@ -2,15 +2,16 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import z from 'zod';
 import { contestRepo, teamRepo } from '$lib/server/repos';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const contestIdParse = z.coerce.number().int().safeParse(params.contestId);
 	if (!contestIdParse.success) {
-		redirect(307, '/admin/contests');
+		redirect(307, resolve('/admin/contests'));
 	}
 	const contest = await contestRepo.getById(contestIdParse.data);
 	if (contest === undefined) {
-		redirect(307, '/admin/contests');
+		redirect(307, resolve('/admin/contests'));
 	}
 	const teams = await teamRepo.getInContestPrivate(contest.id);
 	return { teams };

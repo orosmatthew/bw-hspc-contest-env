@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import type { ContestImportData } from './+page.server';
 
@@ -78,7 +79,7 @@
 	</div>
 
 	<div class="d-flex flex-row justify-content-end gap-2 m-2">
-		<a href="/admin/contests" class="btn btn-outline-secondary">Cancel</a>
+		<a href={resolve('/admin/contests')} class="btn btn-outline-secondary">Cancel</a>
 		<button class="btn btn-success">Import</button>
 	</div>
 </form>

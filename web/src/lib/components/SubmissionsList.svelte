@@ -10,7 +10,7 @@
 	import type { ProblemPrivate } from 'bwcontest-shared/types/problem';
 	import type { SubmissionPrivate } from 'bwcontest-shared/types/submission';
 	import { SvelteMap } from 'svelte/reactivity';
-	import urlJoin from 'url-join';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		contest: Contest;
@@ -96,12 +96,10 @@
 					class="submissionRow"
 					onclick={() =>
 						goto(
-							urlJoin(
-								'/admin/contests',
-								submission.contestId.toString(),
-								'/submissions',
-								submission.id.toString()
-							)
+							resolve('/admin/contests/[contestId]/submissions/[submissionId]', {
+								contestId: submission.contestId.toString(),
+								submissionId: submission.id.toString()
+							})
 						)}
 				>
 					<td>

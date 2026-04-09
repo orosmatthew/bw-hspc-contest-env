@@ -2,9 +2,9 @@
 	import { goto } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import { theme } from '$lib/components/ThemeProvider.svelte';
-	import urlJoin from 'url-join';
 	import type { FormEventHandler } from 'svelte/elements';
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		data: LayoutData;
@@ -15,9 +15,9 @@
 
 	const onSelectContestInput: FormEventHandler<HTMLSelectElement> = async (event) => {
 		if (event.currentTarget.value === '') {
-			await goto('/admin');
+			await goto(resolve('/admin'));
 		}
-		await goto(urlJoin('/admin/contests', event.currentTarget.value));
+		await goto(resolve('/admin/contests/[contestId]', { contestId: event.currentTarget.value }));
 	};
 </script>
 
@@ -38,18 +38,23 @@
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
 				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 					<li class="nav-item">
-						<a href="/admin" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+						<a href={resolve('/admin')} class="nav-link"
+							><i class="bi bi-speedometer2"></i> Dashboard</a
+						>
 					</li>
 					<li class="nav-item">
-						<a href="/admin/problems" class="nav-link"
+						<a href={resolve('/admin/problems')} class="nav-link"
 							><i class="bi bi-question-circle"></i> Problems</a
 						>
 					</li>
 					<li class="nav-item">
-						<a href="/admin/teams" class="nav-link"><i class="bi bi-people"></i> Teams</a>
+						<a href={resolve('/admin/teams')} class="nav-link"><i class="bi bi-people"></i> Teams</a
+						>
 					</li>
 					<li class="nav-item">
-						<a href="/admin/contests" class="nav-link"><i class="bi bi-flag"></i> Contests</a>
+						<a href={resolve('/admin/contests')} class="nav-link"
+							><i class="bi bi-flag"></i> Contests</a
+						>
 					</li>
 					<select
 						class="form-control form-select w-auto"
@@ -64,7 +69,9 @@
 					{#if data.contest !== undefined}
 						<li class="nav-item">
 							<a
-								href={urlJoin('/admin/contests', data.contest.id.toString(), '/reviews')}
+								href={resolve('/admin/contests/[contestId]/reviews', {
+									contestId: data.contest.id.toString()
+								})}
 								class="nav-link"
 							>
 								<i class="bi bi-eye"></i>
@@ -73,7 +80,9 @@
 						</li>
 						<li class="nav-item">
 							<a
-								href={urlJoin('/admin/contests', data.contest.id.toString(), '/submissions')}
+								href={resolve('/admin/contests/[contestId]/submissions', {
+									contestId: data.contest.id.toString()
+								})}
 								class="nav-link"
 							>
 								<i class="bi bi-envelope-paper"></i>
@@ -82,7 +91,9 @@
 						</li>
 						<li class="nav-item">
 							<a
-								href={urlJoin('/admin/contests', data.contest.id.toString(), '/scoreboard')}
+								href={resolve('/admin/contests/[contestId]/scoreboard', {
+									contestId: data.contest.id.toString()
+								})}
 								class="nav-link"
 							>
 								<i class="bi bi-trophy"></i>

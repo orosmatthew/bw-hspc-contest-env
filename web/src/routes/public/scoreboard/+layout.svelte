@@ -8,6 +8,7 @@
 	import type { PageData } from './$types';
 	import { contestId } from './stores';
 	import { theme } from '$lib/components/ThemeProvider.svelte';
+	import { resolve } from '$app/paths';
 	interface Props {
 		data: PageData;
 		children?: import('svelte').Snippet;
@@ -17,7 +18,7 @@
 
 	function onContestSelect() {
 		if ($contestId !== null) {
-			void goto(`/public/scoreboard/${$contestId}`);
+			void goto(resolve('/public/scoreboard/[contestId]', { contestId: $contestId.toString() }));
 		}
 	}
 </script>

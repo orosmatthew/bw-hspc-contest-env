@@ -9,6 +9,7 @@ import {
 	teamRepo
 } from '$lib/server/repos';
 import type { SubmissionStateReason } from 'bwcontest-shared/types/submission';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const submissionIdParse = z.coerce.number().safeParse(params.submissionId);
@@ -17,7 +18,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 	const submission = await submissionRepo.getByIdPrivate(submissionIdParse.data);
 	if (submission === undefined) {
-		redirect(307, '/admin/submissions');
+		redirect(
+			307,
+			resolve('/admin/contests/[contestId]/submissions', { contestId: params.contestId })
+		);
 	}
 	const contest = await contestRepo.getById(submission.contestId);
 	if (contest === undefined) {
@@ -65,7 +69,10 @@ export const actions: Actions = {
 		if (deleteSuccess !== true) {
 			return { success: false, message: 'Unable to delete submission' };
 		}
-		redirect(303, '/admin/submissions');
+		redirect(
+			303,
+			resolve('/admin/contests/[contestId]/submissions', { contestId: params.contestId })
+		);
 	},
 	clearJudgment: async ({ params }) => {
 		const submissionIdParse = z.coerce.number().int().safeParse(params.submissionId);
@@ -87,7 +94,13 @@ export const actions: Actions = {
 		if (updateSuccess !== true) {
 			return { success: false, message: 'Unable to update submission' };
 		}
-		redirect(303, `/admin/submissions/${submission.id}`);
+		redirect(
+			303,
+			resolve('/admin/contests/[contestId]/submissions/[submissionId]', {
+				contestId: submission.contestId.toString(),
+				submissionId: submission.id.toString()
+			})
+		);
 	},
 	rerun: async ({ params }) => {
 		const submissionIdParse = z.coerce.number().int().safeParse(params.submissionId);
@@ -115,7 +128,13 @@ export const actions: Actions = {
 		if (updateSuccess !== true) {
 			return { success: false, message: 'Unable to update submission' };
 		}
-		redirect(303, `/admin/submissions/${submissionIdParse.data}`);
+		redirect(
+			303,
+			resolve('/admin/contests/[contestId]/submissions/[submissionId]', {
+				contestId: params.contestId,
+				submissionId: submissionIdParse.data.toString()
+			})
+		);
 	},
 	submitGrade: async ({ request, params }) => {
 		const submissionIdParse = z.coerce.number().int().safeParse(params.submissionId);

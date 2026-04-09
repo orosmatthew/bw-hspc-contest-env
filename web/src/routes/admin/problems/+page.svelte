@@ -3,6 +3,7 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import InputSpecDescription from './InputSpecDescription.svelte';
 	import { parseProblemInput } from '$lib/common/output-analyzer/input-analyzer';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		data: PageData;
@@ -21,7 +22,7 @@
 
 <div class="row mb-3">
 	<div class="text-end">
-		<a href="/admin/problems/create" class="btn btn-outline-success">Create</a>
+		<a href={resolve('/admin/problems/create')} class="btn btn-outline-success">Create</a>
 	</div>
 </div>
 
@@ -62,7 +63,7 @@
 						{/if}
 					</td><td
 						><a
-							href={`/admin/problems/${problem.id.toString()}`}
+							href={resolve('/admin/problems/[problemId]', { problemId: problem.id.toString() })}
 							class="btn btn-sm btn-outline-secondary">Details</a
 						></td
 					>

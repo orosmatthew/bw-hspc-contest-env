@@ -2,13 +2,14 @@ import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { adminSessionRepo } from '$lib/server/repos';
 import z from 'zod';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const token = cookies.get('session');
 	if (token !== undefined) {
 		const session = await adminSessionRepo.getValid(token);
 		if (session !== undefined) {
-			redirect(307, '/admin');
+			redirect(307, resolve('/admin'));
 		}
 	}
 };

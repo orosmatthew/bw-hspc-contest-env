@@ -15,6 +15,7 @@ import {
 import type { SubmissionState } from 'bwcontest-shared/types/submission';
 import type { TeamLanguage } from 'bwcontest-shared/types/team';
 import { gitRepoService } from '$lib/server/services';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async () => {};
 
@@ -229,7 +230,7 @@ export const actions: Actions = {
 					teamIds: teams.map((t) => t.id)
 				});
 			}
-			return redirect(303, '/admin/contests');
+			return redirect(303, resolve('/admin/contests'));
 		}
 	}
 };

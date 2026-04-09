@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { page } from '$app/state';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import FormAlert from '$lib/components/FormAlert.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { ActionData, PageData } from './$types';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		data: PageData;
@@ -116,7 +116,7 @@
 
 <div class="row">
 	<div class="col-6">
-		<a href="/admin/contests" class="btn btn-outline-primary">All Contests</a>
+		<a href={resolve('/admin/contests')} class="btn btn-outline-primary">All Contests</a>
 	</div>
 	<div class="col-6 text-end">
 		{#if data.contest.isFrozen !== true}
@@ -169,7 +169,9 @@
 	<div class="col-6">
 		<h4>Teams</h4>
 		<a
-			href={`/admin/contests/${page.params.contestId}/logins`}
+			href={resolve('/admin/contests/[contestId]/logins', {
+				contestId: data.contest.id.toString()
+			})}
 			class="mb-2 btn btn-outline-secondary">Printable Logins</a
 		>
 		<div class="list-group">
@@ -182,8 +184,9 @@
 		<h4>Problems</h4>
 		<div class="list-group">
 			{#each data.problems as problem (problem.id)}
-				<a href={`/admin/problems/${problem.id}`} class="list-group-item list-group-item-action"
-					>{problem.friendlyName}</a
+				<a
+					href={resolve('/admin/problems/[problemId]', { problemId: problem.id.toString() })}
+					class="list-group-item list-group-item-action">{problem.friendlyName}</a
 				>
 			{/each}
 		</div>
