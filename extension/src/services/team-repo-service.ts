@@ -212,7 +212,7 @@ export class TeamRepoService {
 			`Running 'git clone' from url ${params.repoUrl} to directory: ${params.targetDirectory}`
 		);
 		try {
-			await git.clone({ fs, http, dir: params.targetDirectory, url: params.repoUrl, ref: 'master' });
+			await git.clone({ fs, http, dir: params.targetDirectory, url: params.repoUrl, ref: 'main' });
 		} catch (error) {
 			vscode.window.showErrorMessage(`BWContest: Failed to git clone: ${error}`);
 			return false;
